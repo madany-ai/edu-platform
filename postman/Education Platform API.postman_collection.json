@@ -1,0 +1,274 @@
+{
+	"info": {
+		"name": "Education Platform API",
+		"description": "REST API for the Instructor Education Platform (white-label LMS).\n\nBase URL: {{base_url}}\n\n## Auth Flow\n1. Register or Login to get a token\n2. Set the token via the \"Set Token\" test script (automatic in Login/Register)\n3. Use authenticated endpoints (Me, Logout) which use the `token` collection variable",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "opencode"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"description": "Authentication endpoints — register, login, logout, and get current user profile.",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Student Name\",\n  \"email\": \"student@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register"]
+						},
+						"description": "Register a new user account.\n\n**Validation rules:**\n- `name` — required, string, max:255\n- `email` — required, valid email, unique\n- `password` — required, min:8, confirmed"
+					},
+					"response": [
+						{
+							"name": "201 Created",
+							"status": "Created",
+							"code": 201,
+							"body": "{\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Student Name\",\n    \"email\": \"student@example.com\",\n    \"created_at\": \"2026-07-08T13:00:00.000000Z\",\n    \"updated_at\": \"2026-07-08T13:00:00.000000Z\"\n  },\n  \"token\": \"1|abc123def456...\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						},
+						{
+							"name": "422 Unprocessable",
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"body": "{\n  \"message\": \"The email has already been taken.\",\n  \"errors\": {\n    \"email\": [\"The email has already been taken.\"]\n  }\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('token', json.token);",
+									"    pm.environment.set('token', json.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"student@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Login with email and password.\n\nReturns a new Sanctum token. The test script auto-saves the token to the `token` collection variable."
+					},
+					"response": [
+						{
+							"name": "200 OK",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Student Name\",\n    \"email\": \"student@example.com\",\n    \"created_at\": \"2026-07-08T13:00:00.000000Z\",\n    \"updated_at\": \"2026-07-08T13:00:00.000000Z\"\n  },\n  \"token\": \"2|xyz789abc012...\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						},
+						{
+							"name": "401 Unauthorized",
+							"status": "Unauthorized",
+							"code": 401,
+							"body": "{\n  \"message\": \"The provided credentials are incorrect.\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var json = pm.response.json();",
+									"    pm.collectionVariables.set('token', json.token);",
+									"    pm.environment.set('token', json.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Me",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/me",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "me"]
+						},
+						"description": "Get the currently authenticated user's profile.\n\nRequires a valid Bearer token (auto-set from Login/Register responses)."
+					},
+					"response": [
+						{
+							"name": "200 OK",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n  \"id\": 1,\n  \"name\": \"Student Name\",\n  \"email\": \"student@example.com\",\n  \"email_verified_at\": null,\n  \"created_at\": \"2026-07-08T13:00:00.000000Z\",\n  \"updated_at\": \"2026-07-08T13:00:00.000000Z\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						},
+						{
+							"name": "401 Unauthorized",
+							"status": "Unauthorized",
+							"code": 401,
+							"body": "{\n  \"message\": \"Unauthenticated.\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "logout"]
+						},
+						"description": "Logout the current user by revoking the current access token.\n\nRequires a valid Bearer token."
+					},
+					"response": [
+						{
+							"name": "200 OK",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n  \"message\": \"Logged out\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						},
+						{
+							"name": "401 Unauthorized",
+							"status": "Unauthorized",
+							"code": 401,
+							"body": "{\n  \"message\": \"Unauthenticated.\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.collectionVariables.set('token', '');",
+									"    pm.environment.set('token', '');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}
