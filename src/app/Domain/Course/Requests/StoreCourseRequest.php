@@ -15,14 +15,10 @@ class StoreCourseRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:courses,slug',
             'description' => 'required|string',
-            'short_description' => 'nullable|string|max:500',
             'price' => 'required|numeric|min:0',
             'thumbnail' => 'nullable|string|max:255',
-            'level' => 'required|in:beginner,intermediate,advanced',
-            'duration_minutes' => 'required|integer|min:0',
-            'language' => 'nullable|string|max:50',
+            'status' => 'nullable|in:draft,published,archived',
             'category_id' => 'nullable|exists:categories,id',
         ];
     }

@@ -28,4 +28,4 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::get('categories', [CategoryController::class, 'index']);
 Route::get('courses', [CourseController::class, 'index']);
-Route::get('courses/{slug:slug}', [CourseController::class, 'show']);
+Route::get('courses/{course}', [CourseController::class, 'show']);

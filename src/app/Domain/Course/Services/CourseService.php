@@ -2,9 +2,11 @@
 
 namespace App\Domain\Course\Services;
 
+use App\Domain\Auth\Models\User;
 use App\Domain\Course\Models\Course;
 use App\Domain\Course\Models\Enrollment;
 use App\Domain\Course\Models\CourseReview;
+use App\Domain\Student\Models\Student;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class CourseService
@@ -12,15 +14,11 @@ class CourseService
     public function listPublished(array $filters = []): LengthAwarePaginator
     {
         $query = Course::with(['category', 'instructor'])
-            ->withCount(['lessons', 'enrollments'])
-            ->where('is_published', true);
+            ->withCount(['sections', 'enrollments'])
+            ->where('status', 'published');
 
         if (! empty($filters['category'])) {
             $query->whereHas('category', fn ($q) => $q->where('slug', $filters['category']));
-        }
-
-        if (! empty($filters['level'])) {
-            $query->where('level', $filters['level']);
         }
 
         if (! empty($filters['search'])) {
@@ -33,19 +31,10 @@ class CourseService
         return $query->latest()->paginate(12);
     }
 
-    public function findBySlug(string $slug): ?Course
-    {
-        return Course::with(['category', 'instructor', 'lessons'])
-            ->withCount(['lessons', 'enrollments'])
-            ->where('is_published', true)
-            ->where('slug', $slug)
-            ->first();
-    }
-
     public function findById(int $id): ?Course
     {
-        return Course::with(['category', 'instructor', 'lessons'])
-            ->withCount(['lessons', 'enrollments'])
+        return Course::with(['category', 'instructor', 'sections.lectures'])
+            ->withCount(['sections', 'enrollments'])
             ->findOrFail($id);
     }
 
@@ -65,32 +54,31 @@ class CourseService
         return $course->delete();
     }
 
-    public function enrollUser(Course $course, int $userId): Enrollment
+    public function enrollStudent(Course $course, User $user): Enrollment
     {
+        $student = Student::where('user_id', $user->id)->firstOrFail();
+
         return Enrollment::firstOrCreate([
-            'user_id' => $userId,
+            'student_id' => $student->id,
             'course_id' => $course->id,
+        ], [
+            'status' => 'active',
+            'started_at' => now(),
         ]);
     }
 
-    public function updateProgress(Enrollment $enrollment, int $progress): Enrollment
+    public function getUserEnrollments(User $user)
     {
-        $data = ['progress' => min(100, max(0, $progress))];
+        $student = Student::where('user_id', $user->id)->first();
 
-        if ($data['progress'] >= 100) {
-            $data['completed_at'] = now();
+        if (! $student) {
+            return collect();
         }
 
-        $enrollment->update($data);
-        return $enrollment->fresh();
-    }
-
-    public function getUserEnrollments(int $userId)
-    {
         return Enrollment::with(['course' => function ($q) {
-            $q->withCount(['lessons', 'enrollments']);
+            $q->withCount(['sections', 'enrollments']);
         }, 'course.category', 'course.instructor'])
-            ->where('user_id', $userId)
+            ->where('student_id', $student->id)
             ->latest()
             ->get();
     }
@@ -106,7 +94,7 @@ class CourseService
     public function getInstructorCourses(int $instructorId)
     {
         return Course::with(['category'])
-            ->withCount(['lessons', 'enrollments'])
+            ->withCount(['sections', 'enrollments'])
             ->where('instructor_id', $instructorId)
             ->latest()
             ->get();

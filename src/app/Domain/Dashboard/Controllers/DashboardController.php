@@ -6,28 +6,26 @@ use App\Domain\Shared\Controllers\Controller;
 use App\Domain\Course\Models\Enrollment;
 use App\Domain\Course\Models\Course;
 use App\Domain\Course\Models\CourseReview;
+use App\Domain\Student\Models\Student;
 use Illuminate\Http\JsonResponse;
 
 class DashboardController extends Controller
 {
     public function student(): JsonResponse
     {
-        $userId = request()->user()->id;
+        $user = request()->user();
+        $student = Student::where('user_id', $user->id)->first();
 
-        $enrollments = Enrollment::where('user_id', $userId)->count();
-        $completed = Enrollment::where('user_id', $userId)->where('progress', 100)->count();
-        $totalMinutes = Enrollment::where('user_id', $userId)
-            ->join('courses', 'enrollments.course_id', '=', 'courses.id')
-            ->sum('courses.duration_minutes');
-        $certificates = Enrollment::where('user_id', $userId)
-            ->whereNotNull('completed_at')
-            ->count();
+        $enrollmentsCount = 0;
+        if ($student) {
+            $enrollmentsCount = Enrollment::where('student_id', $student->id)->count();
+        }
 
         return response()->json([
-            'enrollments_count' => $enrollments,
-            'completed_lessons_count' => $completed,
-            'total_learning_minutes' => $totalMinutes,
-            'certificates_count' => $certificates,
+            'enrollments_count' => $enrollmentsCount,
+            'completed_lessons_count' => 0,
+            'total_learning_minutes' => 0,
+            'certificates_count' => 0,
         ]);
     }
 

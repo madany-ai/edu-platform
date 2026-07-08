@@ -2,13 +2,13 @@
 
 namespace App\Domain\Course\Controllers;
 
-use App\Domain\Shared\Controllers\Controller;
+use App\Domain\Course\Models\Course;
 use App\Domain\Course\Requests\StoreCourseRequest;
 use App\Domain\Course\Requests\StoreReviewRequest;
 use App\Domain\Course\Resources\CourseResource;
 use App\Domain\Course\Resources\EnrollmentResource;
 use App\Domain\Course\Services\CourseService;
-use App\Domain\Course\Models\Course;
+use App\Domain\Shared\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -21,18 +21,15 @@ class CourseController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
-        $courses = $this->courseService->listPublished($request->only(['category', 'level', 'search']));
+        $courses = $this->courseService->listPublished($request->only(['category', 'search']));
 
         return CourseResource::collection($courses);
     }
 
-    public function show(string $slug): CourseResource
+    public function show(Course $course): CourseResource
     {
-        $course = $this->courseService->findBySlug($slug);
-
-        if (! $course) {
-            abort(404, 'Course not found');
-        }
+        $course->load(['category', 'instructor', 'sections.lectures'])
+            ->loadCount(['sections', 'enrollments']);
 
         return new CourseResource($course);
     }
@@ -63,14 +60,14 @@ class CourseController extends Controller
 
     public function enroll(Course $course): JsonResponse
     {
-        $enrollment = $this->courseService->enrollUser($course, request()->user()->id);
+        $enrollment = $this->courseService->enrollStudent($course, request()->user());
 
         return response()->json(new EnrollmentResource($enrollment), 201);
     }
 
     public function myEnrollments(): AnonymousResourceCollection
     {
-        $enrollments = $this->courseService->getUserEnrollments(request()->user()->id);
+        $enrollments = $this->courseService->getUserEnrollments(request()->user());
 
         return EnrollmentResource::collection($enrollments);
     }

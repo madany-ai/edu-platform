@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Noto_Sans_Arabic } from "next/font/google";
+import { Tajawal } from "next/font/google";
 import { AuthProvider } from "@/contexts/auth-context";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import "./globals.css";
 
-const notoSansArabic = Noto_Sans_Arabic({
+const tajawal = Tajawal({
   subsets: ["arabic"],
+  weight: ["200", "300", "400", "500", "700", "800", "900"],
   variable: "--font-sans",
 });
 
@@ -24,7 +25,7 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      className={`${notoSansArabic.variable} h-full antialiased`}
+      className={`${tajawal.variable} h-full antialiased`}
     >
       <body className="min-h-full font-sans bg-background text-foreground">
         <AuthProvider>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { CourseCard } from "@/components/course-card";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { getCourses, getCategories } from "@/lib/api/courses";
 import type { Course, Category } from "@/lib/types";
 import { Search, SlidersHorizontal } from "lucide-react";
 
-export default function CoursesPage() {
+function CoursesContent() {
   const searchParams = useSearchParams();
   const [courses, setCourses] = useState<Course[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -119,5 +119,13 @@ export default function CoursesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function CoursesPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6"><Skeleton className="h-96" /></div>}>
+      <CoursesContent />
+    </Suspense>
   );
 }
