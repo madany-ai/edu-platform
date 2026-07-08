@@ -11,13 +11,19 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::create([
-            'name' => 'Instructor',
-            'email' => 'admin@lms.local',
-            'password' => Hash::make('admin123'),
-        ]);
+        Role::firstOrCreate(['name' => 'student']);
+        $role = Role::firstOrCreate(['name' => 'instructor']);
 
-        $role = Role::create(['name' => 'instructor']);
-        $user->assignRole($role);
+        $user = User::firstOrCreate(
+            ['email' => 'admin@lms.local'],
+            [
+                'name' => 'Instructor',
+                'password' => Hash::make('admin123'),
+            ]
+        );
+
+        if (! $user->hasRole('instructor')) {
+            $user->assignRole($role);
+        }
     }
 }

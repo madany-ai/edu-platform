@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  laravel:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: lms
+          POSTGRES_USER: lms_user
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready -U lms_user -d lms
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: src
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: pdo_pgsql, pgsql, intl, bcmath, gd, redis
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: src/vendor
+          key: composer-${{ hashFiles('src/composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install PHP dependencies
+        run: composer install --no-progress --prefer-dist
+
+      - name: Environment setup
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run migrations
+        run: php artisan migrate --force
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: lms
+          DB_USERNAME: lms_user
+          DB_PASSWORD: secret
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+
+      - name: Run Pint (code style)
+        run: vendor/bin/pint --test
+
+      - name: Run PHPStan (static analysis)
+        run: vendor/bin/phpstan analyse --no-progress
+
+      - name: Run PHPUnit (tests)
+        run: vendor/bin/phpunit
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: lms
+          DB_USERNAME: lms_user
+          DB_PASSWORD: secret
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
