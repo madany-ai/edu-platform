@@ -1,0 +1,9 @@
+#!/bin/bash
+export LD_LIBRARY_PATH=/tmp/libpq/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+exec php \
+  -d "extension=/usr/lib/php/20240924/pdo.so" \
+  -d "extension=/home/madany/php-ext/pdo_sqlite.so" \
+  -d "extension=/home/madany/php-ext/sqlite3.so" \
+  -d "extension=/home/madany/php-ext/intl.so" \
+  -d "extension=/home/madany/php-ext/bcmath.so" \
+  "$@"

@@ -1,10 +1,11 @@
 name: lms-platform
 
 services:
+  # PHP-FPM application container — runs the Laravel 13 codebase
   app:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: lms_app
     restart: unless-stopped
     working_dir: /var/www/html
@@ -12,7 +13,6 @@ services:
       - ./src:/var/www/html
     environment:
       - PHP_IDE_CONFIG=serverName=lms
-      - APP_ENV=local
     depends_on:
       postgres:
         condition: service_healthy
@@ -21,6 +21,7 @@ services:
     networks:
       - lms_network
 
+  # Nginx — serves the app and proxies PHP requests to the app container
   nginx:
     image: nginx:1.27-alpine
     container_name: lms_nginx
@@ -35,6 +36,7 @@ services:
     networks:
       - lms_network
 
+  # PostgreSQL 18 — primary database
   postgres:
     image: postgres:18-alpine
     container_name: lms_postgres
@@ -55,6 +57,7 @@ services:
     networks:
       - lms_network
 
+  # Redis — cache, sessions, and queue driver
   redis:
     image: redis:7-alpine
     container_name: lms_redis
@@ -66,10 +69,12 @@ services:
     networks:
       - lms_network
 
+  # Queue worker — processes background jobs (video processing callbacks, emails, notifications)
+  # Uses the same image as `app`; only the running command differs.
   queue:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: lms_queue
     restart: unless-stopped
     working_dir: /var/www/html
@@ -84,10 +89,11 @@ services:
     networks:
       - lms_network
 
+  # Scheduler — runs Laravel's scheduled tasks (e.g., subscription expiry checks) every minute
   scheduler:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: lms_scheduler
     restart: unless-stopped
     working_dir: /var/www/html
@@ -102,41 +108,15 @@ services:
     networks:
       - lms_network
 
+  # Mailpit — catches all outgoing emails locally for testing (purchase confirmations, grading notices)
+  # Web UI available at http://localhost:8025 — remove this service in production, use SES/Resend instead.
   mailpit:
-    image: axllent/mailpit:v1.22
+    image: axllent/mailpit:latest
     container_name: lms_mailpit
     restart: unless-stopped
     ports:
-      - "8025:8025"
-      - "1025:1025"
-    networks:
-      - lms_network
-
-  nextjs:
-    image: node:22-alpine
-    container_name: lms_nextjs
-    restart: unless-stopped
-    working_dir: /app
-    command: sh -c "npm install && npm run dev"
-    ports:
-      - "${NEXTJS_PORT:-3000}:3000"
-    volumes:
-      - ./frontend:/app
-    depends_on:
-      - app
-    networks:
-      - lms_network
-
-  minio:
-    image: minio/minio:latest
-    container_name: lms_minio
-    restart: unless-stopped
-    command: server /data --console-address ":9001"
-    ports:
-      - "${MINIO_PORT:-9000}:9000"
-      - "9001:9001"
-    volumes:
-      - minio_data:/data
+      - "8025:8025" # Web UI
+      - "1025:1025" # SMTP
     networks:
       - lms_network
 
@@ -147,4 +127,3 @@ networks:
 volumes:
   postgres_data:
   redis_data:
-  minio_data:

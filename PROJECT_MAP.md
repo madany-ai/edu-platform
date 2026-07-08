@@ -1,7 +1,7 @@
 # PROJECT_MAP — Instructor Education Platform
 
 > Last updated: 2026-07-08
-> Architecture: Modular Monolith (DDD-ready)
+> Architecture: Modular Monolith 
 > Build phase: Pre-MVP (Walking Skeleton)
 > SDLC phase: Design — awaiting implementation approval
 > SWE principles: Modularity | Simplicity | Requirements-first | Quality-gated

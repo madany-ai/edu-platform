@@ -1,5 +1,7 @@
+# PHP 8.4 — required minimum for Laravel 13 (see PRD Section 6)
 FROM php:8.4-fpm-alpine
 
+# System dependencies + PHP extensions Laravel needs
 RUN apk add --no-cache \
     git \
     curl \
@@ -30,10 +32,12 @@ RUN apk add --no-cache \
     && docker-php-ext-enable redis \
     && apk del $PHPIZE_DEPS
 
+# Composer (matches the version bundled with Laravel 13 tooling)
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+# Recommended php.ini settings for an LMS handling file uploads (PDFs, assignment submissions)
 RUN { \
     echo 'upload_max_filesize=50M'; \
     echo 'post_max_size=55M'; \
