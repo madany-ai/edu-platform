@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Students;
 
 use App\Filament\Resources\Students\Pages\ManageStudents;
-use App\Models\Student;
+use App\Domain\Student\Models\Student;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;

@@ -1,9 +1,5 @@
 #!/bin/bash
 DIR="$(cd "$(dirname "$0")" && pwd)"
 export LD_LIBRARY_PATH=/tmp/libpq/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-exec php \
-  -d "extension=/home/madany/php-ext/pdo_sqlite.so" \
-  -d "extension=/home/madany/php-ext/sqlite3.so" \
-  -d "extension=/home/madany/php-ext/intl.so" \
-  -d "extension=/home/madany/php-ext/bcmath.so" \
-  "$DIR/src/artisan" "$@"
+export PHP_INI_SCAN_DIR=/etc/php/8.4/cli/conf.d:"$DIR/php.d"
+exec php "$DIR/src/artisan" "$@"

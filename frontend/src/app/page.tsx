@@ -1,66 +1,67 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/auth-context";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Loader2, LogOut, User, GraduationCap } from "lucide-react";
+import { GraduationCap, ArrowLeft, Play } from "lucide-react";
+import { FeaturesSection } from "@/components/features-section";
+import { StatsSection } from "@/components/stats-section";
+import { TestimonialsSection } from "@/components/testimonials-section";
 
 export default function Home() {
-  const router = useRouter();
-  const { user, loading, logout } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-4 text-center">
-        <GraduationCap className="h-16 w-16 text-primary" />
-        <h1 className="text-3xl font-bold">المنصة التعليمية</h1>
-        <p className="text-muted-foreground">منصة التعليم التفاعلية المتكاملة</p>
-        <div className="flex gap-4">
-          <Button size="lg" onClick={() => router.push("/login")}>
-            تسجيل الدخول
-          </Button>
-          <Button size="lg" variant="outline" onClick={() => router.push("/register")}>
-            إنشاء حساب
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between border-b px-6 py-4">
-        <div className="flex items-center gap-2 font-semibold">
-          <GraduationCap className="h-6 w-6" />
-          المنصة التعليمية
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <User className="h-4 w-4" />
-            {user.name}
+    <>
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-primary/5 to-background">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:py-32">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border bg-background px-4 py-1.5 text-sm text-muted-foreground shadow-sm">
+              <GraduationCap className="h-4 w-4 text-primary" />
+              منصة تعليمية متكاملة
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              تعلم{" "}
+              <span className="text-primary">مهارات المستقبل</span>
+              <br />
+              من أفضل المدربين
+            </h1>
+            <p className="mt-6 text-lg text-muted-foreground sm:text-xl">
+              انضم إلى آلاف الطلاب وابدأ رحلتك التعليمية مع دورات احترافية
+              في البرمجة والتصميم والتسويق والمزيد
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <Link href="/courses">
+                <Button size="lg" className="gap-2">
+                  استعرض الدورات
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="lg" variant="outline" className="gap-2">
+                  <Play className="h-4 w-4" />
+                  ابدأ مجاناً
+                </Button>
+              </Link>
+            </div>
           </div>
-          <Button variant="outline" size="sm" onClick={logout}>
-            <LogOut className="ml-2 h-4 w-4" />
-            تسجيل الخروج
-          </Button>
         </div>
-      </header>
-      <main className="flex flex-1 items-center justify-center p-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold">مرحباً بك، {user.name}</h2>
-          <p className="mt-2 text-muted-foreground">
-            البريد الإلكتروني: {user.email}
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000,transparent)]" />
+      </section>
+
+      <FeaturesSection />
+      <StatsSection />
+      <TestimonialsSection />
+
+      <section className="bg-primary/5 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 text-center">
+          <h2 className="text-3xl font-bold mb-4">هل أنت مستعد لبدء رحلتك التعليمية؟</h2>
+          <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
+            سجل الآن واحصل على وصول غير محدود إلى جميع دوراتنا
           </p>
+          <Link href="/register">
+            <Button size="lg" className="gap-2">
+              سجل مجاناً
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
         </div>
-      </main>
-    </div>
+      </section>
+    </>
   );
 }
