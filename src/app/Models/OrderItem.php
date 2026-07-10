@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Domain\Commerce\Models;
+namespace App\Models;
 
+use App\Models\Order;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Domain\Commerce\Models;
+namespace App\Models;
 
-use App\Domain\Student\Models\Student;
+use App\Models\OrderItem;
+use App\Models\Payment;
+use App\Models\Student;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;

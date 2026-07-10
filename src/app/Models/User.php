@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Domain\Auth\Models;
+namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,8 +12,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
-use App\Domain\Course\Models\Course;
-use App\Domain\Student\Models\Student;
+use App\Models\Course;
+use App\Models\Student;
 
 #[Fillable(['name', 'email', 'password', 'status'])]
 #[Hidden(['password', 'remember_token'])]

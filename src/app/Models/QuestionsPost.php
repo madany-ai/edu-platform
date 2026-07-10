@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Domain\Course\Models;
+namespace App\Models;
 
-use App\Domain\Auth\Models\User;
-use App\Domain\Student\Models\Student;
+use App\Models\Lecture;
+use App\Models\QuestionReply;
+use App\Models\Student;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;

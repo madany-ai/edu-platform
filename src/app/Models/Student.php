@@ -1,19 +1,21 @@
 <?php
 
-namespace App\Domain\Student\Models;
+namespace App\Models;
 
-use App\Domain\Auth\Models\User;
-use App\Domain\Course\Models\Enrollment;
-use App\Domain\Course\Models\ExamAttempt;
-use App\Domain\Course\Models\AssignmentSubmission;
-use App\Domain\Course\Models\QuestionsPost;
-use App\Domain\Commerce\Models\Order;
-use App\Domain\Geography\Models\Governorate;
-use App\Domain\Geography\Models\City;
-use App\Domain\Geography\Models\School;
-use App\Domain\Geography\Models\GradeLevel;
-use App\Domain\Geography\Models\AcademicTrack;
-use Database\Factories\StudentFactory;
+use App\Models\AcademicTrack;
+use App\Models\AssignmentSubmission;
+use App\Models\City;
+use App\Models\Enrollment;
+use App\Models\ExamAttempt;
+use App\Models\GradeLevel;
+use App\Models\Governorate;
+use App\Models\Order;
+use App\Models\QuestionsPost;
+use App\Models\School;
+use App\Models\StudentActivity;
+use App\Models\StudentDocument;
+use App\Models\StudentStatistic;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

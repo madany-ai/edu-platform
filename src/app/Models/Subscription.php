@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Domain\Commerce\Models;
+namespace App\Models;
 
-use App\Domain\Student\Models\Student;
+use App\Models\Student;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

@@ -1,8 +1,12 @@
 <?php
 
-namespace App\Domain\Course\Models;
+namespace App\Models;
 
-use App\Domain\Auth\Models\User;
+use App\Models\Category;
+use App\Models\CourseReview;
+use App\Models\CourseSection;
+use App\Models\Enrollment;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;

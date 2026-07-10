@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Domain\Geography\Models;
+namespace App\Models;
 
+use App\Models\Governorate;
+use App\Models\School;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
