@@ -5,22 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Order extends Model
+class Entitlement extends Model
 {
     protected $fillable = [
         'student_id',
-        'purchasable_id',
-        'purchasable_type',
-        'amount_cents',
-        'currency',
-        'payment_method',
-        'transaction_id',
-        'status',
-        'paid_at'
+        'lecture_id',
+        'order_id',
+        'expires_at',
     ];
 
     protected $casts = [
-        'paid_at' => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     public function student(): BelongsTo
@@ -28,8 +23,13 @@ class Order extends Model
         return $this->belongsTo(Student::class);
     }
 
-    public function purchasable()
+    public function lecture(): BelongsTo
     {
-        return $this->morphTo();
+        return $this->belongsTo(Lecture::class);
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
     }
 }

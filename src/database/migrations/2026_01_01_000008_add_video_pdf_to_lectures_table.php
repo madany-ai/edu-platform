@@ -9,15 +9,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('lectures', function (Blueprint $table) {
-            $table->string('bunny_video_id')->nullable()->after('sort_order');
-            $table->string('pdf_url')->nullable()->after('bunny_video_id');
+            $table->string('video_path')->nullable()->after('sort_order');
+            $table->string('pdf_url')->nullable()->after('video_path');
         });
     }
 
     public function down(): void
     {
         Schema::table('lectures', function (Blueprint $table) {
-            $table->dropColumn(['bunny_video_id', 'pdf_url']);
+            $table->dropColumn(['video_path', 'pdf_url']);
         });
     }
 };

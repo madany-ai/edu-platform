@@ -117,21 +117,22 @@ This is the most critical part of the platform and the foundation everything els
 
 | Entity | Description |
 |---|---|
-| `Product` | Any sellable unit (single lecture / full course / monthly plan) |
-| `Price` | A price attached to a product; can change or carry a temporary discount |
-| `Bundle` | A group of Products sold together at a special price (e.g., Month 1 + Month 2 offer) |
-| `Subscription Plan` | A recurring (monthly) plan granting access to a defined set of lectures |
-| `Order` | The actual purchase transaction, processed through the instructor's own payment gateway account |
-| `Entitlement` | A record defining "Student X has access to Content Y until Date Z" |
+| `Product` | Any sellable unit. It maps via a polymorphic relation (`sellable`) to a `Lecture`, `CourseSection` (which acts as a "Month"), or a `Course`. |
+| `Bundle` | A group of `Product`s sold together at a special price (e.g., Month 1 + Month 2 offer). |
+| `Order` | The actual purchase transaction, processed through the instructor's own payment gateway account. Points to a `purchasable` (Product or Bundle). |
+| `Entitlement` | A record defining "Student X has access to Lecture Y until Date Z". **Entitlement is ALWAYS recorded at the Lecture level**, regardless of whether the student bought a single lecture, a month, or a full course. |
 
-**Supported Purchase Scenarios:**
-1. Purchase a single standalone lecture.
-2. Purchase a full course (all lectures included).
-3. Monthly subscription (e.g., 4 lectures/month — configurable by the instructor).
-4. Bundled offer across two or more months at a discounted price.
-5. Instructors can create new offers without any engineering involvement (via their Dashboard).
+**The "Chapter = Month" Paradigm:**
+- The structural `CourseSection` table (which groups lectures) acts naturally as a "Month" or "Chapter".
+- We do NOT need a separate "Month" table. A `Product` simply points to a `CourseSection` to sell it as a one-month package.
 
-**Core rule:** The "who can access what" logic (Entitlement Check) must be a single unified layer that every content access request (video, PDF, exam, assignment) passes through — regardless of the purchase method used.
+**The "Entitlement" Logic:**
+- The "who can access what" logic (Entitlement Check) must be a single unified layer that every content access request (video, PDF, exam, assignment) passes through.
+- When an `Order` for a `Product` or `Bundle` is paid, a service (`GrantEntitlementService`) resolves all the nested `Lecture` IDs contained within that purchase.
+- It then issues an individual `Entitlement` row for *each* lecture.
+- Consequently, checking access anywhere in the platform is always a simple query:
+  `Entitlement::where('student_id', $id)->where('lecture_id', $lecture_id)->whereValid()->exists();`
+- This ensures the video player, exams, and assignments do not need to know *how* the student bought the content.
 
 ### 3.4 Exams System
 - Question Bank: multiple choice, true/false, essay.

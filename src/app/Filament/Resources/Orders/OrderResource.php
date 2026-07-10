@@ -3,16 +3,20 @@
 namespace App\Filament\Resources\Orders;
 
 use App\Filament\Resources\Orders\Pages\ManageOrders;
+use App\Models\Bundle;
 use App\Models\Order;
+use App\Models\Product;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class OrderResource extends Resource
 {
@@ -46,14 +50,27 @@ class OrderResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('course.title')
-                    ->label('الدورة')
-                    ->searchable()
-                    ->sortable(),
+                TextColumn::make('purchasable_type')
+                    ->label('النوع')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        Product::class => 'منتج',
+                        Bundle::class => 'باقة',
+                        default => $state,
+                    })
+                    ->badge(),
 
-                TextColumn::make('amount')
+                TextColumn::make('purchasable_name')
+                    ->label('المشتريات')
+                    ->formatStateUsing(function (Order $record): string {
+                        if ($record->purchasable) {
+                            return $record->purchasable->name;
+                        }
+                        return '-';
+                    }),
+
+                TextColumn::make('amount_cents')
                     ->label('المبلغ')
-                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' د.م'),
+                    ->formatStateUsing(fn ($state): string => number_format((int) $state / 100, 2) . ' ج.م'),
 
                 TextColumn::make('status')
                     ->label('الحالة')
@@ -91,15 +108,24 @@ class OrderResource extends Resource
         ];
     }
 
-    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    public static function getEloquentQuery(): Builder
     {
         $user = request()->user();
 
         return parent::getEloquentQuery()
-            ->with(['student.user', 'course'])
-            ->when(
-                $user && $user->hasRole('instructor') && ! $user->hasRole('super_admin'),
-                fn ($query) => $query->whereHas('course', fn ($q) => $q->where('instructor_id', $user->id))
-            );
+            ->with(['student.user', 'purchasable'])
+            ->when($user && ! $user->hasRole('super_admin'), function (Builder $query) use ($user) {
+                if ($user->hasRole('instructor')) {
+                    $query->where(function (Builder $q) use ($user) {
+                        $q->whereHasMorph('purchasable', [Product::class], fn (Builder $pq) => $pq->where('instructor_id', $user->id))
+                          ->orWhereHasMorph('purchasable', [Bundle::class], fn (Builder $bq) => $bq->where('instructor_id', $user->id));
+                    });
+                } elseif ($user->hasRole('assistant')) {
+                    $query->where(function (Builder $q) use ($user) {
+                        $q->whereHasMorph('purchasable', [Product::class], fn (Builder $pq) => $pq->where('instructor_id', $user->id))
+                          ->orWhereHasMorph('purchasable', [Bundle::class], fn (Builder $bq) => $bq->where('instructor_id', $user->id));
+                    });
+                }
+            });
     }
 }

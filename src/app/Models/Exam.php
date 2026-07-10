@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Exam extends Model
 {
-    protected $fillable = ['lecture_id', 'title', 'duration'];
+    protected $fillable = ['lecture_id', 'title', 'duration', 'sort_order'];
 
     public function lecture(): BelongsTo
     {

@@ -120,6 +120,39 @@ services:
     networks:
       - lms_network
 
+  # MinIO — S3 compatible object storage for local testing
+  minio:
+    image: minio/minio:latest
+    container_name: lms_minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-lms_minio_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-lms_minio_secret}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - lms_network
+
+  minio-setup:
+    image: minio/mc:latest
+    container_name: lms_minio_setup
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      /usr/bin/mc alias set lms_minio http://minio:9000 ${MINIO_ROOT_USER:-lms_minio_admin} ${MINIO_ROOT_PASSWORD:-lms_minio_secret};
+      /usr/bin/mc mb lms_minio/${MINIO_BUCKET:-lms-videos} --ignore-existing;
+      /usr/bin/mc anonymous set public lms_minio/${MINIO_BUCKET:-lms-videos};
+      exit 0;
+      "
+    networks:
+      - lms_network
+
 networks:
   lms_network:
     driver: bridge
@@ -127,3 +160,4 @@ networks:
 volumes:
   postgres_data:
   redis_data:
+  minio_data:

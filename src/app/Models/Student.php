@@ -11,6 +11,7 @@ use App\Models\GradeLevel;
 use App\Models\Governorate;
 use App\Models\QuestionsPost;
 use App\Models\School;
+use App\Models\Entitlement;
 use App\Models\StudentActivity;
 use App\Models\StudentStatistic;
 use App\Models\User;
@@ -103,5 +104,10 @@ class Student extends Model
     public function questionsPosts(): HasMany
     {
         return $this->hasMany(QuestionsPost::class, 'student_id');
+    }
+
+    public function entitlements(): HasMany
+    {
+        return $this->hasMany(Entitlement::class, 'student_id');
     }
 }

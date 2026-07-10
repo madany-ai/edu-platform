@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Lecture extends Model
 {
-    protected $fillable = ['section_id', 'title', 'description', 'duration', 'sort_order', 'bunny_video_id', 'pdf_url'];
+    protected $fillable = ['section_id', 'title', 'description', 'duration', 'sort_order', 'video_path', 'pdf_url'];
 
     public function section(): BelongsTo
     {
@@ -31,9 +31,9 @@ class Lecture extends Model
         return $this->hasMany(LectureFile::class);
     }
 
-    public function exam(): HasOne
+    public function exam(): HasMany
     {
-        return $this->hasOne(Exam::class);
+        return $this->hasMany(Exam::class);
     }
 
     public function assignment(): HasOne

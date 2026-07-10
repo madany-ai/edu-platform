@@ -10,6 +10,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -97,16 +98,37 @@ class CourseResource extends Resource
                                             ->numeric()
                                             ->default(0),
 
-                                        TextInput::make('bunny_video_id')
-                                            ->label('معرّف الفيديو (Bunny Stream)')
-                                            ->placeholder('اتركه فارغاً إذا لا يوجد فيديو')
-                                            ->maxLength(255),
+                                        FileUpload::make('video_path')
+                                            ->label('الفيديو')
+                                            ->disk('minio')
+                                            ->directory('lectures')
+                                            ->visibility('private')
+                                            ->acceptedFileTypes(['video/mp4', 'video/webm', 'video/ogg'])
+                                            ->maxSize(1024000), // 1 GB max size
 
-                                        TextInput::make('pdf_url')
-                                            ->label('رابط ملف PDF')
-                                            ->url()
-                                            ->placeholder('https://...')
-                                            ->maxLength(500),
+                                            FileUpload::make('pdf_file')
+                                            ->label('ملف الـ PDF')
+                                            ->disk('minio') // استخدام MinIO
+                                            ->directory('pdfs') // مجلد فرعي تنظيمي داخل الـ Bucket
+                                            ->acceptedFileTypes(['application/pdf']),
+
+                                        Repeater::make('exam')
+                                            ->relationship('exam')
+                                            ->label('الامتحانات')
+                                            ->schema([
+                                                TextInput::make('title')
+                                                    ->label('عنوان الامتحان')
+                                                    ->required()
+                                                    ->maxLength(255),
+                                                TextInput::make('duration')
+                                                    ->label('المدة (دقائق)')
+                                                    ->numeric()
+                                                    ->default(0),
+                                            ])
+                                            ->orderColumn('sort_order')
+                                            ->reorderableWithButtons()
+                                            ->collapsible()
+                                            ->columnSpanFull(),
                                     ])
                                     ->columns(2)
                                     ->label('المحاضرات'),

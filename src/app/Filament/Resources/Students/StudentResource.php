@@ -2,6 +2,10 @@
 
 namespace App\Filament\Resources\Students;
 
+use App\Models\Bundle;
+use App\Models\Order;
+use App\Models\Product;
+use App\Services\GrantEntitlementService;
 use App\Services\NotificationService;
 use App\Models\Student;
 use App\Filament\Resources\Students\Pages\ManageStudents;
@@ -223,6 +227,94 @@ class StudentResource extends Resource
                             ->send();
                     })
                     ->visible(fn (Student $record): bool => $record->user->status === 'pending'),
+
+                Action::make('grantAccess')
+                    ->label('إضافة صلاحية')
+                    ->icon('heroicon-o-lock-open')
+                    ->color('success')
+                    ->modalHeading('إضافة صلاحية وصول للطالب')
+                    ->modalDescription('سيتم إنشاء طلب يدوي ومنح الطالب صلاحية الوصول للمحتوى.')
+                    ->form([
+                        Select::make('purchasable_type')
+                            ->label('النوع')
+                            ->options([
+                                Product::class => 'منتج',
+                                Bundle::class => 'باقة',
+                            ])
+                            ->required()
+                            ->reactive()
+                            ->afterStateUpdated(fn (callable $set) => $set('purchasable_id', null)),
+
+                        Select::make('purchasable_id')
+                            ->label('اختر المنتج/الباقة')
+                            ->options(function (callable $get) {
+                                $type = $get('purchasable_type');
+                                if (! $type || ! class_exists($type)) {
+                                    return [];
+                                }
+                                $user = request()->user();
+                                $query = $type::query();
+                                if ($user && ! $user->hasRole('super_admin') && $user->hasRole('instructor')) {
+                                    $query->where('instructor_id', $user->id);
+                                }
+                                return $query->pluck('name', 'id');
+                            })
+                            ->searchable()
+                            ->required(),
+                    ])
+                    ->action(function (array $data, Student $record): void {
+                        $order = Order::create([
+                            'student_id' => $record->id,
+                            'purchasable_type' => $data['purchasable_type'],
+                            'purchasable_id' => $data['purchasable_id'],
+                            'amount_cents' => 0,
+                            'status' => 'completed',
+                            'paid_at' => now(),
+                        ]);
+
+                        app(GrantEntitlementService::class)->handle($order);
+
+                        Notification::make()
+                            ->title('تم منح الصلاحية للطالب')
+                            ->success()
+                            ->send();
+                    }),
+
+                Action::make('revokeAccess')
+                    ->label('إلغاء الصلاحيات')
+                    ->icon('heroicon-o-lock-closed')
+                    ->color('danger')
+                    ->modalHeading('صلاحيات الطالب الحالية')
+                    ->modalContent(function (Student $record): string {
+                        $entitlements = $record->entitlements()
+                            ->with('lecture.section.course')
+                            ->latest()
+                            ->get();
+
+                        if ($entitlements->isEmpty()) {
+                            return '<p class="text-gray-500 text-center py-4">لا توجد صلاحيات وصول لهذا الطالب.</p>';
+                        }
+
+                        $html = '<div class="space-y-2 max-h-96 overflow-y-auto">';
+                        foreach ($entitlements as $e) {
+                            $course = $e->lecture?->section?->course?->title ?? '-';
+                            $section = $e->lecture?->section?->title ?? '-';
+                            $lecture = $e->lecture?->title ?? '-';
+                            $expires = $e->expires_at ? $e->expires_at->format('Y-m-d') : 'دائم';
+                            $html .= "<div class=\"p-3 border rounded-lg flex justify-between items-center\">
+                                <div>
+                                    <strong>{$lecture}</strong>
+                                    <div class=\"text-sm text-gray-500\">{$course} / {$section}</div>
+                                    <div class=\"text-xs text-gray-400\">ينتهي: {$expires}</div>
+                                </div>
+                            </div>";
+                        }
+                        $html .= '</div>';
+                        return $html;
+                    })
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('إغلاق'),
+
                 DeleteAction::make(),
             ])
             ->toolbarActions([
