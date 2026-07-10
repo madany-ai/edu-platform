@@ -78,7 +78,12 @@ export default function RegisterPage() {
     if (step === 2) {
       const newErrors: FieldError[] = [];
       if (!firstName) newErrors.push({ field: "first_name", message: "الاسم الأول مطلوب" });
+      if (!secondName) newErrors.push({ field: "second_name", message: "الاسم الثاني مطلوب" });
+      if (!thirdName) newErrors.push({ field: "third_name", message: "الاسم الثالث مطلوب" });
       if (!lastName) newErrors.push({ field: "last_name", message: "الاسم الأخير مطلوب" });
+      if (!gender) newErrors.push({ field: "gender", message: "الجنس مطلوب" });
+      if (!birthDate) newErrors.push({ field: "birth_date", message: "تاريخ الميلاد مطلوب" });
+      if (!phone) newErrors.push({ field: "phone", message: "رقم الهاتف مطلوب" });
       if (newErrors.length > 0) {
         setErrors(newErrors);
         return;
@@ -95,6 +100,17 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors([]);
+    
+    // Step 3 validation before submitting
+    const newErrors: FieldError[] = [];
+    if (!fatherPhone) newErrors.push({ field: "father_phone", message: "هاتف الأب مطلوب" });
+    if (!motherPhone) newErrors.push({ field: "mother_phone", message: "هاتف الأم مطلوب" });
+    if (!guardianJob) newErrors.push({ field: "guardian_job", message: "وظيفة ولي الأمر مطلوبة" });
+    if (newErrors.length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     setLoading(true);
     try {
       await register({
@@ -102,15 +118,15 @@ export default function RegisterPage() {
         password,
         password_confirmation: passwordConfirmation,
         first_name: firstName,
-        second_name: secondName || undefined,
-        third_name: thirdName || undefined,
+        second_name: secondName,
+        third_name: thirdName,
         last_name: lastName,
-        phone: phone || undefined,
-        father_phone: fatherPhone || undefined,
-        mother_phone: motherPhone || undefined,
-        guardian_job: guardianJob || undefined,
-        gender: gender || undefined,
-        birth_date: birthDate || undefined,
+        phone,
+        father_phone: fatherPhone,
+        mother_phone: motherPhone,
+        guardian_job: guardianJob,
+        gender,
+        birth_date: birthDate,
       });
       setSubmitted(true);
     } catch (err: unknown) {
@@ -262,24 +278,32 @@ export default function RegisterPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="second_name">الاسم الثاني</Label>
+                  <Label htmlFor="second_name">الاسم الثاني *</Label>
                   <Input
                     id="second_name"
                     type="text"
                     placeholder="أحمد"
                     value={secondName}
-                    onChange={(e) => setSecondName(e.target.value)}
+                    onChange={(e) => { setSecondName(e.target.value); clearFieldError("second_name"); }}
+                    required
                   />
+                  {getFieldError("second_name") && (
+                    <p className="text-sm text-destructive">{getFieldError("second_name")}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="third_name">الاسم الثالث</Label>
+                  <Label htmlFor="third_name">الاسم الثالث *</Label>
                   <Input
                     id="third_name"
                     type="text"
                     placeholder="علي"
                     value={thirdName}
-                    onChange={(e) => setThirdName(e.target.value)}
+                    onChange={(e) => { setThirdName(e.target.value); clearFieldError("third_name"); }}
+                    required
                   />
+                  {getFieldError("third_name") && (
+                    <p className="text-sm text-destructive">{getFieldError("third_name")}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="last_name">الاسم الأخير *</Label>
@@ -298,8 +322,8 @@ export default function RegisterPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="gender">الجنس</Label>
-                  <Select value={gender} onValueChange={setGender}>
+                  <Label htmlFor="gender">الجنس *</Label>
+                  <Select value={gender} onValueChange={(val) => { setGender(val); clearFieldError("gender"); }}>
                     <SelectTrigger id="gender">
                       <SelectValue placeholder="اختر" />
                     </SelectTrigger>
@@ -311,26 +335,37 @@ export default function RegisterPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {getFieldError("gender") && (
+                    <p className="text-sm text-destructive">{getFieldError("gender")}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="birth_date">تاريخ الميلاد</Label>
+                  <Label htmlFor="birth_date">تاريخ الميلاد *</Label>
                   <Input
                     id="birth_date"
                     type="date"
                     value={birthDate}
-                    onChange={(e) => setBirthDate(e.target.value)}
+                    onChange={(e) => { setBirthDate(e.target.value); clearFieldError("birth_date"); }}
+                    required
                   />
+                  {getFieldError("birth_date") && (
+                    <p className="text-sm text-destructive">{getFieldError("birth_date")}</p>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">رقم الهاتف</Label>
+                <Label htmlFor="phone">رقم الهاتف *</Label>
                 <Input
                   id="phone"
                   type="tel"
                   placeholder="+966501234567"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => { setPhone(e.target.value); clearFieldError("phone"); }}
+                  required
                 />
+                {getFieldError("phone") && (
+                  <p className="text-sm text-destructive">{getFieldError("phone")}</p>
+                )}
               </div>
               <div className="flex gap-3">
                 <Button type="button" variant="outline" className="flex-1" onClick={handleBack}>
@@ -346,34 +381,46 @@ export default function RegisterPage() {
           {step === 3 && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="father_phone">هاتف الأب</Label>
+                <Label htmlFor="father_phone">هاتف الأب *</Label>
                 <Input
                   id="father_phone"
                   type="tel"
                   placeholder="+966501234567"
                   value={fatherPhone}
-                  onChange={(e) => setFatherPhone(e.target.value)}
+                  onChange={(e) => { setFatherPhone(e.target.value); clearFieldError("father_phone"); }}
+                  required
                 />
+                {getFieldError("father_phone") && (
+                  <p className="text-sm text-destructive">{getFieldError("father_phone")}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="mother_phone">هاتف الأم</Label>
+                <Label htmlFor="mother_phone">هاتف الأم *</Label>
                 <Input
                   id="mother_phone"
                   type="tel"
                   placeholder="+966501234567"
                   value={motherPhone}
-                  onChange={(e) => setMotherPhone(e.target.value)}
+                  onChange={(e) => { setMotherPhone(e.target.value); clearFieldError("mother_phone"); }}
+                  required
                 />
+                {getFieldError("mother_phone") && (
+                  <p className="text-sm text-destructive">{getFieldError("mother_phone")}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="guardian_job">وظيفة ولي الأمر</Label>
+                <Label htmlFor="guardian_job">وظيفة ولي الأمر *</Label>
                 <Input
                   id="guardian_job"
                   type="text"
                   placeholder="مهندس"
                   value={guardianJob}
-                  onChange={(e) => setGuardianJob(e.target.value)}
+                  onChange={(e) => { setGuardianJob(e.target.value); clearFieldError("guardian_job"); }}
+                  required
                 />
+                {getFieldError("guardian_job") && (
+                  <p className="text-sm text-destructive">{getFieldError("guardian_job")}</p>
+                )}
               </div>
               <div className="flex gap-3">
                 <Button type="button" variant="outline" className="flex-1" onClick={handleBack}>

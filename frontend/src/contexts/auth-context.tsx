@@ -17,14 +17,14 @@ interface RegisterData {
   password_confirmation: string;
   first_name: string;
   last_name: string;
-  second_name?: string;
-  third_name?: string;
-  phone?: string;
-  father_phone?: string;
-  mother_phone?: string;
-  guardian_job?: string;
-  gender?: string;
-  birth_date?: string;
+  second_name: string;
+  third_name: string;
+  phone: string;
+  father_phone: string;
+  mother_phone: string;
+  guardian_job: string;
+  gender: string;
+  birth_date: string;
 }
 
 interface AuthContextType {

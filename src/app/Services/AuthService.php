@@ -19,7 +19,7 @@ class AuthService
     public function register(array $data): array
     {
         $user = User::create([
-            'name' => $data['first_name'] . ' ' . $data['last_name'],
+            'name' => $data['first_name'] . ' ' . $data['second_name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'status' => 'pending',
@@ -30,15 +30,15 @@ class AuthService
         Student::create([
             'user_id' => $user->id,
             'first_name' => $data['first_name'],
-            'second_name' => $data['second_name'] ?? null,
-            'third_name' => $data['third_name'] ?? null,
+            'second_name' => $data['second_name'],
+            'third_name' => $data['third_name'],
             'last_name' => $data['last_name'],
-            'phone' => $data['phone'] ?? null,
-            'father_phone' => $data['father_phone'] ?? null,
-            'mother_phone' => $data['mother_phone'] ?? null,
-            'guardian_job' => $data['guardian_job'] ?? null,
-            'gender' => $data['gender'] ?? null,
-            'birth_date' => $data['birth_date'] ?? null,
+            'phone' => $data['phone'],
+            'father_phone' => $data['father_phone'],
+            'mother_phone' => $data['mother_phone'],
+            'guardian_job' => $data['guardian_job'],
+            'gender' => $data['gender'],
+            'birth_date' => $data['birth_date'],
         ]);
 
         $instructors = User::role('instructor')->get();
