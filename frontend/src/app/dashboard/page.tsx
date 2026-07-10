@@ -43,9 +43,9 @@ export default function StudentDashboardPage() {
 
   const statCards = [
     { icon: BookOpen, label: "الدورات المسجلة", value: stats.enrollments_count, color: "text-blue-600 bg-blue-100" },
-    { icon: PlayCircle, label: "الدروس المكتملة", value: stats.completed_lessons_count, color: "text-green-600 bg-green-100" },
-    { icon: Clock, label: "ساعات التعلم", value: Math.round(stats.total_learning_minutes / 60), color: "text-orange-600 bg-orange-100" },
-    { icon: Award, label: "الشهادات", value: stats.certificates_count, color: "text-purple-600 bg-purple-100" },
+    { icon: PlayCircle, label: "المحاضرات المكتملة", value: stats.completed_lectures, color: "text-green-600 bg-green-100" },
+    { icon: Clock, label: "ساعات التعلم", value: Math.round(stats.total_watch_minutes / 60), color: "text-orange-600 bg-orange-100" },
+    { icon: Award, label: "الدورات المكتملة", value: stats.completed_courses, color: "text-purple-600 bg-purple-100" },
   ];
 
   return (
@@ -129,16 +129,16 @@ export default function StudentDashboardPage() {
               <span className="font-bold">{stats.enrollments_count}</span>
             </div>
             <div className="flex items-center justify-between border-b pb-3">
-              <span className="text-sm">الدروس المكتملة</span>
-              <span className="font-bold">{stats.completed_lessons_count}</span>
+              <span className="text-sm">المحاضرات المكتملة</span>
+              <span className="font-bold">{stats.completed_lectures}</span>
             </div>
             <div className="flex items-center justify-between border-b pb-3">
               <span className="text-sm">إجمالي وقت التعلم</span>
-              <span className="font-bold">{Math.round(stats.total_learning_minutes / 60)} ساعة</span>
+              <span className="font-bold">{Math.round(stats.total_watch_minutes / 60)} ساعة</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">الشهادات المحصلة</span>
-              <span className="font-bold">{stats.certificates_count}</span>
+              <span className="text-sm">متوسط درجات الامتحانات</span>
+              <span className="font-bold">{stats.average_exam_score}%</span>
             </div>
           </CardContent>
         </Card>

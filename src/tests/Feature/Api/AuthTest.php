@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Api;
 
-use App\Domain\Auth\Models\User;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -10,19 +10,34 @@ class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'student']);
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'instructor']);
+    }
+
     public function test_user_can_register(): void
     {
         $response = $this->postJson('/api/auth/register', [
-            'name' => 'Test User',
+            'first_name' => 'Test',
+            'second_name' => 'Second',
+            'third_name' => 'Third',
+            'last_name' => 'User',
             'email' => 'test@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
+            'phone' => '01000000000',
+            'father_phone' => '01100000000',
+            'mother_phone' => '01200000000',
+            'guardian_job' => 'Employee',
+            'gender' => 'male',
+            'birth_date' => '2000-01-01',
         ]);
 
         $response->assertStatus(201)
             ->assertJsonStructure([
                 'user' => ['id', 'name', 'email', 'created_at', 'updated_at'],
-                'token',
             ]);
 
         $this->assertDatabaseHas('users', [
@@ -36,10 +51,19 @@ class AuthTest extends TestCase
         User::factory()->create(['email' => 'test@example.com']);
 
         $response = $this->postJson('/api/auth/register', [
-            'name' => 'Another User',
+            'first_name' => 'Another',
+            'second_name' => 'Second',
+            'third_name' => 'Third',
+            'last_name' => 'User',
             'email' => 'test@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
+            'phone' => '01000000000',
+            'father_phone' => '01100000000',
+            'mother_phone' => '01200000000',
+            'guardian_job' => 'Employee',
+            'gender' => 'male',
+            'birth_date' => '2000-01-01',
         ]);
 
         $response->assertStatus(422)
@@ -49,14 +73,14 @@ class AuthTest extends TestCase
     public function test_user_cannot_register_with_invalid_data(): void
     {
         $response = $this->postJson('/api/auth/register', [
-            'name' => '',
+            'first_name' => '',
             'email' => 'not-an-email',
             'password' => 'short',
             'password_confirmation' => 'not-matching',
         ]);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'email', 'password']);
+            ->assertJsonValidationErrors(['first_name', 'email', 'password', 'second_name', 'third_name', 'last_name', 'phone', 'father_phone', 'mother_phone', 'guardian_job', 'gender', 'birth_date']);
     }
 
     public function test_user_can_login(): void
@@ -92,7 +116,7 @@ class AuthTest extends TestCase
 
         $response->assertStatus(401)
             ->assertJson([
-                'message' => 'The provided credentials are incorrect.',
+                'message' => 'بيانات الدخول غير صحيحة.',
             ]);
     }
 

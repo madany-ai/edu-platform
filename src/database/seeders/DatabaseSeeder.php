@@ -43,8 +43,15 @@ class DatabaseSeeder extends Seeder
             $students[] = Student::create([
                 'user_id' => $student->id,
                 'first_name' => 'طالب',
+                'second_name' => 'ثاني',
+                'third_name' => 'ثالث',
                 'last_name' => "تجريبي {$i}",
+                'phone' => '01000000000',
+                'father_phone' => '01100000000',
+                'mother_phone' => '01200000000',
+                'guardian_job' => 'موظف',
                 'gender' => 'male',
+                'birth_date' => '2000-01-01',
             ]);
         }
 

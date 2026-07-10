@@ -27,6 +27,11 @@ export function Navbar() {
                 لوحة التحكم
               </Link>
             )}
+            {user && (
+              <Link href="/dashboard/instructor" className="text-muted-foreground hover:text-foreground transition-colors">
+                لوحة المدرب
+              </Link>
+            )}
           </nav>
         </div>
 

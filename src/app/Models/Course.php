@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
-use App\Models\CourseReview;
 use App\Models\CourseSection;
 use App\Models\Enrollment;
+use App\Models\Lecture;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Course extends Model
 {
@@ -39,8 +40,8 @@ class Course extends Model
         return $this->hasMany(Enrollment::class);
     }
 
-    public function reviews(): HasMany
+    public function lectures(): HasManyThrough
     {
-        return $this->hasMany(CourseReview::class);
+        return $this->HasManyThrough(Lecture::class, CourseSection::class);
     }
 }

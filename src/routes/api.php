@@ -19,10 +19,15 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
 
     // Dashboard
     Route::get('dashboard/student', [DashboardController::class, 'student']);
+
+    // Instructor Dashboard
     Route::get('dashboard/instructor', [DashboardController::class, 'instructor']);
+    Route::get('dashboard/instructor/courses', [DashboardController::class, 'instructorCourses']);
+    Route::get('dashboard/instructor/recent-enrollments', [DashboardController::class, 'instructorRecentEnrollments']);
+    Route::get('dashboard/instructor/course-performance', [DashboardController::class, 'instructorCoursePerformance']);
+    Route::get('dashboard/instructor/notifications', [DashboardController::class, 'instructorNotifications']);
 
     // Courses (instructor)
-    Route::get('instructor/courses', [CourseController::class, 'instructorCourses']);
     Route::post('courses', [CourseController::class, 'store']);
     Route::put('courses/{course}', [CourseController::class, 'update']);
     Route::delete('courses/{course}', [CourseController::class, 'destroy']);

@@ -14,6 +14,7 @@ RUN apk add --no-cache \
     icu-dev \
     oniguruma-dev \
     linux-headers \
+    libjpeg-turbo-dev \
     $PHPIZE_DEPS \
     && docker-php-ext-configure gd --with-jpeg \
     && docker-php-ext-install -j$(nproc) \

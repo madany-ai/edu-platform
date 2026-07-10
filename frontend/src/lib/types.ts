@@ -82,9 +82,11 @@ export interface Enrollment {
 
 export interface StudentDashboard {
   enrollments_count: number;
-  completed_lessons_count: number;
-  total_learning_minutes: number;
-  certificates_count: number;
+  active_enrollments: number;
+  completed_lectures: number;
+  total_watch_minutes: number;
+  average_exam_score: number;
+  completed_courses: number;
 }
 
 export interface InstructorDashboard {
@@ -92,4 +94,42 @@ export interface InstructorDashboard {
   total_students: number;
   total_revenue: number;
   average_rating: number;
+}
+
+export interface InstructorDashboardStats {
+  courses: {
+    total: number;
+    published: number;
+    draft: number;
+  };
+  students: {
+    total: number;
+    active: number;
+    recent_enrollments: number;
+  };
+  revenue: {
+    total: number;
+  };
+  content: {
+    total_lectures: number;
+  };
+  pending_enrollments: number;
+}
+
+export interface DashboardNotification {
+  id: number;
+  title: string;
+  body: string;
+  read_at: string | null;
+  created_at: string;
+}
+
+export interface CoursePerformance {
+  id: number;
+  title: string;
+  status: string;
+  price: number;
+  enrollments_count: number;
+  lectures_count: number;
+  sections_count: number;
 }

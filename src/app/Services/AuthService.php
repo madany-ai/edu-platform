@@ -19,7 +19,7 @@ class AuthService
     public function register(array $data): array
     {
         $user = User::create([
-            'name' => $data['first_name'] . ' ' . $data['second_name'],
+            'name' => $data['first_name'] . ' ' . $data['last_name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'status' => 'pending',
