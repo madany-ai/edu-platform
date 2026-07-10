@@ -1,5 +1,5 @@
 #!/bin/bash
 DIR="$(cd "$(dirname "$0")" && pwd)"
-export LD_LIBRARY_PATH=/tmp/libpq/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH="$DIR/php-ext:$LD_LIBRARY_PATH"
 export PHP_INI_SCAN_DIR=/etc/php/8.4/cli/conf.d:"$DIR/php.d"
 exec php "$DIR/src/artisan" "$@"

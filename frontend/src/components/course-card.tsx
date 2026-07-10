@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { BookOpen, Users, Clock } from "lucide-react";
+import { BookOpen, Users } from "lucide-react";
 
 interface CourseCardProps {
   id: number;
@@ -9,12 +9,11 @@ interface CourseCardProps {
   category: string;
   lessons: number;
   students: number;
-  duration: string;
   price: number;
   image?: string;
 }
 
-export function CourseCard({ id, title, instructor, category, lessons, students, duration, price, image }: CourseCardProps) {
+export function CourseCard({ id, title, instructor, category, lessons, students, price, image }: CourseCardProps) {
   return (
     <Link href={`/courses/${id}`}>
       <Card className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
@@ -40,15 +39,11 @@ export function CourseCard({ id, title, instructor, category, lessons, students,
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <BookOpen className="h-3.5 w-3.5" />
-              {lessons} درس
+              {lessons} أقسام
             </span>
             <span className="flex items-center gap-1">
               <Users className="h-3.5 w-3.5" />
               {students}
-            </span>
-            <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
-              {duration}
             </span>
           </div>
         </CardContent>

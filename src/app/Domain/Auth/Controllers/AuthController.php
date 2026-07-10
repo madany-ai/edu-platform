@@ -28,10 +28,22 @@ class AuthController extends Controller
             $request->input('password')
         );
 
-        if (! $result) {
+        if ($result === null) {
             return response()->json([
-                'message' => 'The provided credentials are incorrect.',
+                'message' => 'بيانات الدخول غير صحيحة.',
             ], 401);
+        }
+
+        if ($result === 'pending') {
+            return response()->json([
+                'message' => 'حسابك قيد المراجعة. يرجى انتظار الموافقة من قبل الإدارة.',
+            ], 403);
+        }
+
+        if ($result === 'rejected') {
+            return response()->json([
+                'message' => 'لم يتم الموافقة على حسابك. يرجى التواصل مع الإدارة.',
+            ], 403);
         }
 
         return response()->json($result);

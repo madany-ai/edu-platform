@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -13,8 +12,8 @@ import { getCourse, enrollCourse } from "@/lib/api/courses";
 import { useAuth } from "@/contexts/auth-context";
 import type { Course as CourseType } from "@/lib/types";
 import {
-  CheckCircle2, Clock, BookOpen, Users, PlayCircle,
-  ArrowRight, Share2, Heart, Award
+  CheckCircle2, BookOpen, Users, PlayCircle,
+  ArrowRight, Share2, Heart, Award, ChevronDown
 } from "lucide-react";
 
 export default function CourseDetailPage() {
@@ -24,6 +23,7 @@ export default function CourseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
+  const [openSections, setOpenSections] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     getCourse(id).then((data) => {
@@ -41,6 +41,18 @@ export default function CourseDetailPage() {
     } finally {
       setEnrolling(false);
     }
+  };
+
+  const toggleSection = (sectionId: number) => {
+    setOpenSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) {
+        next.delete(sectionId);
+      } else {
+        next.add(sectionId);
+      }
+      return next;
+    });
   };
 
   if (loading) {
@@ -73,12 +85,6 @@ export default function CourseDetailPage() {
     "نشر التطبيقات على منصات السحابة",
   ];
 
-  const levelMap: Record<string, string> = {
-    beginner: "مبتدئ",
-    intermediate: "متوسط",
-    advanced: "متقدم",
-  };
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <div className="grid gap-8 lg:grid-cols-3">
@@ -97,17 +103,12 @@ export default function CourseDetailPage() {
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
               <span className="flex items-center gap-1">
                 <PlayCircle className="h-4 w-4" />
-                {course.lessons_count} درس
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                {Math.round(course.duration_minutes / 60)} ساعة
+                {course.sections_count ?? 0} قسم
               </span>
               <span className="flex items-center gap-1">
                 <Users className="h-4 w-4" />
                 {course.students_count} طالب
               </span>
-              <Badge variant="secondary">{levelMap[course.level] || course.level}</Badge>
             </div>
 
             <p className="text-muted-foreground leading-relaxed">
@@ -131,22 +132,48 @@ export default function CourseDetailPage() {
 
           <Separator />
 
-          {course.lessons && course.lessons.length > 0 && (
+          {course.sections && course.sections.length > 0 && (
             <div>
               <h2 className="text-xl font-bold mb-4">محتوى الدورة</h2>
-              <div className="space-y-2">
-                {course.lessons.map((lesson, i) => (
-                  <div key={lesson.id} className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
-                        {i + 1}
+              <div className="space-y-3">
+                {course.sections.map((section) => (
+                  <div key={section.id} className="rounded-lg border overflow-hidden">
+                    <button
+                      className="flex w-full items-center justify-between p-4 text-right hover:bg-muted/50 transition-colors"
+                      onClick={() => toggleSection(section.id)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
+                          {course.sections!.indexOf(section) + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium">{section.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {section.lectures?.length ?? 0} محاضرات
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">{lesson.title}</p>
-                        <p className="text-xs text-muted-foreground">{lesson.duration_minutes} دقيقة</p>
+                      <ChevronDown
+                        className={`h-5 w-5 text-muted-foreground transition-transform ${
+                          openSections.has(section.id) ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                    {openSections.has(section.id) && section.lectures && (
+                      <div className="border-t">
+                        {section.lectures.map((lecture, i) => (
+                          <div
+                            key={lecture.id}
+                            className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <PlayCircle className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{lecture.title}</span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                    <PlayCircle className="h-5 w-5 text-muted-foreground" />
+                    )}
                   </div>
                 ))}
               </div>
@@ -202,24 +229,12 @@ export default function CourseDetailPage() {
 
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">المدة</span>
-                    <span className="font-medium">{Math.round(course.duration_minutes / 60)} ساعة</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">المستوى</span>
-                    <span className="font-medium">{levelMap[course.level] || course.level}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">الدروس</span>
-                    <span className="font-medium">{course.lessons_count}</span>
+                    <span className="text-muted-foreground">الأقسام</span>
+                    <span className="font-medium">{course.sections_count ?? 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">الطلاب</span>
                     <span className="font-medium">{course.students_count}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">اللغة</span>
-                    <span className="font-medium">{course.language}</span>
                   </div>
                 </div>
 

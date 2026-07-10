@@ -7,22 +7,41 @@ use App\Domain\Course\Models\Course;
 use App\Domain\Auth\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        Role::firstOrCreate(['name' => 'student']);
-        Role::firstOrCreate(['name' => 'instructor']);
+        $studentRole = Role::firstOrCreate(['name' => 'student']);
+        $instructorRole = Role::firstOrCreate(['name' => 'instructor']);
+        $assistantRole = Role::firstOrCreate(['name' => 'assistant']);
 
-        $instructor = User::factory()->create([
-            'name' => 'أحمد محمد',
-            'email' => 'instructor@test.com',
-            'password' => bcrypt('password'),
-        ]);
+        $permissions = [
+            'approve-students',
+            'answer-questions',
+            'grade-assignments',
+            'manage-courses',
+            'manage-assistants',
+        ];
+
+        foreach ($permissions as $perm) {
+            Permission::firstOrCreate(['name' => $perm]);
+        }
+
+        $instructorRole->syncPermissions($permissions);
+        $assistantRole->syncPermissions(['answer-questions', 'grade-assignments']);
+
+        $instructor = User::firstOrCreate(
+            ['email' => 'instructor@test.com'],
+            [
+                'name' => 'أحمد محمد',
+                'password' => bcrypt('password'),
+            ]
+        );
         $instructor->assignRole('instructor');
 
-        $categories = [
+        $categoriesData = [
             ['name' => 'برمجة', 'slug' => 'programming', 'icon' => 'code'],
             ['name' => 'تصميم', 'slug' => 'design', 'icon' => 'palette'],
             ['name' => 'تسويق', 'slug' => 'marketing', 'icon' => 'megaphone'],
@@ -30,11 +49,15 @@ class DatabaseSeeder extends Seeder
             ['name' => 'لغات', 'slug' => 'languages', 'icon' => 'globe'],
         ];
 
-        foreach ($categories as $cat) {
-            Category::create($cat);
+        $categories = [];
+        foreach ($categoriesData as $catData) {
+            $categories[] = Category::firstOrCreate(
+                ['slug' => $catData['slug']],
+                $catData
+            );
         }
 
-        $courses = [
+        $coursesData = [
             [
                 'title' => 'دورة كاملة في تطوير الويب باستخدام React',
                 'description' => 'دورة شاملة في تطوير الويب باستخدام React.js. ستتعلم من الأساسيات إلى المفاهيم المتقدمة مثل Hooks وContext API وRedux.',
@@ -93,11 +116,11 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
-        foreach ($courses as $courseData) {
-            Course::create([
-                ...$courseData,
-                'instructor_id' => $instructor->id,
-            ]);
+        foreach ($coursesData as $courseData) {
+            Course::firstOrCreate(
+                ['title' => $courseData['title'], 'instructor_id' => $instructor->id],
+                $courseData
+            );
         }
     }
 }

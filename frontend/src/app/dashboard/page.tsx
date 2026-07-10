@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getStudentDashboard } from "@/lib/api/dashboard";
 import { getMyEnrollments } from "@/lib/api/courses";
@@ -97,10 +96,12 @@ export default function StudentDashboardPage() {
                       {enrollment.course.instructor?.name}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Progress value={enrollment.progress} className="flex-1" />
-                    <span className="text-sm font-medium min-w-[3rem] text-left">
-                      {enrollment.progress}%
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      {enrollment.status === 'active' ? 'جاري' : enrollment.status}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {enrollment.created_at ? new Date(enrollment.created_at).toLocaleDateString('ar-SA') : ''}
                     </span>
                   </div>
                   <Link

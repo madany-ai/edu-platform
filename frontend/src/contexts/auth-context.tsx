@@ -9,18 +9,30 @@ import {
   type ReactNode,
 } from "react";
 import api from "@/lib/api";
+import type { User } from "@/lib/types";
 
-interface User {
-  id: number;
+interface RegisterData {
   name: string;
   email: string;
+  password: string;
+  password_confirmation: string;
+  first_name: string;
+  last_name: string;
+  second_name?: string;
+  third_name?: string;
+  phone?: string;
+  father_phone?: string;
+  mother_phone?: string;
+  guardian_job?: string;
+  gender?: string;
+  birth_date?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (data: RegisterData) => Promise<{ message: string }>;
   logout: () => Promise<void>;
 }
 
@@ -56,15 +68,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(data.user);
   };
 
-  const register = async (name: string, email: string, password: string) => {
-    const { data } = await api.post("/auth/register", {
-      name,
-      email,
-      password,
-      password_confirmation: password,
-    });
-    localStorage.setItem("token", data.token);
-    setUser(data.user);
+  const register = async (formData: RegisterData) => {
+    const { data } = await api.post("/auth/register", formData);
+    return { message: data.message };
   };
 
   const logout = async () => {

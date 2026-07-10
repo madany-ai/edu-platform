@@ -110,9 +110,8 @@ function CoursesContent() {
               title={course.title}
               instructor={course.instructor?.name ?? ""}
               category={course.category?.name ?? ""}
-              lessons={course.lessons_count}
-              students={course.students_count}
-              duration={`${Math.round(course.duration_minutes / 60)} ساعة`}
+              lessons={course.sections_count ?? 0}
+              students={course.students_count ?? 0}
               price={course.price}
             />
           ))}

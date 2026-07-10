@@ -3,7 +3,6 @@ import type { Course, Category, Enrollment } from "@/lib/types";
 
 interface CoursesParams {
   category?: string;
-  level?: string;
   search?: string;
 }
 
@@ -12,8 +11,8 @@ export async function getCourses(params?: CoursesParams): Promise<Course[]> {
   return data.data;
 }
 
-export async function getCourse(slug: string): Promise<Course> {
-  const { data } = await api.get(`/courses/${slug}`);
+export async function getCourse(id: string): Promise<Course> {
+  const { data } = await api.get(`/courses/${id}`);
   return data.data;
 }
 

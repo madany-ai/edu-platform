@@ -2,6 +2,24 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  status: string;
+  student?: Student;
+}
+
+export interface Student {
+  id: number;
+  user_id: number;
+  first_name: string;
+  second_name: string | null;
+  third_name: string | null;
+  last_name: string;
+  phone: string | null;
+  father_phone: string | null;
+  mother_phone: string | null;
+  guardian_job: string | null;
+  gender: string | null;
+  birth_date: string | null;
+  is_verified: boolean;
 }
 
 export interface Category {
@@ -21,35 +39,37 @@ export interface Instructor {
 export interface Course {
   id: number;
   title: string;
-  slug: string;
   description: string;
-  short_description?: string;
   price: number;
   thumbnail?: string;
-  level: string;
-  duration_minutes: number;
-  language: string;
+  status: string;
   category?: Category;
   instructor?: Instructor;
-  lessons_count: number;
+  sections_count: number;
   students_count: number;
-  lessons?: CourseLesson[];
-  is_published: boolean;
+  sections?: CourseSection[];
   created_at: string;
 }
 
-export interface CourseLesson {
+export interface CourseSection {
   id: number;
   title: string;
-  duration_minutes: number;
+  sort_order: number;
+  lectures?: Lecture[];
+}
+
+export interface Lecture {
+  id: number;
+  title: string;
   sort_order: number;
 }
 
 export interface Enrollment {
   id: number;
   course: Course;
-  progress: number;
-  completed_at: string | null;
+  status: string;
+  started_at: string | null;
+  expires_at: string | null;
   created_at: string;
 }
 

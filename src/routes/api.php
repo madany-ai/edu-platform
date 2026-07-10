@@ -2,6 +2,7 @@
 
 use App\Domain\Auth\Controllers\AuthController;
 use App\Domain\Course\Controllers\CategoryController;
+use App\Domain\Course\Controllers\CourseAssistantController;
 use App\Domain\Course\Controllers\CourseController;
 use App\Domain\Dashboard\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('auth/register', [AuthController::class, 'register']);
 Route::post('auth/login', [AuthController::class, 'login']);
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('auth/me', [AuthController::class, 'me'])->name('auth.me');
 
@@ -24,6 +25,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('courses', [CourseController::class, 'store']);
     Route::put('courses/{course}', [CourseController::class, 'update']);
     Route::delete('courses/{course}', [CourseController::class, 'destroy']);
+
+    Route::get('courses/{course}/assistants', [CourseAssistantController::class, 'index']);
+    Route::post('courses/{course}/assistants', [CourseAssistantController::class, 'store']);
+    Route::delete('courses/{course}/assistants/{assistant}', [CourseAssistantController::class, 'destroy']);
 });
 
 Route::get('categories', [CategoryController::class, 'index']);
