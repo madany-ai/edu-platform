@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Category;
 use App\Models\CourseReview;
 use App\Models\CourseSection;
 use App\Models\Enrollment;
@@ -16,7 +15,7 @@ class Course extends Model
 {
     protected $fillable = [
         'title', 'description', 'thumbnail', 'status',
-        'price', 'instructor_id', 'category_id',
+        'price', 'instructor_id',
     ];
 
     public function instructor(): BelongsTo
@@ -28,11 +27,6 @@ class Course extends Model
     {
         return $this->belongsToMany(User::class, 'course_assistants')
             ->withTimestamps();
-    }
-
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(Category::class);
     }
 
     public function sections(): HasMany

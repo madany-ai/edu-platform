@@ -12,7 +12,6 @@ import api from "@/lib/api";
 import type { User } from "@/lib/types";
 
 interface RegisterData {
-  name: string;
   email: string;
   password: string;
   password_confirmation: string;

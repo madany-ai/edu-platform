@@ -37,7 +37,6 @@ export default function RegisterPage() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
 
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
@@ -67,7 +66,6 @@ export default function RegisterPage() {
     setErrors([]);
     if (step === 1) {
       const newErrors: FieldError[] = [];
-      if (!name) newErrors.push({ field: "name", message: "الاسم الكامل مطلوب" });
       if (!email) newErrors.push({ field: "email", message: "البريد الإلكتروني مطلوب" });
       if (!password) newErrors.push({ field: "password", message: "كلمة المرور مطلوبة" });
       if (password.length < 8) newErrors.push({ field: "password", message: "كلمة المرور يجب أن تكون 8 أحرف على الأقل" });
@@ -100,7 +98,6 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await register({
-        name,
         email,
         password,
         password_confirmation: passwordConfirmation,
@@ -199,20 +196,6 @@ export default function RegisterPage() {
 
           {step === 1 && (
             <>
-              <div className="space-y-2">
-                <Label htmlFor="name">الاسم الكامل</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="محمد أحمد علي"
-                  value={name}
-                  onChange={(e) => { setName(e.target.value); clearFieldError("name"); }}
-                  required
-                />
-                {getFieldError("name") && (
-                  <p className="text-sm text-destructive">{getFieldError("name")}</p>
-                )}
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">البريد الإلكتروني</Label>
                 <Input

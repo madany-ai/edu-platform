@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { getCourse, enrollCourse } from "@/lib/api/courses";
+import { getCourse, enrollCourse, purchaseCourse } from "@/lib/api/courses";
 import { useAuth } from "@/contexts/auth-context";
 import type { Course as CourseType } from "@/lib/types";
 import {
@@ -22,6 +22,7 @@ export default function CourseDetailPage() {
   const [course, setCourse] = useState<CourseType | null>(null);
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
   const [openSections, setOpenSections] = useState<Set<number>>(new Set());
 
@@ -40,6 +41,17 @@ export default function CourseDetailPage() {
       setEnrolled(true);
     } finally {
       setEnrolling(false);
+    }
+  };
+
+  const handlePurchase = async () => {
+    if (!course) return;
+    setPurchasing(true);
+    try {
+      await purchaseCourse(course.id);
+      setEnrolled(true);
+    } finally {
+      setPurchasing(false);
     }
   };
 
@@ -77,14 +89,6 @@ export default function CourseDetailPage() {
     return <div className="text-center py-20">الدورة غير موجودة</div>;
   }
 
-  const outcomes = [
-    "بناء تطبيقات ويب تفاعلية باستخدام React",
-    "فهم مفاهيم React الأساسية والمتقدمة",
-    "إدارة حالة التطبيق باستخدام Redux",
-    "بناء REST APIs متكاملة",
-    "نشر التطبيقات على منصات السحابة",
-  ];
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <div className="grid gap-8 lg:grid-cols-3">
@@ -95,7 +99,7 @@ export default function CourseDetailPage() {
               <span>/</span>
               <Link href="/courses" className="hover:text-foreground">الدورات</Link>
               <span>/</span>
-              <span className="text-foreground">{course.category?.name}</span>
+              <span className="text-foreground">{course.title}</span>
             </div>
 
             <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
@@ -114,20 +118,6 @@ export default function CourseDetailPage() {
             <p className="text-muted-foreground leading-relaxed">
               {course.description}
             </p>
-          </div>
-
-          <Separator />
-
-          <div>
-            <h2 className="text-xl font-bold mb-4">ماذا ستتعلم</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {outcomes.map((outcome) => (
-                <div key={outcome} className="flex items-start gap-2">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                  <span className="text-sm">{outcome}</span>
-                </div>
-              ))}
-            </div>
           </div>
 
           <Separator />
@@ -161,7 +151,7 @@ export default function CourseDetailPage() {
                     </button>
                     {openSections.has(section.id) && section.lectures && (
                       <div className="border-t">
-                        {section.lectures.map((lecture, i) => (
+                        {section.lectures.map((lecture) => (
                           <div
                             key={lecture.id}
                             className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors"
@@ -169,6 +159,19 @@ export default function CourseDetailPage() {
                             <div className="flex items-center gap-3">
                               <PlayCircle className="h-4 w-4 text-muted-foreground" />
                               <span className="text-sm">{lecture.title}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs text-muted-foreground">
+                                {lecture.duration} دقيقة
+                              </span>
+                              {enrolled && (
+                                <Link href={`/courses/${id}/lectures/${lecture.id}`}>
+                                  <Button variant="ghost" size="sm">
+                                    مشاهدة
+                                    <ArrowRight className="h-3 w-3 mr-1" />
+                                  </Button>
+                                </Link>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -201,18 +204,30 @@ export default function CourseDetailPage() {
 
                 {user ? (
                   enrolled ? (
-                    <Button className="w-full gap-2" size="lg" disabled>
-                      <CheckCircle2 className="h-4 w-4" />
-                      أنت مسجل في هذه الدورة
-                    </Button>
-                  ) : (
+                    <Link href={`/courses/${id}`}>
+                      <Button className="w-full gap-2" size="lg">
+                        <CheckCircle2 className="h-4 w-4" />
+                        متابعة التعلم
+                      </Button>
+                    </Link>
+                  ) : course.price === 0 ? (
                     <Button
                       className="w-full gap-2"
                       size="lg"
                       onClick={handleEnroll}
                       disabled={enrolling}
                     >
-                      {enrolling ? "جاري التسجيل..." : "سجل الآن"}
+                      {enrolling ? "جاري التسجيل..." : "سجل الآن مجاناً"}
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full gap-2"
+                      size="lg"
+                      onClick={handlePurchase}
+                      disabled={purchasing}
+                    >
+                      {purchasing ? "جاري الشراء..." : `شراء - ${course.price} د.م`}
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   )

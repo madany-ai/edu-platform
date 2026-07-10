@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import type { Course, Category, Enrollment } from "@/lib/types";
+import type { Course, Enrollment, Lecture } from "@/lib/types";
 
 interface CoursesParams {
   category?: string;
@@ -16,11 +16,6 @@ export async function getCourse(id: string): Promise<Course> {
   return data.data;
 }
 
-export async function getCategories(): Promise<Category[]> {
-  const { data } = await api.get("/categories");
-  return data.data;
-}
-
 export async function enrollCourse(courseId: number): Promise<Enrollment> {
   const { data } = await api.post(`/courses/${courseId}/enroll`);
   return data;
@@ -29,4 +24,14 @@ export async function enrollCourse(courseId: number): Promise<Enrollment> {
 export async function getMyEnrollments(): Promise<Enrollment[]> {
   const { data } = await api.get("/courses/my-enrollments");
   return data.data;
+}
+
+export async function purchaseCourse(courseId: number): Promise<Enrollment> {
+  const { data } = await api.post(`/courses/${courseId}/purchase`);
+  return data;
+}
+
+export async function getLecture(lectureId: number): Promise<Lecture> {
+  const { data } = await api.get(`/lectures/${lectureId}`);
+  return data;
 }

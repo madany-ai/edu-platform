@@ -19,7 +19,6 @@ class StoreCourseRequest extends FormRequest
             'price' => 'required|numeric|min:0',
             'thumbnail' => 'nullable|string|max:255',
             'status' => 'nullable|in:draft,published,archived',
-            'category_id' => 'nullable|exists:categories,id',
         ];
     }
 }

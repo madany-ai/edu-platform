@@ -22,14 +22,6 @@ export interface Student {
   is_verified: boolean;
 }
 
-export interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  icon?: string;
-  courses_count: number;
-}
-
 export interface Instructor {
   id: number;
   name: string;
@@ -43,7 +35,6 @@ export interface Course {
   price: number;
   thumbnail?: string;
   status: string;
-  category?: Category;
   instructor?: Instructor;
   sections_count: number;
   students_count: number;
@@ -61,7 +52,23 @@ export interface CourseSection {
 export interface Lecture {
   id: number;
   title: string;
+  description?: string;
+  duration: number;
   sort_order: number;
+  video?: LectureVideo;
+  files?: LectureFile[];
+}
+
+export interface LectureVideo {
+  id: number;
+  bunny_video_id: string;
+  duration: number;
+}
+
+export interface LectureFile {
+  id: number;
+  type: string;
+  file_path: string;
 }
 
 export interface Enrollment {

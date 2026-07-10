@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Course;
+use App\Models\CourseSection;
+use App\Models\Lecture;
 use App\Http\Requests\StoreCourseRequest;
-use App\Http\Requests\StoreReviewRequest;
 use App\Http\Resources\CourseResource;
-use App\Http\Resources\EnrollmentResource;
 use App\Services\CourseService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -21,14 +21,14 @@ class CourseController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
-        $courses = $this->courseService->listPublished($request->only(['category', 'search']));
+        $courses = $this->courseService->listPublished($request->only(['search']));
 
         return CourseResource::collection($courses);
     }
 
     public function show(Course $course): CourseResource
     {
-        $course->load(['category', 'instructor', 'sections.lectures'])
+        $course->load(['instructor', 'sections.lectures'])
             ->loadCount(['sections', 'enrollments']);
 
         return new CourseResource($course);
@@ -58,36 +58,76 @@ class CourseController extends Controller
         return response()->json(['message' => 'Course deleted']);
     }
 
-    public function enroll(Course $course): JsonResponse
-    {
-        $enrollment = $this->courseService->enrollStudent($course, request()->user());
-
-        return response()->json(new EnrollmentResource($enrollment), 201);
-    }
-
-    public function myEnrollments(): AnonymousResourceCollection
-    {
-        $enrollments = $this->courseService->getUserEnrollments(request()->user());
-
-        return EnrollmentResource::collection($enrollments);
-    }
-
-    public function review(StoreReviewRequest $request, Course $course): JsonResponse
-    {
-        $review = $this->courseService->createReview(
-            $course,
-            $request->user()->id,
-            $request->input('rating'),
-            $request->input('review')
-        );
-
-        return response()->json($review, 201);
-    }
-
     public function instructorCourses(): AnonymousResourceCollection
     {
         $courses = $this->courseService->getInstructorCourses(request()->user()->id);
 
         return CourseResource::collection($courses);
+    }
+
+    public function storeSection(Request $request, Course $course): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'sort_order' => 'nullable|integer',
+        ]);
+
+        $section = $course->sections()->create($validated);
+
+        return response()->json($section, 201);
+    }
+
+    public function updateSection(Request $request, Course $course, \App\Models\CourseSection $section): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'sort_order' => 'nullable|integer',
+        ]);
+
+        $section->update($validated);
+
+        return response()->json($section);
+    }
+
+    public function destroySection(Course $course, \App\Models\CourseSection $section): JsonResponse
+    {
+        $section->delete();
+
+        return response()->json(['message' => 'تم حذف القسم بنجاح.']);
+    }
+
+    public function storeLecture(Request $request, \App\Models\CourseSection $section): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'duration' => 'nullable|integer|min:0',
+            'sort_order' => 'nullable|integer',
+        ]);
+
+        $lecture = $section->lectures()->create($validated);
+
+        return response()->json($lecture, 201);
+    }
+
+    public function updateLecture(Request $request, \App\Models\CourseSection $section, \App\Models\Lecture $lecture): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'duration' => 'nullable|integer|min:0',
+            'sort_order' => 'nullable|integer',
+        ]);
+
+        $lecture->update($validated);
+
+        return response()->json($lecture);
+    }
+
+    public function destroyLecture(\App\Models\CourseSection $section, \App\Models\Lecture $lecture): JsonResponse
+    {
+        $lecture->delete();
+
+        return response()->json(['message' => 'تم حذف المحاضرة بنجاح.']);
     }
 }

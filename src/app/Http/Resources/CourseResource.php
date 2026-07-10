@@ -16,11 +16,6 @@ class CourseResource extends JsonResource
             'price' => (float) $this->price,
             'thumbnail' => $this->thumbnail,
             'status' => $this->status,
-            'category' => $this->whenLoaded('category', fn () => [
-                'id' => $this->category->id,
-                'name' => $this->category->name,
-                'slug' => $this->category->slug,
-            ]),
             'instructor' => $this->whenLoaded('instructor', fn () => [
                 'id' => $this->instructor->id,
                 'name' => $this->instructor->name,

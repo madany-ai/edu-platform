@@ -9,11 +9,9 @@ use App\Models\Enrollment;
 use App\Models\ExamAttempt;
 use App\Models\GradeLevel;
 use App\Models\Governorate;
-use App\Models\Order;
 use App\Models\QuestionsPost;
 use App\Models\School;
 use App\Models\StudentActivity;
-use App\Models\StudentDocument;
 use App\Models\StudentStatistic;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -87,19 +85,9 @@ class Student extends Model
         return $this->hasMany(StudentActivity::class, 'student_id');
     }
 
-    public function documents(): HasMany
-    {
-        return $this->hasMany(StudentDocument::class, 'student_id');
-    }
-
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class, 'student_id');
-    }
-
-    public function orders(): HasMany
-    {
-        return $this->hasMany(Order::class, 'student_id');
     }
 
     public function examAttempts(): HasMany

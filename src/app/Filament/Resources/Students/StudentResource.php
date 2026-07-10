@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Students;
 
-use App\Domain\Notification\Services\NotificationService;
-use App\Domain\Student\Models\Student;
+use App\Services\NotificationService;
+use App\Models\Student;
 use App\Filament\Resources\Students\Pages\ManageStudents;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;

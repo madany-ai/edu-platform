@@ -4,36 +4,28 @@ import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { CourseCard } from "@/components/course-card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getCourses, getCategories } from "@/lib/api/courses";
-import type { Course, Category } from "@/lib/types";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { getCourses } from "@/lib/api/courses";
+import type { Course } from "@/lib/types";
+import { Search } from "lucide-react";
 
 function CoursesContent() {
   const searchParams = useSearchParams();
   const [courses, setCourses] = useState<Course[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get("search") || "");
-  const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "");
 
   const fetchCourses = useCallback(async () => {
     setLoading(true);
     try {
       const filters: Record<string, string> = {};
       if (search) filters.search = search;
-      if (activeCategory) filters.category = activeCategory;
-      const [coursesData, categoriesData] = await Promise.all([
-        getCourses(filters),
-        getCategories(),
-      ]);
+      const coursesData = await getCourses(filters);
       setCourses(coursesData);
-      setCategories(categoriesData);
     } finally {
       setLoading(false);
     }
-  }, [search, activeCategory]);
+  }, [search]);
 
   useEffect(() => {
     const timer = setTimeout(fetchCourses, 300);
@@ -49,8 +41,8 @@ function CoursesContent() {
         </p>
       </div>
 
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1 max-w-md">
+      <div className="mb-8">
+        <div className="relative max-w-md">
           <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="ابحث عن دورة..."
@@ -59,30 +51,6 @@ function CoursesContent() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">تصفية</span>
-        </div>
-      </div>
-
-      <div className="mb-8 flex flex-wrap gap-2">
-        <Badge
-          variant={activeCategory === "" ? "default" : "outline"}
-          className="cursor-pointer"
-          onClick={() => setActiveCategory("")}
-        >
-          الكل
-        </Badge>
-        {categories.map((cat) => (
-          <Badge
-            key={cat.slug}
-            variant={activeCategory === cat.slug ? "default" : "outline"}
-            className="cursor-pointer"
-            onClick={() => setActiveCategory(cat.slug)}
-          >
-            {cat.name}
-          </Badge>
-        ))}
       </div>
 
       {loading ? (
@@ -109,7 +77,7 @@ function CoursesContent() {
               id={course.id}
               title={course.title}
               instructor={course.instructor?.name ?? ""}
-              category={course.category?.name ?? ""}
+              category=""
               lessons={course.sections_count ?? 0}
               students={course.students_count ?? 0}
               price={course.price}
