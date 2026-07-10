@@ -24,6 +24,11 @@ export default function StudentDashboardPage() {
     if (authLoading) return;
     if (!user) { router.push("/login"); return; }
 
+    if (user.roles?.includes("instructor")) {
+      router.replace("/dashboard/instructor");
+      return;
+    }
+
     Promise.all([
       getStudentDashboard(),
       getMyEnrollments(),

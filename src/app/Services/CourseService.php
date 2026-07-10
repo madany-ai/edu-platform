@@ -2,10 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Models\Course;
-use App\Models\Enrollment;
-use App\Models\Student;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class CourseService
@@ -47,19 +44,6 @@ class CourseService
     public function delete(Course $course): bool
     {
         return $course->delete();
-    }
-
-    public function enrollStudent(Course $course, User $user): Enrollment
-    {
-        $student = Student::where('user_id', $user->id)->firstOrFail();
-
-        return Enrollment::firstOrCreate([
-            'student_id' => $student->id,
-            'course_id' => $course->id,
-        ], [
-            'status' => 'active',
-            'started_at' => now(),
-        ]);
     }
 
     public function getInstructorCourses(int $instructorId)

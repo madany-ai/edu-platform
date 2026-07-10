@@ -67,7 +67,6 @@ class EnrollmentService
         }
 
         return Enrollment::with(['course.instructor', 'course.sections'])
-            ->withCount('course.sections')
             ->where('student_id', $student->id)
             ->latest()
             ->get();

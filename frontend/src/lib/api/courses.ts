@@ -22,7 +22,7 @@ export async function enrollCourse(courseId: number): Promise<Enrollment> {
 }
 
 export async function getMyEnrollments(): Promise<Enrollment[]> {
-  const { data } = await api.get("/courses/my-enrollments");
+  const { data } = await api.get("/my-enrollments");
   return data.data;
 }
 

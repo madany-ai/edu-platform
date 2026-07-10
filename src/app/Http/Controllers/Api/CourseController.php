@@ -36,6 +36,8 @@ class CourseController extends Controller
 
     public function store(StoreCourseRequest $request): CourseResource
     {
+        $this->authorize('create', Course::class);
+
         $course = $this->courseService->create([
             ...$request->validated(),
             'instructor_id' => $request->user()->id,
@@ -46,6 +48,8 @@ class CourseController extends Controller
 
     public function update(StoreCourseRequest $request, Course $course): CourseResource
     {
+        $this->authorize('update', $course);
+
         $course = $this->courseService->update($course, $request->validated());
 
         return new CourseResource($course);
@@ -53,9 +57,18 @@ class CourseController extends Controller
 
     public function destroy(Course $course): JsonResponse
     {
+        $this->authorize('delete', $course);
+
         $this->courseService->delete($course);
 
         return response()->json(['message' => 'Course deleted']);
+    }
+
+    public function showLecture(\App\Models\Lecture $lecture): JsonResponse
+    {
+        $lecture->load(['video', 'files', 'section.course']);
+
+        return response()->json($lecture);
     }
 
     public function instructorCourses(): AnonymousResourceCollection

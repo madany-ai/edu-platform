@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Lecture extends Model
 {
-    protected $fillable = ['section_id', 'title', 'description', 'duration', 'sort_order'];
+    protected $fillable = ['section_id', 'title', 'description', 'duration', 'sort_order', 'bunny_video_id', 'pdf_url'];
 
     public function section(): BelongsTo
     {

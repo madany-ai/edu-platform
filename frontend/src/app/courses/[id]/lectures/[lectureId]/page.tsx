@@ -50,11 +50,13 @@ export default function LectureViewPage() {
       )}
 
       <div className="aspect-video bg-muted rounded-lg flex items-center justify-center mb-8">
-        {lecture.video ? (
-          <div className="text-center">
-            <Play className="h-16 w-16 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">بانتظار ربط الفيديو</p>
-          </div>
+        {lecture.video?.bunny_video_id ? (
+          <iframe
+            src={`https://iframe.mediadelivery.net/embed/${process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID}/${lecture.video.bunny_video_id}?autoplay=false`}
+            className="aspect-video w-full rounded-lg"
+            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
         ) : (
           <div className="text-center">
             <Play className="h-16 w-16 text-muted-foreground mx-auto mb-2" />

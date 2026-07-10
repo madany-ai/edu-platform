@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ExamController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -40,6 +41,10 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     Route::put('sections/{section}/lectures/{lecture}', [CourseController::class, 'updateLecture']);
     Route::delete('sections/{section}/lectures/{lecture}', [CourseController::class, 'destroyLecture']);
 
+    // Lecture View (with enrollment check)
+    Route::get('lectures/{lecture}', [CourseController::class, 'showLecture'])
+        ->middleware(\App\Http\Middleware\CheckEnrollment::class);
+
     // Enrollments
     Route::get('my-enrollments', [EnrollmentController::class, 'myEnrollments']);
     Route::post('courses/{course}/enroll', [EnrollmentController::class, 'enroll']);
@@ -51,5 +56,19 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
 
     // Students (instructor)
     Route::get('instructor/students', [DashboardController::class, 'instructorStudents'])
+        ->middleware('role:instructor');
+
+    // Exams (student)
+    Route::get('lectures/{lecture}/exam', [ExamController::class, 'show']);
+    Route::post('exams/{exam}/start', [ExamController::class, 'startAttempt']);
+    Route::post('attempts/{attempt}/submit', [ExamController::class, 'submitAttempt']);
+    Route::get('attempts/{attempt}/result', [ExamController::class, 'result']);
+
+    // Exams (instructor)
+    Route::post('lectures/{lecture}/exam', [ExamController::class, 'store'])
+        ->middleware('role:instructor');
+    Route::put('exams/{exam}', [ExamController::class, 'update'])
+        ->middleware('role:instructor');
+    Route::delete('exams/{exam}', [ExamController::class, 'destroy'])
         ->middleware('role:instructor');
 });

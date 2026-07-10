@@ -102,6 +102,17 @@ class CourseResource extends Resource
                                             ->label('الترتيب')
                                             ->numeric()
                                             ->default(0),
+
+                                        TextInput::make('bunny_video_id')
+                                            ->label('معرّف الفيديو (Bunny Stream)')
+                                            ->placeholder('اتركه فارغاً إذا لا يوجد فيديو')
+                                            ->maxLength(255),
+
+                                        TextInput::make('pdf_url')
+                                            ->label('رابط ملف PDF')
+                                            ->url()
+                                            ->placeholder('https://...')
+                                            ->maxLength(500),
                                     ])
                                     ->columns(2)
                                     ->label('المحاضرات'),
@@ -175,6 +186,13 @@ class CourseResource extends Resource
     {
         return [
             'index' => ManageCourses::route('/'),
+        ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            \App\Filament\Resources\Courses\RelationManagers\AssistantsRelationManager::class,
         ];
     }
 

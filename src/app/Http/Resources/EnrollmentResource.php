@@ -12,8 +12,24 @@ class EnrollmentResource extends JsonResource
         return [
             'id' => $this->id,
             'course_id' => $this->course_id,
-            'course_title' => $this->whenLoaded('course', fn () => $this->course->title),
+            'course' => $this->whenLoaded('course', fn () => [
+                'id' => $this->course->id,
+                'title' => $this->course->title,
+                'price' => (float) $this->course->price,
+                'status' => $this->course->status,
+                'instructor' => $this->course->instructor ? [
+                    'id' => $this->course->instructor->id,
+                    'name' => $this->course->instructor->name,
+                ] : null,
+            ]),
+            'student' => $this->whenLoaded('student', fn () => [
+                'id' => $this->student->id,
+                'user' => $this->student->user ? [
+                    'name' => $this->student->user->name,
+                ] : null,
+            ]),
             'status' => $this->status,
+            'source' => $this->source,
             'started_at' => $this->started_at,
             'expires_at' => $this->expires_at,
             'created_at' => $this->created_at,

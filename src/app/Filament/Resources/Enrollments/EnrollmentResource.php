@@ -38,7 +38,11 @@ class EnrollmentResource extends Resource
             ->components([
                 Select::make('student_id')
                     ->label('الطالب')
-                    ->relationship('student.user', 'name')
+                    ->options(function () {
+                        return \App\Models\Student::with('user')
+                            ->get()
+                            ->mapWithKeys(fn ($s) => [$s->id => $s->user?->name ?? 'غير معروف']);
+                    })
                     ->searchable()
                     ->required(),
 

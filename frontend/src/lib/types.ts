@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   status: string;
+  roles?: string[];
   student?: Student;
 }
 
@@ -132,4 +133,43 @@ export interface CoursePerformance {
   enrollments_count: number;
   lectures_count: number;
   sections_count: number;
+}
+
+export interface Exam {
+  id: number;
+  lecture_id: number;
+  title: string;
+  duration: number;
+  questions: ExamQuestion[];
+}
+
+export interface ExamQuestion {
+  id: number;
+  type: string;
+  question: string;
+  degree: number;
+  choices: ExamChoice[];
+}
+
+export interface ExamChoice {
+  id: number;
+  answer: string;
+  is_correct?: boolean;
+}
+
+export interface ExamAttempt {
+  id: number;
+  exam_id: number;
+  student_id: number;
+  score: number;
+  started_at: string | null;
+  submitted_at: string | null;
+  answers?: ExamAnswer[];
+}
+
+export interface ExamAnswer {
+  id: number;
+  question_id: number;
+  answer: string;
+  question?: ExamQuestion;
 }
