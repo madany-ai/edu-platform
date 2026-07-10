@@ -13,7 +13,11 @@ class ManageCourses extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->using(function (array $data, string $model): \Illuminate\Database\Eloquent\Model {
+                    $data['instructor_id'] = auth()->id();
+                    return static::getModel()::create($data);
+                }),
         ];
     }
 }

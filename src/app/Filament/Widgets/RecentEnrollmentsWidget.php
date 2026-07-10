@@ -17,7 +17,7 @@ class RecentEnrollmentsWidget extends TableWidget
     public function table(Table $table): Table
     {
         $user = request()->user();
-        $courseIds = Course::where('instructor_id', $user->id)->pluck('id');
+        $courseIds = $this->getUserCourseIds($user);
 
         return $table
             ->query(
@@ -51,5 +51,23 @@ class RecentEnrollmentsWidget extends TableWidget
             ])
             ->defaultSort('created_at', 'desc')
             ->paginated([10, 25, 50]);
+    }
+
+    private function getUserCourseIds($user): array
+    {
+        if ($user->hasRole('super_admin')) {
+            return Course::pluck('id')->toArray();
+        }
+
+        if ($user->hasRole('instructor')) {
+            return Course::where('instructor_id', $user->id)->pluck('id')->toArray();
+        }
+
+        if ($user->hasRole('assistant')) {
+            return Course::whereHas('assistants', fn ($q) => $q->where('user_id', $user->id))
+                ->pluck('id')->toArray();
+        }
+
+        return [];
     }
 }

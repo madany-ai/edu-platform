@@ -12,15 +12,15 @@ class InstructorStatsOverview extends StatsOverviewWidget
     protected function getStats(): array
     {
         $user = request()->user();
-        $courseIds = Course::where('instructor_id', $user->id)->pluck('id');
+        $courseIds = $this->getUserCourseIds($user);
 
-        $coursesCount = Course::where('instructor_id', $user->id)->count();
-        $publishedCount = Course::where('instructor_id', $user->id)
+        $coursesCount = count($courseIds);
+        $publishedCount = Course::whereIn('id', $courseIds)
             ->where('status', 'published')->count();
         $totalStudents = Enrollment::whereIn('course_id', $courseIds)->count();
         $recentEnrollments = Enrollment::whereIn('course_id', $courseIds)
             ->where('created_at', '>=', now()->subDays(7))->count();
-        $totalRevenue = Course::where('instructor_id', $user->id)->sum('price');
+        $totalRevenue = Course::whereIn('id', $courseIds)->sum('price');
 
         return [
             Stat::make('إجمالي الدورات', $coursesCount)
@@ -38,16 +38,34 @@ class InstructorStatsOverview extends StatsOverviewWidget
                 ->descriptionIcon('heroicon-o-banknotes')
                 ->color('warning'),
 
-            Stat::make('المحاضرات', $this->getTotalLectures($user->id))
+            Stat::make('المحاضرات', $this->getTotalLectures($courseIds))
                 ->description('إجمالي المحاضرات في جميع الدورات')
                 ->descriptionIcon('heroicon-o-play')
                 ->color('info'),
         ];
     }
 
-    private function getTotalLectures(int $instructorId): int
+    private function getUserCourseIds($user): array
     {
-        return Course::where('instructor_id', $instructorId)
+        if ($user->hasRole('super_admin')) {
+            return Course::pluck('id')->toArray();
+        }
+
+        if ($user->hasRole('instructor')) {
+            return Course::where('instructor_id', $user->id)->pluck('id')->toArray();
+        }
+
+        if ($user->hasRole('assistant')) {
+            return Course::whereHas('assistants', fn ($q) => $q->where('user_id', $user->id))
+                ->pluck('id')->toArray();
+        }
+
+        return [];
+    }
+
+    private function getTotalLectures(array $courseIds): int
+    {
+        return Course::whereIn('id', $courseIds)
             ->withCount('lectures')
             ->get()
             ->sum('lectures_count');

@@ -11,13 +11,11 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Section as FormSection;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section as FormSection;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Actions\Action;
@@ -66,10 +64,6 @@ class CourseResource extends Resource
                     ->options(CourseStatus::class)
                     ->default(CourseStatus::Draft)
                     ->required(),
-
-                Toggle::make('is_published')
-                    ->label('منشور')
-                    ->default(false),
 
                 FormSection::make('الأقسام والمحاضرات')
                     ->schema([
@@ -202,9 +196,12 @@ class CourseResource extends Resource
 
         return parent::getEloquentQuery()
             ->withCount(['sections', 'enrollments'])
-            ->when(
-                $user && $user->hasRole('instructor') && ! $user->hasRole('super_admin'),
-                fn (Builder $query) => $query->where('instructor_id', $user->id)
-            );
+            ->when($user && ! $user->hasRole('super_admin'), function (Builder $query) use ($user) {
+                if ($user->hasRole('instructor')) {
+                    $query->where('instructor_id', $user->id);
+                } elseif ($user->hasRole('assistant')) {
+                    $query->whereHas('assistants', fn (Builder $q) => $q->where('user_id', $user->id));
+                }
+            });
     }
 }

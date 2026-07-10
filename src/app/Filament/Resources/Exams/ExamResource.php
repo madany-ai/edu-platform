@@ -10,10 +10,10 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -48,9 +48,11 @@ class ExamResource extends Resource
                     ->default(30)
                     ->minValue(1),
 
-                TextInput::make('lecture.title')
+                Select::make('lecture_id')
                     ->label('المحاضرة')
-                    ->disabled(),
+                    ->relationship('lecture', 'title')
+                    ->searchable()
+                    ->required(),
 
                 Repeater::make('questions')
                     ->relationship()

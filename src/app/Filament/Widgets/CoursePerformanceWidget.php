@@ -16,11 +16,12 @@ class CoursePerformanceWidget extends TableWidget
     public function table(Table $table): Table
     {
         $user = request()->user();
+        $courseIds = $this->getUserCourseIds($user);
 
         return $table
             ->query(
                 Course::withCount(['enrollments', 'lectures', 'sections'])
-                    ->where('instructor_id', $user->id)
+                    ->whereIn('id', $courseIds)
                     ->where('status', 'published')
                     ->orderByDesc('enrollments_count')
             )
@@ -61,5 +62,23 @@ class CoursePerformanceWidget extends TableWidget
                     ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' د.م'),
             ])
             ->defaultSort('enrollments_count', 'desc');
+    }
+
+    private function getUserCourseIds($user): array
+    {
+        if ($user->hasRole('super_admin')) {
+            return Course::pluck('id')->toArray();
+        }
+
+        if ($user->hasRole('instructor')) {
+            return Course::where('instructor_id', $user->id)->pluck('id')->toArray();
+        }
+
+        if ($user->hasRole('assistant')) {
+            return Course::whereHas('assistants', fn ($q) => $q->where('user_id', $user->id))
+                ->pluck('id')->toArray();
+        }
+
+        return [];
     }
 }

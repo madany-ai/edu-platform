@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Enrollments;
 
+use App\Enums\EnrollmentSource;
+use App\Enums\EnrollmentStatus;
 use App\Filament\Resources\Enrollments\Pages\ManageEnrollments;
 use App\Models\Course;
 use App\Models\Enrollment;
@@ -10,7 +12,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -54,21 +55,14 @@ class EnrollmentResource extends Resource
 
                 Select::make('status')
                     ->label('الحالة')
-                    ->options([
-                        'active' => 'نشط',
-                        'expired' => 'منتهي',
-                        'suspended' => 'معلق',
-                    ])
-                    ->default('active')
+                    ->options(EnrollmentStatus::class)
+                    ->default(EnrollmentStatus::Active)
                     ->required(),
 
                 Select::make('source')
                     ->label('المصدر')
-                    ->options([
-                        'manual' => 'يدوي',
-                        'purchase' => 'شراء',
-                    ])
-                    ->default('manual')
+                    ->options(EnrollmentSource::class)
+                    ->default(EnrollmentSource::Manual)
                     ->required(),
             ]);
     }
@@ -149,9 +143,12 @@ class EnrollmentResource extends Resource
 
         return parent::getEloquentQuery()
             ->with(['student.user', 'course'])
-            ->when(
-                $user && $user->hasRole('instructor') && ! $user->hasRole('super_admin'),
-                fn (Builder $query) => $query->whereHas('course', fn (Builder $q) => $q->where('instructor_id', $user->id))
-            );
+            ->when($user && ! $user->hasRole('super_admin'), function (Builder $query) use ($user) {
+                if ($user->hasRole('instructor')) {
+                    $query->whereHas('course', fn (Builder $q) => $q->where('instructor_id', $user->id));
+                } elseif ($user->hasRole('assistant')) {
+                    $query->whereHas('course', fn (Builder $q) => $q->whereHas('assistants', fn (Builder $a) => $a->where('user_id', $user->id)));
+                }
+            });
     }
 }

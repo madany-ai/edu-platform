@@ -51,9 +51,11 @@ class StudentResource extends Resource
                     ->maxLength(255),
                 TextInput::make('second_name')
                     ->label('الاسم الثاني')
+                    ->required()
                     ->maxLength(255),
                 TextInput::make('third_name')
                     ->label('الاسم الثالث')
+                    ->required()
                     ->maxLength(255),
                 TextInput::make('last_name')
                     ->label('الاسم الأخير')
@@ -61,27 +63,33 @@ class StudentResource extends Resource
                     ->maxLength(255),
                 TextInput::make('phone')
                     ->label('رقم الهاتف')
+                    ->required()
                     ->tel()
                     ->maxLength(20),
                 TextInput::make('father_phone')
                     ->label('هاتف الأب')
+                    ->required()
                     ->tel()
                     ->maxLength(20),
                 TextInput::make('mother_phone')
                     ->label('هاتف الأم')
+                    ->required()
                     ->tel()
                     ->maxLength(20),
                 TextInput::make('guardian_job')
                     ->label('وظيفة ولي الأمر')
+                    ->required()
                     ->maxLength(255),
                 Select::make('gender')
                     ->label('الجنس')
                     ->options([
                         'male' => 'ذكر',
                         'female' => 'أنثى',
-                    ]),
+                    ])
+                    ->required(),
                 DatePicker::make('birth_date')
-                    ->label('تاريخ الميلاد'),
+                    ->label('تاريخ الميلاد')
+                    ->required(),
                 Select::make('governorate_id')
                     ->label('المحافظة')
                     ->relationship('governorate', 'name')
