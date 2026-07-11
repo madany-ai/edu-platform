@@ -98,7 +98,7 @@ class QAResource extends Resource
                     ->label('عرض')
                     ->icon('heroicon-o-eye')
                     ->modalHeading('السؤال والردود')
-                    ->modalContent(function (QuestionsPost $record): string {
+                    ->modalContent(function (QuestionsPost $record): \Illuminate\Support\HtmlString {
                         $html = '<div class="space-y-4">';
                         $html .= '<div class="p-4 bg-gray-50 rounded-lg"><strong>السؤال:</strong><br>' . e($record->body) . '</div>';
                         foreach ($record->replies as $reply) {
@@ -108,7 +108,7 @@ class QAResource extends Resource
                             $html .= '</div>';
                         }
                         $html .= '</div>';
-                        return $html;
+                        return new \Illuminate\Support\HtmlString($html);
                     }),
             ])
             ->toolbarActions([

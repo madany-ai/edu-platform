@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>مشغل الدروس | مختبر العلوم</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@100..900&display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "error-container": "#ffdad6",
+                "on-secondary-fixed-variant": "#004f58",
+                "surface-dim": "#d8dadd",
+                "surface-tint": "#29695b",
+                "on-primary": "#ffffff",
+                "primary-fixed-dim": "#94d3c1",
+                "primary": "#00342b",
+                "surface-container-lowest": "#ffffff",
+                "outline-variant": "#bfc9c4",
+                "surface": "#f7f9fc",
+                "on-primary-fixed": "#00201a",
+                "on-tertiary-container": "#9cb5c1",
+                "secondary-fixed-dim": "#00daf3",
+                "error": "#ba1a1a",
+                "tertiary-container": "#304751",
+                "secondary-container": "#00e3fd",
+                "on-surface": "#191c1e",
+                "on-primary-fixed-variant": "#065043",
+                "surface-variant": "#e0e3e6",
+                "outline": "#707975",
+                "tertiary-fixed-dim": "#b1cad7",
+                "tertiary-fixed": "#cde6f4",
+                "primary-container": "#004d40",
+                "on-background": "#191c1e",
+                "inverse-surface": "#2d3133",
+                "on-tertiary-fixed": "#051e28",
+                "on-tertiary": "#ffffff",
+                "on-error": "#ffffff",
+                "on-surface-variant": "#3f4945",
+                "inverse-on-surface": "#eff1f4",
+                "on-secondary": "#ffffff",
+                "surface-container-highest": "#e0e3e6",
+                "on-tertiary-fixed-variant": "#334a55",
+                "surface-container-high": "#e6e8eb",
+                "inverse-primary": "#94d3c1",
+                "on-secondary-container": "#00616d",
+                "on-secondary-fixed": "#001f24",
+                "on-primary-container": "#7ebdac",
+                "on-error-container": "#93000a",
+                "background": "#f7f9fc",
+                "surface-bright": "#f7f9fc",
+                "primary-fixed": "#afefdd",
+                "secondary": "#006875",
+                "tertiary": "#19303b",
+                "surface-container": "#eceef1",
+                "secondary-fixed": "#9cf0ff",
+                "surface-container-low": "#f2f4f7"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "card-padding": "24px",
+                "container-margin": "24px",
+                "gutter": "20px",
+                "base": "8px",
+                "section-padding": "64px"
+            },
+            "fontFamily": {
+                "headline-md": ["IBM Plex Sans Arabic"],
+                "caption": ["IBM Plex Sans Arabic"],
+                "headline-lg": ["IBM Plex Sans Arabic"],
+                "display-lg": ["IBM Plex Sans Arabic"],
+                "label-md": ["IBM Plex Sans Arabic"],
+                "body-lg": ["IBM Plex Sans Arabic"],
+                "headline-lg-mobile": ["IBM Plex Sans Arabic"],
+                "body-md": ["IBM Plex Sans Arabic"]
+            },
+            "fontSize": {
+                "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                "display-lg": ["48px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                "headline-lg-mobile": ["28px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            background-color: #f7f9fc;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #bfc9c4;
+            border-radius: 10px;
+        }
+        .video-container {
+            aspect-ratio: 16 / 9;
+            box-shadow: 0 10px 30px -10px rgba(0, 52, 43, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopNavBar Implementation -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/30 dark:border-outline-variant/30 shadow-sm">
+<nav class="flex flex-row-reverse justify-between items-center px-gutter py-4 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">مختبر العلوم</span>
+</div>
+<div class="hidden md:flex flex-row-reverse gap-8 items-center">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-all" href="#">الرئيسية</a>
+<a class="font-body-md text-body-md text-primary dark:text-secondary-fixed-dim font-bold border-b-2 border-primary pb-1" href="#">الدورات</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-all" href="#">عن المنصة</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-all" href="#">تسجيل الدخول</a>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-surface-container-low border-none rounded-full pr-10 pl-4 py-2 text-label-md focus:ring-2 focus:ring-primary/20 w-64" placeholder="بحث عن تجربة..." type="text"/>
+</div>
+</div>
+</nav>
+</header>
+<!-- Main Content Area -->
+<main class="mt-20 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden max-w-[1600px] mx-auto w-full">
+<!-- Center/Left: Video Player & Tabs (8 Columns) -->
+<div class="lg:col-span-9 flex flex-col h-[calc(100vh-80px)] overflow-y-auto custom-scrollbar p-6 space-y-6">
+<!-- Video Stage -->
+<div class="video-container glass-panel rounded-2xl overflow-hidden relative group">
+<div class="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
+<button class="w-20 h-20 bg-secondary-container text-on-secondary-container rounded-full flex items-center justify-center shadow-lg transform active:scale-90 transition-transform">
+<span class="material-symbols-outlined scale-150" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+</div>
+<div class="w-full h-full bg-cover bg-center" data-alt="A high-resolution scientific cinematic visual showing a 3D molecular animation of water molecules vibrating and forming hydrogen bonds. The lighting is laboratory-clean with cyan and deep teal glowing accents against a dark, professional background. The style is modern corporate educational media with sharp edges and realistic textures." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBwSnV6JDrRUSMljlP7IEm3eW_8wlC71faajelDRWcUiPcEOkAcyntUeM4BZJLDBHA_zj-QtuUeGI9Zvsep12i-uf0fKvVvRI9lPQIvQDkVzp7qpkmzzBx5cenQefB9ssnq5Yuc5Ar9xN5dD1OpuDIrRfMufwJLklwMYdtUmpMUtWDwzmE8BErayDXokGKUegnzuhpCVC_Q4CCXLA-ZNKAHQYIH01pgA2iUaa4yGFshE4Esnvvsa1NSkw')"></div>
+<!-- Simple Player Controls Overlay -->
+<div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent flex items-center gap-4 text-white z-20">
+<span class="material-symbols-outlined cursor-pointer">pause</span>
+<div class="flex-grow h-1 bg-white/30 rounded-full relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-secondary-fixed w-[40%]"></div>
+</div>
+<span class="font-label-md text-label-md">12:45 / 30:00</span>
+<span class="material-symbols-outlined cursor-pointer">volume_up</span>
+<span class="material-symbols-outlined cursor-pointer">fullscreen</span>
+</div>
+</div>
+<!-- Navigation Buttons -->
+<div class="flex justify-between items-center">
+<button class="flex items-center gap-2 px-6 py-3 rounded-xl border border-outline-variant text-primary font-label-md hover:bg-surface-container-high transition-colors active:scale-95">
+<span class="material-symbols-outlined">arrow_forward</span>
+                    الدرس السابق
+                </button>
+<h1 class="font-headline-md text-headline-md text-primary">الدرس 2: الجزيئات والروابط الكيميائية</h1>
+<button class="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-on-primary font-label-md hover:bg-primary/90 transition-colors active:scale-95">
+                    الدرس التالي
+                    <span class="material-symbols-outlined">arrow_back</span>
+</button>
+</div>
+<!-- Tabs Section -->
+<div class="glass-panel rounded-2xl flex flex-col flex-grow">
+<div class="flex border-b border-outline-variant">
+<button class="px-8 py-4 font-label-md border-b-2 border-primary text-primary transition-all" id="tab-overview" onclick="switchTab('overview')">نظرة عامة</button>
+<button class="px-8 py-4 font-label-md border-b-2 border-transparent text-on-surface-variant hover:text-primary transition-all" id="tab-resources" onclick="switchTab('resources')">المصادر (2)</button>
+<button class="px-8 py-4 font-label-md border-b-2 border-transparent text-on-surface-variant hover:text-primary transition-all" id="tab-qa" onclick="switchTab('qa')">الأسئلة والأجوبة</button>
+</div>
+<div class="p-card-padding flex-grow">
+<!-- Tab: Overview -->
+<div class="space-y-4" id="content-overview">
+<h2 class="font-headline-sm text-primary font-bold">عن هذا الدرس</h2>
+<p class="font-body-md text-on-surface-variant leading-relaxed">
+                            في هذا الدرس، سنستكشف عالم الجزيئات وكيف تتحد الذرات لتكوين مركبات معقدة. سنقوم بتحليل الروابط التساهمية والأيونية من خلال محاكاة بصرية ثلاثية الأبعاد، مما يسهل فهم القوى الجاذبة التي تحافظ على استقرار المادة.
+                        </p>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-4 pt-4">
+<div class="p-4 bg-surface-container rounded-xl flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">timer</span>
+<div>
+<p class="text-caption text-on-surface-variant">المدة</p>
+<p class="font-label-md">30 دقيقة</p>
+</div>
+</div>
+<div class="p-4 bg-surface-container rounded-xl flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">signal_cellular_alt</span>
+<div>
+<p class="text-caption text-on-surface-variant">المستوى</p>
+<p class="font-label-md">متوسط</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Tab: Resources (Hidden by default) -->
+<div class="hidden space-y-4" id="content-resources">
+<div class="flex items-center justify-between p-4 bg-surface-container rounded-xl hover:bg-surface-variant cursor-pointer transition-colors border border-transparent hover:border-primary/20">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-error-container text-on-error-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div>
+<p class="font-label-md">ملخص الدرس - الروابط الكيميائية</p>
+<p class="text-caption text-on-surface-variant">PDF • 2.4 MB</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary">download</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container rounded-xl hover:bg-surface-variant cursor-pointer transition-colors border border-transparent hover:border-primary/20">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-primary-container text-on-primary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">science</span>
+</div>
+<div>
+<p class="font-label-md">دليل التجارب المعملية</p>
+<p class="text-caption text-on-surface-variant">PDF • 1.8 MB</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary">download</span>
+</div>
+</div>
+<!-- Tab: Q&A (Hidden by default) -->
+<div class="hidden" id="content-qa">
+<div class="flex gap-4 mb-6">
+<img class="w-10 h-10 rounded-full border border-outline-variant" data-alt="A portrait of a teenage student with a curious expression, wearing a simple modern hoodie, clean background, soft lighting, professional student profile picture style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWEj6cZIOkWW6e0k6DT-Rggs1gopeYnwhEuA7Wmeg8MFwyoJf-HuRKemXFTN1JvtrW_IB64NzD8eAxbDxd7HtxyIWcL5n3pmIbg3d5XDGgbTZhagE3F3n4FxGdZ5JEjc3aNDqqNbTNkeX_xXDqHCtwD5ymONgrG41WVQHxRL70OAoigQeOqR_ZwN-hzMe7MChso5SY43dd6BvgzYwJuCdBTs3bauGZ2pTRGUCffAVLWf1R5AB9RdC9Cg"/>
+<div class="flex-grow">
+<textarea class="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-body-md focus:ring-primary focus:border-primary min-h-[100px]" placeholder="اسأل سؤالاً حول هذا الدرس..."></textarea>
+<div class="flex justify-end mt-2">
+<button class="bg-primary text-on-primary px-6 py-2 rounded-lg font-label-md">إرسال السؤال</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Sidebar: Curriculum (3 Columns) -->
+<aside class="lg:col-span-3 bg-surface-container-low border-r border-outline-variant flex flex-col h-[calc(100vh-80px)]">
+<div class="p-6 border-b border-outline-variant">
+<h3 class="font-headline-sm text-primary mb-4">محتوى الدورة</h3>
+<div class="space-y-2">
+<div class="flex justify-between items-center text-label-md mb-1">
+<span class="text-on-surface-variant">التقدم الإجمالي</span>
+<span class="text-primary font-bold">40% مكتمل</span>
+</div>
+<div class="h-2 bg-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary transition-all duration-700" style="width: 40%"></div>
+</div>
+</div>
+</div>
+<div class="flex-grow overflow-y-auto custom-scrollbar p-4 space-y-6">
+<!-- Module 1 -->
+<div>
+<button class="flex items-center justify-between w-full mb-3 group">
+<span class="font-label-md font-bold text-on-surface">الوحدة 1: المادة وتركيبها</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">expand_more</span>
+</button>
+<div class="space-y-2">
+<!-- Lesson 1 (Completed) -->
+<div class="p-3 bg-white/50 rounded-xl flex items-center gap-3 border border-transparent hover:border-outline-variant transition-all cursor-pointer group">
+<div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex-grow">
+<p class="text-label-md text-on-surface group-hover:text-primary transition-colors">1. بنية الذرة</p>
+<p class="text-caption text-on-surface-variant">15:00</p>
+</div>
+</div>
+<!-- Lesson 2 (Active) -->
+<div class="p-3 bg-primary-container text-on-primary-container rounded-xl flex items-center gap-3 shadow-md transform scale-[1.02] border border-primary/20">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center animate-pulse">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+<div class="flex-grow">
+<p class="text-label-md font-bold">2. الجزيئات والروابط</p>
+<p class="text-caption opacity-80">30:00 • جاري المشاهدة</p>
+</div>
+</div>
+<!-- Lesson 3 (Upcoming) -->
+<div class="p-3 bg-white/20 rounded-xl flex items-center gap-3 border border-transparent hover:border-outline-variant transition-all cursor-pointer group opacity-60">
+<div class="w-8 h-8 rounded-full bg-outline-variant text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+</div>
+<div class="flex-grow">
+<p class="text-label-md text-on-surface group-hover:text-primary transition-colors">3. الحالات الفيزيائية</p>
+<p class="text-caption text-on-surface-variant">22:00</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Module 2 -->
+<div class="pt-2">
+<button class="flex items-center justify-between w-full mb-3 group opacity-50">
+<span class="font-label-md font-bold text-on-surface">الوحدة 2: التفاعلات الكيميائية</span>
+<span class="material-symbols-outlined text-on-surface-variant">lock</span>
+</button>
+<div class="space-y-2">
+<div class="p-3 rounded-xl flex items-center gap-3 border border-dashed border-outline-variant/50 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">circle</span>
+<span class="text-label-md">أنواع التفاعلات</span>
+</div>
+<div class="p-3 rounded-xl flex items-center gap-3 border border-dashed border-outline-variant/50 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">circle</span>
+<span class="text-label-md">موازنة المعادلات</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sidebar Footer CTA -->
+<div class="p-4 border-t border-outline-variant bg-surface-container">
+<button class="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white border border-outline-variant text-primary font-label-md hover:bg-primary-container/10 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-[20px]">assignment</span>
+                    اختبار الوحدة الأولى
+                </button>
+</div>
+</aside>
+</main>
+<!-- Simple Footer (Mobile only/Responsive context) -->
+<footer class="w-full mt-auto bg-primary dark:bg-primary-container text-on-primary dark:text-on-primary-container">
+<div class="flex flex-col md:flex-row-reverse justify-between items-center px-6 py-4 w-full text-caption">
+<div class="flex flex-row-reverse gap-4 mb-2 md:mb-0">
+<a class="hover:text-white transition-opacity" href="#">اتصل بنا</a>
+<a class="hover:text-white transition-opacity" href="#">سياسة الخصوصية</a>
+<a class="hover:text-white transition-opacity" href="#">شروط الاستخدام</a>
+</div>
+<p dir="ltr">© 2024 مختبر العلوم الرقمي. جميع الحقوق محفوظة</p>
+</div>
+</footer>
+<script>
+        function switchTab(tabId) {
+            // Hide all contents
+            document.getElementById('content-overview').classList.add('hidden');
+            document.getElementById('content-resources').classList.add('hidden');
+            document.getElementById('content-qa').classList.add('hidden');
+            
+            // Deactivate all tabs
+            const tabs = ['overview', 'resources', 'qa'];
+            tabs.forEach(id => {
+                const tab = document.getElementById('tab-' + id);
+                tab.classList.remove('border-primary', 'text-primary');
+                tab.classList.add('border-transparent', 'text-on-surface-variant');
+            });
+            
+            // Show active content and tab
+            document.getElementById('content-' + tabId).classList.remove('hidden');
+            const activeTab = document.getElementById('tab-' + tabId);
+            activeTab.classList.add('border-primary', 'text-primary');
+            activeTab.classList.remove('border-transparent', 'text-on-surface-variant');
+        }
+
+        // Micro-interaction for sidebar items
+        document.querySelectorAll('.cursor-pointer').forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                // Subtle feedback handled via Tailwind
+            });
+        });
+    </script>
+</body></html>

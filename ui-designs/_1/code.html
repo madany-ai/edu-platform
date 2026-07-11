@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>مختبر العلوم - تفاصيل الدورة</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#004d40",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#00201a",
+                        "tertiary": "#19303b",
+                        "surface-container-highest": "#e0e3e6",
+                        "on-surface": "#191c1e",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#94d3c1",
+                        "secondary-fixed": "#9cf0ff",
+                        "tertiary-fixed-dim": "#b1cad7",
+                        "inverse-surface": "#2d3133",
+                        "primary-fixed": "#afefdd",
+                        "tertiary-fixed": "#cde6f4",
+                        "secondary-fixed-dim": "#00daf3",
+                        "on-secondary-container": "#00616d",
+                        "surface-bright": "#f7f9fc",
+                        "surface-variant": "#e0e3e6",
+                        "on-secondary-fixed-variant": "#004f58",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#e6e8eb",
+                        "tertiary-container": "#304751",
+                        "secondary": "#006875",
+                        "on-error": "#ffffff",
+                        "surface-container": "#eceef1",
+                        "outline-variant": "#bfc9c4",
+                        "surface-dim": "#d8dadd",
+                        "on-background": "#191c1e",
+                        "primary": "#00342b",
+                        "error-container": "#ffdad6",
+                        "on-surface-variant": "#3f4945",
+                        "on-secondary-fixed": "#001f24",
+                        "surface-container-lowest": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#334a55",
+                        "on-tertiary-container": "#9cb5c1",
+                        "inverse-on-surface": "#eff1f4",
+                        "surface-tint": "#29695b",
+                        "on-primary-fixed-variant": "#065043",
+                        "surface-container-low": "#f2f4f7",
+                        "outline": "#707975",
+                        "surface": "#f7f9fc",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#051e28",
+                        "inverse-primary": "#94d3c1",
+                        "secondary-container": "#00e3fd",
+                        "on-primary-container": "#7ebdac",
+                        "background": "#f7f9fc"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-padding": "64px",
+                        "gutter": "20px",
+                        "base": "8px",
+                        "card-padding": "24px",
+                        "container-margin": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["IBM Plex Sans"],
+                        "headline-lg": ["IBM Plex Sans"],
+                        "headline-lg-mobile": ["IBM Plex Sans"],
+                        "headline-md": ["IBM Plex Sans"],
+                        "body-lg": ["IBM Plex Sans"],
+                        "body-md": ["IBM Plex Sans"],
+                        "caption": ["IBM Plex Sans"],
+                        "label-md": ["IBM Plex Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.02em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at 70% 30%, #afefdd33 0%, transparent 50%), 
+                        radial-gradient(circle at 10% 80%, #9cf0ff22 0%, transparent 40%);
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/30 dark:border-outline-variant/30 shadow-sm">
+<div class="flex flex-row-reverse justify-between items-center px-gutter py-4 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">مختبر العلوم</span>
+</div>
+<div class="hidden md:flex flex-row-reverse gap-8 items-center">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary font-body-md text-body-md transition-all" href="#">الرئيسية</a>
+<a class="text-primary dark:text-secondary-fixed-dim font-bold border-b-2 border-primary pb-1 font-body-md text-body-md transition-all" href="#">الدورات</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary font-body-md text-body-md transition-all" href="#">عن المنصة</a>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-full font-label-md hover:opacity-90 active:scale-95 transition-all">تسجيل الدخول</button>
+</div>
+<div class="flex items-center gap-2 md:hidden">
+<span class="material-symbols-outlined text-primary text-3xl">menu</span>
+</div>
+</div>
+</nav>
+<main class="pt-24 pb-section-padding">
+<!-- Hero Section -->
+<section class="relative overflow-hidden hero-gradient">
+<div class="max-w-7xl mx-auto px-gutter py-12 md:py-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+<div class="lg:col-span-7 space-y-6">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-primary-container/10 text-primary rounded-full font-label-md">
+<span class="material-symbols-outlined text-sm">science</span>
+<span>المرحلة الإعدادية - الصف الأول</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-primary leading-tight">الكيمياء للمرحلة الإعدادية الأولى</h1>
+<p class="text-on-surface-variant font-body-lg text-body-lg max-w-2xl">
+                        رحلة استكشافية في عالم الذرات والجزيئات. تعلّم أساسيات المادة وتفاعلاتها من خلال تجارب افتراضية متطورة وشرح مبسط يجعلك متفوقاً في دراستك.
+                    </p>
+<div class="flex flex-wrap gap-4 pt-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary">schedule</span>
+<span class="font-label-md">24 ساعة تعليمية</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary">group</span>
+<span class="font-label-md">1500+ طالب مشترك</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary">star</span>
+<span class="font-label-md">4.9 (230 تقييم)</span>
+</div>
+</div>
+</div>
+<div class="lg:col-span-5 relative group">
+<div class="absolute -inset-4 bg-primary-fixed/20 blur-3xl rounded-full opacity-50 group-hover:opacity-70 transition-opacity"></div>
+<div class="relative rounded-3xl overflow-hidden shadow-2xl glass-panel p-2">
+<img class="w-full aspect-video object-cover rounded-2xl" data-alt="A high-tech digital laboratory illustration with glowing blue chemical structures, test tubes, and 3D molecular models floating in a clean, professional space. The lighting is bright and modern with soft cyan and teal accents, creating a sense of scientific wonder and academic excellence in a minimalist, corporate UI style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmX34lf2YdwPIrrUfcN0gPLZzwvFCb07uKM9Hll_x_kCXgdAUHG932ZIWm9zOzhC7i9eelVWifG3ucn7WZbGnRPL7UFNvkhfEuj9A2pKubhA3LgECZb2eoxNx6xL9uofxxw8Bn8TYSq-yHe_ZPKqV9l-xmkgbV5neDFRnvF6cxDL7JLRByaPSn7fZE41qzPPDiyLT-QnuIzmi7VxekH3sp-99NOqN96E3nZWEl2gujnUQnHukhgLijbw"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<button class="w-20 h-20 bg-primary/90 text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 transition-transform backdrop-blur-md">
+<span class="material-symbols-outlined text-4xl mr-1" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Content Grid -->
+<section class="max-w-7xl mx-auto px-gutter mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+<!-- Main Content Area -->
+<div class="lg:col-span-2 space-y-12">
+<!-- About Course -->
+<div class="glass-panel p-card-padding rounded-3xl space-y-6">
+<h2 class="font-headline-md text-headline-md text-primary flex items-center gap-3">
+<span class="material-symbols-outlined">info</span>
+                        عن الدورة
+                    </h2>
+<p class="text-on-surface-variant leading-relaxed">
+                        تهدف هذه الدورة إلى تزويد الطالب بالفهم العميق للمفاهيم الكيميائية الأساسية. سنغطي موضوعات المادة وخصائصها، التركيب الذري، والتفاعلات الكيميائية بطريقة تفاعلية تعتمد على "مختبر العلوم الرقمي" الخاص بنا. الدورة مصممة خصيصاً لتناسب المنهج الدراسي مع إضافة لمسات إبداعية تحفز التفكير النقدي.
+                    </p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+<h3 class="col-span-full font-label-md text-primary font-bold">ماذا ستتعلم في هذه الدورة؟</h3>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<span class="text-on-surface-variant">فهم تركيب الذرة ومستويات الطاقة</span>
+</div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<span class="text-on-surface-variant">تصنيف العناصر والمواد الكيميائية</span>
+</div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<span class="text-on-surface-variant">القدرة على إجراء تجارب افتراضية بأمان</span>
+</div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<span class="text-on-surface-variant">حل المسائل الكيميائية المعقدة ببساطة</span>
+</div>
+</div>
+</div>
+<!-- Syllabus Accordion -->
+<div class="space-y-4">
+<h2 class="font-headline-md text-headline-md text-primary px-2">منهج الدورة</h2>
+<div class="space-y-3">
+<details class="group glass-panel rounded-2xl" open="">
+<summary class="flex items-center justify-between p-4 cursor-pointer list-none">
+<div class="flex items-center gap-4">
+<span class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">01</span>
+<span class="font-headline-sm text-on-surface font-semibold">المادة وتركيبها</span>
+</div>
+<span class="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="p-4 pt-0 border-t border-outline-variant/20 space-y-3 mt-2">
+<div class="flex items-center justify-between py-2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-sm">description</span>
+<span>الدرس الأول: المادة وخواصها</span>
+</div>
+<span class="text-caption">15:00 دقيقة</span>
+</div>
+<div class="flex items-center justify-between py-2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-sm">play_circle</span>
+<span>الدرس الثاني: التركيب الذري للمادة</span>
+</div>
+<span class="text-caption">22:00 دقيقة</span>
+</div>
+<div class="flex items-center justify-between py-2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-sm">quiz</span>
+<span>اختبار الوحدة الأولى</span>
+</div>
+<span class="text-caption">10 أسئلة</span>
+</div>
+</div>
+</details>
+<details class="group glass-panel rounded-2xl">
+<summary class="flex items-center justify-between p-4 cursor-pointer list-none">
+<div class="flex items-center gap-4">
+<span class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">02</span>
+<span class="font-headline-sm text-on-surface font-semibold">الطاقة</span>
+</div>
+<span class="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="p-4 pt-0 border-t border-outline-variant/20 space-y-3 mt-2">
+<div class="flex items-center justify-between py-2 text-on-surface-variant">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-sm">play_circle</span>
+<span>الدرس الأول: الطاقة ومصادرها</span>
+</div>
+<span class="text-caption">18:00 دقيقة</span>
+</div>
+</div>
+</details>
+</div>
+</div>
+<!-- Teacher Profile -->
+<div class="glass-panel p-card-padding rounded-3xl flex flex-col md:flex-row gap-8 items-center">
+<div class="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg shrink-0">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a male chemistry teacher in a clean white laboratory coat, smiling warmly. He has a friendly and approachable academic appearance, set against a blurred background of a modern scientific research lab with soft teal lighting. High-end professional corporate headshot style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpyZh3uSLuWnZTED4zDCDdbyJLB5pO61eBj33Nt_Qas_3gjBSFu-6fXUDsy0hdvMqROQyZ5LOAB0RzLkSeI5bPCxWgzI-6NIcZiUxBO-XtE8rczUbPDFSr5t_XcCJj2XRXVO_KiKG3k0IF-rThk_uTuT6I1htPHBKR1oqpGCVg_6gd05Dh4zAiBEjC0GTvKLUTvnQE0MMG70uO6MFGizI9c2TFj41yGB-bT8BhbfLWJmzAWSdDuqa2TA"/>
+</div>
+<div class="space-y-3 text-center md:text-right">
+<div class="flex flex-col md:flex-row md:items-center gap-2">
+<h3 class="font-headline-md text-headline-md text-primary">أ/ محمد العالِم</h3>
+<span class="px-3 py-1 bg-secondary-container/20 text-on-secondary-container rounded-full text-caption">خبير الكيمياء</span>
+</div>
+<p class="text-on-surface-variant">
+                            معلم أول كيمياء بخبرة تزيد عن 10 سنوات في تبسيط العلوم للمرحلة الإعدادية. حاصل على ماجستير في طرق التدريس الحديثة ومبتكر منهج "المختبر التفاعلي".
+                        </p>
+<div class="flex justify-center md:justify-start gap-4">
+<button class="text-primary hover:underline font-label-md">عرض جميع الدورات</button>
+<div class="w-px h-4 bg-outline-variant self-center"></div>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">star</span>
+<span class="text-caption">4.9 تقييم المعلم</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Pricing Box -->
+<aside class="lg:sticky lg:top-28 space-y-6">
+<div class="bg-primary text-on-primary rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+<div class="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+<div class="relative z-10 space-y-6">
+<div>
+<span class="text-on-primary/70 line-through text-lg">450 ج.م</span>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-bold">299</span>
+<span class="text-xl">جنية مصري</span>
+</div>
+<p class="text-primary-fixed text-caption mt-1">عرض محدود لفترة بداية الفصل الدراسي</p>
+</div>
+<button class="w-full py-4 bg-secondary-container text-on-secondary-container font-headline-md rounded-2xl hover:brightness-110 active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2">
+<span>اشترك الآن</span>
+<span class="material-symbols-outlined">rocket_launch</span>
+</button>
+<div class="space-y-4 pt-4 border-t border-white/20">
+<p class="font-bold text-lg">مميزات الاشتراك:</p>
+<ul class="space-y-3">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-fixed">picture_as_pdf</span>
+<span class="text-sm">مذكرات PDF شاملة لكل درس</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-fixed">quiz</span>
+<span class="text-sm">اختبارات دورية وتصحيح تلقائي</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-fixed">videocam</span>
+<span class="text-sm">حصص مسجلة بجودة عالية</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-fixed">forum</span>
+<span class="text-sm">تواصل مباشر مع المعلم</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-fixed">workspace_premium</span>
+<span class="text-sm">شهادة إتمام معتمدة من المنصة</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-3xl border-dashed border-2 border-primary/20">
+<h4 class="font-label-md font-bold text-primary mb-2">هل لديك استفسار؟</h4>
+<p class="text-caption text-on-surface-variant mb-4">فريق الدعم الفني متاح للرد على جميع تساؤلاتك حول الدورة.</p>
+<button class="w-full py-2 border border-primary text-primary rounded-xl hover:bg-primary/5 transition-colors text-sm font-bold flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">chat</span>
+                        تواصل معنا
+                    </button>
+</div>
+</aside>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-primary dark:bg-primary-container text-on-primary dark:text-on-primary-container w-full mt-auto">
+<div class="flex flex-col md:flex-row-reverse justify-between items-center px-section-padding py-8 w-full max-w-7xl mx-auto">
+<div class="flex flex-col items-center md:items-end gap-2">
+<span class="font-headline-md text-headline-md text-on-primary">مختبر العلوم</span>
+<p class="font-caption text-caption text-on-primary/80">© 2024 مختبر العلوم الرقمي. جميع الحقوق محفوظة</p>
+</div>
+<div class="flex gap-8 mt-6 md:mt-0">
+<a class="text-on-primary/80 hover:text-white font-caption text-caption transition-opacity" href="#">اتصل بنا</a>
+<a class="text-on-primary/80 hover:text-white font-caption text-caption transition-opacity" href="#">سياسة الخصوصية</a>
+<a class="text-on-primary/80 hover:text-white font-caption text-caption transition-opacity" href="#">شروط الاستخدام</a>
+<a class="text-on-primary/80 hover:text-white font-caption text-caption transition-opacity" href="#">الأسئلة الشائعة</a>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interactions and subtle effects
+        document.querySelectorAll('details').forEach((detail) => {
+            detail.addEventListener('toggle', () => {
+                if (detail.open) {
+                    detail.classList.add('shadow-md');
+                } else {
+                    detail.classList.remove('shadow-md');
+                }
+            });
+        });
+
+        // Hover effect for the pricing card
+        const pricingCard = document.querySelector('aside .bg-primary');
+        pricingCard.addEventListener('mousemove', (e) => {
+            const rect = pricingCard.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            pricingCard.style.setProperty('--mouse-x', `${x}px`);
+            pricingCard.style.setProperty('--mouse-y', `${y}px`);
+        });
+    </script>
+</body></html>

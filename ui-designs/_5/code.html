@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>مختبر العلوم - الدورات الدراسية</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#004d40",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed": "#00201a",
+                    "tertiary": "#19303b",
+                    "surface-container-highest": "#e0e3e6",
+                    "on-surface": "#191c1e",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#94d3c1",
+                    "secondary-fixed": "#9cf0ff",
+                    "tertiary-fixed-dim": "#b1cad7",
+                    "inverse-surface": "#2d3133",
+                    "primary-fixed": "#afefdd",
+                    "tertiary-fixed": "#cde6f4",
+                    "secondary-fixed-dim": "#00daf3",
+                    "on-secondary-container": "#00616d",
+                    "surface-bright": "#f7f9fc",
+                    "surface-variant": "#e0e3e6",
+                    "on-secondary-fixed-variant": "#004f58",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#e6e8eb",
+                    "tertiary-container": "#304751",
+                    "secondary": "#006875",
+                    "on-error": "#ffffff",
+                    "surface-container": "#eceef1",
+                    "outline-variant": "#bfc9c4",
+                    "surface-dim": "#d8dadd",
+                    "on-background": "#191c1e",
+                    "primary": "#00342b",
+                    "error-container": "#ffdad6",
+                    "on-surface-variant": "#3f4945",
+                    "on-secondary-fixed": "#001f24",
+                    "surface-container-lowest": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed-variant": "#334a55",
+                    "on-tertiary-container": "#9cb5c1",
+                    "inverse-on-surface": "#eff1f4",
+                    "surface-tint": "#29695b",
+                    "on-primary-fixed-variant": "#065043",
+                    "surface-container-low": "#f2f4f7",
+                    "outline": "#707975",
+                    "surface": "#f7f9fc",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed": "#051e28",
+                    "inverse-primary": "#94d3c1",
+                    "secondary-container": "#00e3fd",
+                    "on-primary-container": "#7ebdac",
+                    "background": "#f7f9fc"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-padding": "64px",
+                    "gutter": "20px",
+                    "base": "8px",
+                    "card-padding": "24px",
+                    "container-margin": "24px"
+            },
+            "fontFamily": {
+                    "display-lg": ["IBM Plex Sans"],
+                    "headline-lg": ["IBM Plex Sans"],
+                    "headline-lg-mobile": ["IBM Plex Sans"],
+                    "headline-md": ["IBM Plex Sans"],
+                    "body-lg": ["IBM Plex Sans"],
+                    "body-md": ["IBM Plex Sans"],
+                    "caption": ["IBM Plex Sans"],
+                    "label-md": ["IBM Plex Sans"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.02em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        font-family: 'IBM Plex Sans', sans-serif;
+        background-color: #f7f9fc;
+        color: #191c1e;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+      }
+      .glass-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 10px 30px -5px rgba(0, 77, 64, 0.1);
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .active-chip {
+        background-color: #004d40;
+        color: #ffffff;
+      }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-b border-white/30 shadow-sm">
+<div class="flex flex-row-reverse justify-between items-center px-gutter py-4 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-bold text-primary">مختبر العلوم</span>
+</div>
+<nav class="hidden md:flex flex-row-reverse items-center gap-8 font-body-md text-body-md">
+<a class="text-on-surface-variant hover:text-primary transition-all" href="#">الرئيسية</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 transition-all" href="#">الدورات</a>
+<a class="text-on-surface-variant hover:text-primary transition-all" href="#">عن المنصة</a>
+<a class="px-6 py-2 bg-primary text-white rounded-full active:scale-95 transition-transform" href="#">تسجيل الدخول</a>
+</nav>
+<button class="md:hidden text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</header>
+<main class="mt-24 mb-16 flex-grow container mx-auto px-container-margin max-w-7xl">
+<!-- Header Section -->
+<section class="mb-12 text-center md:text-right">
+<h1 class="font-display-lg text-display-lg text-primary mb-4">استكشف عالم العلوم</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">اختر من بين مجموعة واسعة من الدورات التفاعلية المصممة خصيصاً لطلاب المرحلة الإعدادية.</p>
+</section>
+<!-- Search & Filter Bar -->
+<section class="mb-12 space-y-6">
+<div class="flex flex-col md:flex-row-reverse gap-4 items-center justify-between">
+<!-- Search -->
+<div class="relative w-full md:w-1/3">
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined">search</span>
+<input class="w-full pr-12 pl-4 py-3 bg-surface-container-low border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-body-md" placeholder="ابحث عن موضوع (كيمياء، فيزياء...)" type="text"/>
+</div>
+<!-- Grade Filters -->
+<div class="flex flex-wrap gap-2 justify-center md:justify-start">
+<button class="px-6 py-2 rounded-full border border-outline-variant hover:bg-primary-container/10 transition-all font-label-md text-label-md active-chip">الكل</button>
+<button class="px-6 py-2 rounded-full border border-outline-variant hover:bg-primary-container/10 transition-all font-label-md text-label-md">الصف الأول الإعدادي</button>
+<button class="px-6 py-2 rounded-full border border-outline-variant hover:bg-primary-container/10 transition-all font-label-md text-label-md">الصف الثاني الإعدادي</button>
+<button class="px-6 py-2 rounded-full border border-outline-variant hover:bg-primary-container/10 transition-all font-label-md text-label-md">الصف الثالث الإعدادي</button>
+</div>
+</div>
+<!-- Subject Chips -->
+<div class="flex flex-wrap gap-3">
+<span class="px-4 py-1.5 bg-secondary-container/30 text-on-secondary-container rounded-lg font-label-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">science</span> كيمياء
+                </span>
+<span class="px-4 py-1.5 bg-secondary-container/30 text-on-secondary-container rounded-lg font-label-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">bolt</span> فيزياء
+                </span>
+<span class="px-4 py-1.5 bg-secondary-container/30 text-on-secondary-container rounded-lg font-label-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">biotech</span> أحياء
+                </span>
+<span class="px-4 py-1.5 bg-secondary-container/30 text-on-secondary-container rounded-lg font-label-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">public</span> علوم الأرض
+                </span>
+</div>
+</section>
+<!-- Courses Grid (Bento Style Variation) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Course Card 1 -->
+<div class="glass-card rounded-2xl overflow-hidden flex flex-col h-full group">
+<div class="relative h-48">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="A high-tech digital illustration of atoms and molecular structures in a vibrant deep teal and cyan palette. The scene is bright and airy with glassmorphism overlays and soft white lighting, suggesting a professional science laboratory atmosphere for middle school students." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDleVdtOfjNYn9fvahAo9yNJlg6N-dZxB1PRWaRJSZNIwNHLEp7MbG9LaQEnSa--Z8iylsPBtjuaKKI8rje0lS_jjgNHLLb2Byv4nnWlu0BGvqnKXvMb7YuaFATVITdiD1PefOzJ3GXKqtprxpq-CMNLJWwYDxN6UVeoU_SzRn2JsUkBeKlwaQwV2bZUq5i2mgay5Txwv1K13h42gdIyNwKpCFj3pxV-dDkMlLz4A2Hn94NITJ4hdL_WA')"></div>
+<div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-caption font-bold shadow-lg">الأكثر طلباً</div>
+</div>
+<div class="p-card-padding flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-3">
+<span class="text-secondary font-label-md">كيمياء • الصف الأول</span>
+<div class="flex items-center text-primary">
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="text-label-md font-bold mr-1">4.9</span>
+</div>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3">أساسيات التفاعلات الكيميائية</h3>
+<p class="text-on-surface-variant font-body-md mb-6 line-clamp-2">رحلة استكشافية في عالم الذرات والجزيئات، نفهم من خلالها كيف تتشكل المادة من حولنا.</p>
+<div class="mt-auto space-y-4">
+<div class="flex justify-between items-center text-on-surface-variant font-label-md">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+<span>12 ساعة</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span>24 درس</span>
+</div>
+</div>
+<hr class="border-outline-variant/30"/>
+<div class="flex justify-between items-center">
+<span class="font-headline-md text-headline-md text-primary">450 ج.م</span>
+<button class="bg-primary hover:bg-primary-container text-white px-6 py-2 rounded-xl transition-colors font-label-md">اشترك الآن</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Course Card 2 -->
+<div class="glass-card rounded-2xl overflow-hidden flex flex-col h-full group">
+<div class="relative h-48">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="A macro 3D render of a biological cell with glowing organelles like mitochondria and nucleus. The aesthetic is clean and high-end, utilizing a palette of soft teal, light blue, and crisp whites. The lighting is diffused, highlighting the transparency and glassy textures of the microscopic scene." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDjIYAaLDBK6fvpRzXLMH3EfZxQARpz6y6x7LnSpwub_2kEknkyYoU-l3n_MnttWKvkZxnd6QouAjCsUfCo51aaClaMHTk0QWawKLFVe-bR3tQR6QzGvZFbHtJjQoXguXV9s3eB0HhbcWifiUxzO1fFzLV0mAcuGSTUw89WhxVfZFtrhVa3LhuyU1nNd1OSbVp5zmkWyM8IosjeE0R36TMUfBtXO40D7ruDs1HzPF3m0Ocwwl_3dP8soA')"></div>
+<div class="absolute top-4 right-4 bg-secondary text-white px-3 py-1 rounded-full text-caption font-bold shadow-lg">متاح الآن</div>
+</div>
+<div class="p-card-padding flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-3">
+<span class="text-secondary font-label-md">أحياء • الصف الثاني</span>
+<div class="flex items-center text-primary">
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="text-label-md font-bold mr-1">4.8</span>
+</div>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3">أسرار الخلية الحية</h3>
+<p class="text-on-surface-variant font-body-md mb-6 line-clamp-2">تعرف على لبنة بناء الحياة، وكيف تعمل الأجهزة الحيوية داخل أجسامنا بدقة مذهلة.</p>
+<div class="mt-auto space-y-4">
+<div class="flex justify-between items-center text-on-surface-variant font-label-md">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+<span>10 ساعات</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span>18 درس</span>
+</div>
+</div>
+<hr class="border-outline-variant/30"/>
+<div class="flex justify-between items-center">
+<span class="font-headline-md text-headline-md text-primary">380 ج.م</span>
+<button class="bg-primary hover:bg-primary-container text-white px-6 py-2 rounded-xl transition-colors font-label-md">اشترك الآن</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Course Card 3 -->
+<div class="glass-card rounded-2xl overflow-hidden flex flex-col h-full group">
+<div class="relative h-48">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="A dynamic physics concept visualization showing glowing electrical currents and magnetic field lines flowing through a modern device. The design is sleek and technical, with a cool-toned palette of deep teal, electric cyan, and white highlights, maintaining a professional academic yet exciting visual style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuASYXZQjmd0GhwHKlJT6CBszr28cBetKVf0Atzg6xm9TmQXoCfFodroBj9t-WLyrKioNseMrrQBwSL64KX4eY6xdPYByiRE-iBo6PYcLI4XQL-TeQ6XmkK9JE8XKLh8cbSTaKkvrZDqJSGXXkaMzPrIEw1bYJqnPgKBh3iOqhCnD8eSqH3g64BQpdVxCHym6Y1shf7CquVrG6sH7lCOLCP2hDehJhHXarm9Y2WaeMJPpSQo6pLptxMcuA')"></div>
+</div>
+<div class="p-card-padding flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-3">
+<span class="text-secondary font-label-md">فيزياء • الصف الثالث</span>
+<div class="flex items-center text-primary">
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="text-label-md font-bold mr-1">5.0</span>
+</div>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3">القوى والحركة والمغناطيسية</h3>
+<p class="text-on-surface-variant font-body-md mb-6 line-clamp-2">استكشاف القوانين الفيزيائية التي تحكم الكون، من حركة التفاحة وحتى دوران الكواكب.</p>
+<div class="mt-auto space-y-4">
+<div class="flex justify-between items-center text-on-surface-variant font-label-md">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+<span>15 ساعة</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span>30 درس</span>
+</div>
+</div>
+<hr class="border-outline-variant/30"/>
+<div class="flex justify-between items-center">
+<span class="font-headline-md text-headline-md text-primary">520 ج.م</span>
+<button class="bg-primary hover:bg-primary-container text-white px-6 py-2 rounded-xl transition-colors font-label-md">اشترك الآن</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Course Card 4 -->
+<div class="glass-card rounded-2xl overflow-hidden flex flex-col h-full group">
+<div class="relative h-48">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="A stunning 3D model of Earth's layers and tectonic plate movements, viewed from a slightly elevated scientific perspective. The visual style is high-contrast and professional, featuring glowing lava effects against deep teal oceanic crusts, with a clean and airy laboratory aesthetic overall." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCyTREKvu4e9eE01AExrHF2U3SpgMK7MryOj3FeuN-gvjU5lTabhipgZeyqStJl8UEA7mPFOV_c-yR3-qfb93pOMKR8RIWhf2FLqDC7Fk1eqtcLB8p2eSOUk7ob9tLzXRQ8SBTuy0I1xF5epm4-R7mXGJN_p2LpAZA--amxvis2DVBWmtpWbdEOKessp_9EjpaF3SpnU4goZfoofqZLetnaHzRem71bdgoc5nx0jWUVm_iXkUg4T80DEw')"></div>
+<div class="absolute top-4 right-4 bg-tertiary-container text-white px-3 py-1 rounded-full text-caption font-bold shadow-lg">دورة جديدة</div>
+</div>
+<div class="p-card-padding flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-3">
+<span class="text-secondary font-label-md">جيولوجيا • الصف الأول</span>
+<div class="flex items-center text-primary">
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="text-label-md font-bold mr-1">4.7</span>
+</div>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3">بنية الأرض والظواهر الطبيعية</h3>
+<p class="text-on-surface-variant font-body-md mb-6 line-clamp-2">اكتشف ما يكمن تحت أقدامنا، وكيف تشكلت الجبال والبحار عبر ملايين السنين.</p>
+<div class="mt-auto space-y-4">
+<div class="flex justify-between items-center text-on-surface-variant font-label-md">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+<span>8 ساعات</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span>15 درس</span>
+</div>
+</div>
+<hr class="border-outline-variant/30"/>
+<div class="flex justify-between items-center">
+<span class="font-headline-md text-headline-md text-primary">320 ج.م</span>
+<button class="bg-primary hover:bg-primary-container text-white px-6 py-2 rounded-xl transition-colors font-label-md">اشترك الآن</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Course Card 5 -->
+<div class="glass-card rounded-2xl overflow-hidden flex flex-col h-full group">
+<div class="relative h-48">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="A futuristic laboratory setup with glowing test tubes and a holographic display showing chemical formulas. The lighting is crisp and cool, featuring vibrant cyan and primary teal shades against a minimalist white background. The scene feels clean, modern, and highly academic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBkwB2TARzbY7HBGVS0LrBxoNkQVOGBaiEdbhYnEniIii0ro4pT-0do5rdQYDrpVH_R_wxvV0HSHMGd4rcxTZo4twy2COBfn2EmZFS4t_TulfnL6QbYFi4kdLZUx5PThCH-KAKK5F8xRbRyw-g8Th-ZXvhpPJtWctyKI1nYiKmispAItdxUN63MwR4zunFX-x2HvOO6ll60FdZPScnr9obJ0eopNuIXF-_6Tt_QUbIgqHoHKkutf9ZQ3A')"></div>
+</div>
+<div class="p-card-padding flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-3">
+<span class="text-secondary font-label-md">كيمياء • الصف الثالث</span>
+<div class="flex items-center text-primary">
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="text-label-md font-bold mr-1">4.9</span>
+</div>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3">التحليل الكيميائي والمعادلات</h3>
+<p class="text-on-surface-variant font-body-md mb-6 line-clamp-2">إتقان مهارات حل المعادلات الكيميائية المعقدة وفهم مبادئ التحليل في المختبر.</p>
+<div class="mt-auto space-y-4">
+<div class="flex justify-between items-center text-on-surface-variant font-label-md">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+<span>14 ساعة</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span>28 درس</span>
+</div>
+</div>
+<hr class="border-outline-variant/30"/>
+<div class="flex justify-between items-center">
+<span class="font-headline-md text-headline-md text-primary">480 ج.م</span>
+<button class="bg-primary hover:bg-primary-container text-white px-6 py-2 rounded-xl transition-colors font-label-md">اشترك الآن</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Course Card 6 -->
+<div class="glass-card rounded-2xl overflow-hidden flex flex-col h-full group">
+<div class="relative h-48">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="A detailed 3D scientific rendering of a DNA double helix illuminated with soft cyan light, set against a dark teal and frosted glass background. The aesthetic is clean, sophisticated, and highly technological, representing modern genetics and biology for students." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCuWe0RNRLmvAmIFuz-57MdkRVabO6sfo6ru9SfFJ1IdVcKsmo8LhfmnMbKRzO_vDBsKGBXWvLHML0MktZ8GnfMen6qQBxX1Ft4XzHd8LUQfQxNmIGbZlZ7YV7SUmNw4iaZaHOvtM2iRhBTrfBeT7iOm2gszXdo-8arOE_sJmR791569YIIEUXKhxmdbdlsHyCdG0zl28B3YTPJfAbHNIsfbR3iMuiZYFgIs5Ns7CT201xijv2rKwxvgw')"></div>
+</div>
+<div class="p-card-padding flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-3">
+<span class="text-secondary font-label-md">أحياء • الصف الثالث</span>
+<div class="flex items-center text-primary">
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="text-label-md font-bold mr-1">4.9</span>
+</div>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3">مبادئ الوراثة والتطور</h3>
+<p class="text-on-surface-variant font-body-md mb-6 line-clamp-2">رحلة في تاريخ الوراثة، نفهم من خلالها كيف تنتقل الصفات عبر الأجيال وشفرة الـ DNA.</p>
+<div class="mt-auto space-y-4">
+<div class="flex justify-between items-center text-on-surface-variant font-label-md">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+<span>11 ساعة</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span>22 درس</span>
+</div>
+</div>
+<hr class="border-outline-variant/30"/>
+<div class="flex justify-between items-center">
+<span class="font-headline-md text-headline-md text-primary">410 ج.م</span>
+<button class="bg-primary hover:bg-primary-container text-white px-6 py-2 rounded-xl transition-colors font-label-md">اشترك الآن</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="mt-16 flex justify-center gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-primary hover:text-white transition-all"><span class="material-symbols-outlined">chevron_right</span></button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-primary hover:text-white transition-all">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-primary hover:text-white transition-all">3</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-primary hover:text-white transition-all"><span class="material-symbols-outlined">chevron_left</span></button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-auto bg-primary">
+<div class="flex flex-col md:flex-row-reverse justify-between items-center px-section-padding py-8 w-full max-w-7xl mx-auto">
+<div class="mb-6 md:mb-0">
+<span class="font-headline-md text-headline-md text-on-primary">مختبر العلوم</span>
+</div>
+<div class="flex flex-col md:flex-row-reverse items-center gap-6">
+<nav class="flex flex-row-reverse gap-6 font-caption text-caption">
+<a class="text-on-primary/80 hover:text-white transition-opacity" href="#">اتصل بنا</a>
+<a class="text-on-primary/80 hover:text-white transition-opacity" href="#">سياسة الخصوصية</a>
+<a class="text-on-primary/80 hover:text-white transition-opacity" href="#">شروط الاستخدام</a>
+<a class="text-on-primary/80 hover:text-white transition-opacity" href="#">الأسئلة الشائعة</a>
+</nav>
+<span class="text-on-primary/60 font-caption text-caption">© 2024 مختبر العلوم الرقمي. جميع الحقوق محفوظة</span>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interactions
+        const filterButtons = document.querySelectorAll('button.font-label-md');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => b.classList.remove('active-chip'));
+                btn.classList.add('active-chip');
+            });
+        });
+
+        // Search highlight interaction
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('scale-[1.02]');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('scale-[1.02]');
+        });
+    </script>
+</body></html>

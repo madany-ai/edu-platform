@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>مختبر العلوم | منصة تعلم العلوم الذكية</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#004d40",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed": "#00201a",
+                    "tertiary": "#19303b",
+                    "surface-container-highest": "#e0e3e6",
+                    "on-surface": "#191c1e",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#94d3c1",
+                    "secondary-fixed": "#9cf0ff",
+                    "tertiary-fixed-dim": "#b1cad7",
+                    "inverse-surface": "#2d3133",
+                    "primary-fixed": "#afefdd",
+                    "tertiary-fixed": "#cde6f4",
+                    "secondary-fixed-dim": "#00daf3",
+                    "on-secondary-container": "#00616d",
+                    "surface-bright": "#f7f9fc",
+                    "surface-variant": "#e0e3e6",
+                    "on-secondary-fixed-variant": "#004f58",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#e6e8eb",
+                    "tertiary-container": "#304751",
+                    "secondary": "#006875",
+                    "on-error": "#ffffff",
+                    "surface-container": "#eceef1",
+                    "outline-variant": "#bfc9c4",
+                    "surface-dim": "#d8dadd",
+                    "on-background": "#191c1e",
+                    "primary": "#00342b",
+                    "error-container": "#ffdad6",
+                    "on-surface-variant": "#3f4945",
+                    "on-secondary-fixed": "#001f24",
+                    "surface-container-lowest": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed-variant": "#334a55",
+                    "on-tertiary-container": "#9cb5c1",
+                    "inverse-on-surface": "#eff1f4",
+                    "surface-tint": "#29695b",
+                    "on-primary-fixed-variant": "#065043",
+                    "surface-container-low": "#f2f4f7",
+                    "outline": "#707975",
+                    "surface": "#f7f9fc",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed": "#051e28",
+                    "inverse-primary": "#94d3c1",
+                    "secondary-container": "#00e3fd",
+                    "on-primary-container": "#7ebdac",
+                    "background": "#f7f9fc"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-padding": "64px",
+                    "gutter": "20px",
+                    "base": "8px",
+                    "card-padding": "24px",
+                    "container-margin": "24px"
+            },
+            "fontFamily": {
+                    "body": ["IBM Plex Sans Arabic", "sans-serif"],
+                    "display-lg": ["IBM Plex Sans Arabic"],
+                    "headline-lg": ["IBM Plex Sans Arabic"],
+                    "headline-lg-mobile": ["IBM Plex Sans Arabic"],
+                    "headline-md": ["IBM Plex Sans Arabic"],
+                    "body-lg": ["IBM Plex Sans Arabic"],
+                    "body-md": ["IBM Plex Sans Arabic"],
+                    "caption": ["IBM Plex Sans Arabic"],
+                    "label-md": ["IBM Plex Sans Arabic"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.02em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at 50% 50%, rgba(148, 211, 193, 0.1) 0%, transparent 70%);
+        }
+        .vibrant-cyan-btn {
+            background: linear-gradient(135deg, #00daf3 0%, #006875 100%);
+            transition: all 0.3s ease;
+        }
+        .vibrant-cyan-btn:hover {
+            box-shadow: 0 4px 20px rgba(0, 218, 243, 0.4);
+            transform: translateY(-2px);
+        }
+        [dir="rtl"] .material-symbols-outlined {
+            transform: scaleX(1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-b border-white/30 shadow-sm">
+<div class="flex flex-row-reverse justify-between items-center px-gutter py-4 w-full max-w-7xl mx-auto">
+<!-- Brand Logo -->
+<div class="font-headline-md text-headline-md font-bold text-primary">مختبر العلوم</div>
+<!-- Desktop Navigation -->
+<div class="hidden md:flex flex-row-reverse items-center gap-8 font-body-md text-body-md">
+<a class="text-primary font-bold border-b-2 border-primary pb-1" href="#">الرئيسية</a>
+<a class="text-on-surface-variant hover:text-primary transition-all duration-300" href="#">الدورات</a>
+<a class="text-on-surface-variant hover:text-primary transition-all duration-300" href="#">عن المنصة</a>
+<a class="text-on-surface-variant hover:text-primary transition-all duration-300" href="#">تسجيل الدخول</a>
+<button class="vibrant-cyan-btn text-white px-6 py-2 rounded-full font-label-md">ابدأ الآن</button>
+</div>
+<!-- Mobile Menu Toggle -->
+<button class="md:hidden text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</nav>
+<!-- Hero Section -->
+<header class="relative pt-32 pb-20 overflow-hidden">
+<div class="absolute inset-0 z-0">
+
+</div>
+<div class="container mx-auto px-container-margin relative z-10">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<div class="text-right space-y-6">
+<span class="inline-block py-1 px-4 rounded-full bg-primary-fixed text-on-primary-fixed font-label-md">مرحباً بك في مستقبل التعليم</span>
+<h1 class="font-display-lg text-display-lg text-primary leading-tight">اكتشف روعة العلوم مع أفضل الخبراء</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">تعلم الكيمياء والفيزياء والأحياء بأسلوب تفاعلي حديث يحاكي المختبرات العالمية، مصمم خصيصاً لطلاب المرحلة الإعدادية.</p>
+<div class="flex flex-row-reverse gap-4 pt-4">
+<button class="vibrant-cyan-btn text-white px-8 py-4 rounded-xl font-headline-md shadow-lg active:scale-95 transform">ابدأ رحلة التعلم الآن</button>
+<button class="flex items-center gap-2 px-8 py-4 rounded-xl border border-primary text-primary hover:bg-primary/5 transition-all font-label-md">
+<span class="material-symbols-outlined">play_circle</span>
+                            شاهد العرض التجريبي
+                        </button>
+</div>
+</div>
+<div class="relative">
+<div class="relative z-10 glass rounded-3xl overflow-hidden shadow-2xl border-white/50 border">
+<img class="w-full aspect-square object-cover" data-alt="A professional Middle Eastern male science teacher wearing a modern navy lab coat, smiling confidently while demonstrating a chemical reaction with glowing blue fluid in a glass beaker. Beside him, two engaged middle school students, a boy and a girl, look on with curiosity. The setting is a high-tech laboratory with soft teal lighting, frosted glass surfaces, and holographic chemical structures floating in the background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQmM3qKfp4NmQJrlFqkx8JicdATcIcM47uhvjcm07A4K2XJgZZnOoAuFZdT9QO2_Ssn1mD1y1TtPTsG1HkFgwIoVtD0eyX_FiHHBETbpzpYbi8-JV4k9OeljLLDfAbfGjYaDZREq1tICyEp3O5hhc6AfM3LoU0KqS20bqEllO7dDM35f9YevuqUYM_BsVfhKDBxhrt6P0hnFGXF42_yOAUiCv_qFpNTlxS8fXDGje46q4Rk6Z9lAsaxA"/>
+</div>
+<!-- Decorative Elements -->
+<div class="absolute -top-6 -right-6 w-24 h-24 bg-secondary-fixed-dim rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+<div class="absolute -bottom-10 -left-10 w-40 h-40 bg-primary-fixed-dim rounded-full mix-blend-multiply filter blur-2xl opacity-60"></div>
+</div>
+</div>
+</div>
+</header>
+<!-- Why Choose Us - Interactive Icons -->
+<section class="py-section-padding bg-surface-container-low">
+<div class="container mx-auto px-container-margin">
+<div class="text-center mb-16">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-4">لماذا تختار مختبر العلوم؟</h2>
+<div class="w-20 h-1.5 bg-secondary-fixed-dim mx-auto rounded-full"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+<!-- Feature 1 -->
+<div class="glass p-card-padding rounded-2xl text-center group hover:translate-y-[-8px] transition-transform duration-300 cursor-default">
+<div class="w-16 h-16 bg-primary-container rounded-2xl flex items-center justify-center mx-auto mb-6 text-on-primary-container group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl" data-weight="fill">science</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-3">تجارب واقعية</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">محاكاة ثلاثية الأبعاد للمختبرات الكيميائية والفيزيائية بكل أمان.</p>
+</div>
+<!-- Feature 2 -->
+<div class="glass p-card-padding rounded-2xl text-center group hover:translate-y-[-8px] transition-transform duration-300 cursor-default">
+<div class="w-16 h-16 bg-secondary-fixed-dim rounded-2xl flex items-center justify-center mx-auto mb-6 text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl" data-weight="fill">school</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-3">خبراء متخصصون</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">نخبة من أفضل معلمي العلوم في الوطن العربي بخبرات واسعة.</p>
+</div>
+<!-- Feature 3 -->
+<div class="glass p-card-padding rounded-2xl text-center group hover:translate-y-[-8px] transition-transform duration-300 cursor-default">
+<div class="w-16 h-16 bg-tertiary-fixed-dim rounded-2xl flex items-center justify-center mx-auto mb-6 text-tertiary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl" data-weight="fill">quiz</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-3">تقييم مستمر</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">اختبارات ذكية تقيس مستوى التقدم وتقدم تقارير مفصلة فورية.</p>
+</div>
+<!-- Feature 4 -->
+<div class="glass p-card-padding rounded-2xl text-center group hover:translate-y-[-8px] transition-transform duration-300 cursor-default">
+<div class="w-16 h-16 bg-primary-fixed-dim rounded-2xl flex items-center justify-center mx-auto mb-6 text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl" data-weight="fill">rocket_launch</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-3">تعلم تفاعلي</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">رحلات علمية افتراضية ومسابقات بين الطلاب لتحفيز الإبداع.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- About the Teacher -->
+<section class="py-section-padding overflow-hidden">
+<div class="container mx-auto px-container-margin">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="relative order-2 lg:order-1">
+<div class="absolute inset-0 bg-secondary-fixed opacity-10 rounded-full blur-3xl"></div>
+<img class="relative z-10 w-full rounded-[40px] shadow-2xl" data-alt="A portrait of a charismatic male scientist in a bright, modern office. He is leaning against a white table filled with futuristic scientific apparatus like magnetic stirrers and crystalline models. He wears a stylish gray suit jacket over a casual white shirt, projecting a friendly yet authoritative professional aura. The background features a large window with soft daylight filtering through, highlighting the glassmorphism aesthetic of the office." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDjk8Xy2VSVgQzMZ0SAaUk_b5r2QCUU6aZBz6sB_Q9vy_pY6uAahsaZ9cLYvJpZSHNGYT54_3ZYWccj-q1D9Bu9Q3gbSYs75Ij4-EnLrtpLyAqdEUe_1l1yCIAUXPvATcOiKxOAb98QZjb0Cpcb8QeMbJ6lL5oGJdA9szhaAX6_9ZAftZgQwTaVlxTOLc3kL0APmRQT9AJfEL_eAI77Xbr_nYKiWCD6c_g6Z4Ahyw6g4xMIkfcYy1wyA"/>
+<div class="absolute -bottom-8 -right-8 glass p-6 rounded-2xl shadow-xl z-20 max-w-xs">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white">
+<span class="material-symbols-outlined">award_star</span>
+</div>
+<div>
+<p class="font-bold text-primary">+15 سنة</p>
+<p class="text-caption">خبرة في التعليم الرقمي</p>
+</div>
+</div>
+</div>
+</div>
+<div class="text-right space-y-8 order-1 lg:order-2">
+<h2 class="font-headline-lg text-headline-lg text-primary">من هو معلمك القادم؟</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">الأستاذ أحمد العلمي، متخصص في تبسيط المفاهيم العلمية المعقدة لطلاب المرحلة الإعدادية. يجمع بين الشغف العلمي والتقنية الحديثة لجعل كل درس تجربة لا تنسى.</p>
+<ul class="space-y-4">
+<li class="flex items-center gap-3 justify-start flex-row-reverse">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<span class="font-body-md">حاصل على دكتوراة في طرائق تدريس العلوم</span>
+</li>
+<li class="flex items-center gap-3 justify-start flex-row-reverse">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<span class="font-body-md">مؤلف سلسلة "العلوم الممتعة" للمرحلة الإعدادية</span>
+</li>
+<li class="flex items-center gap-3 justify-start flex-row-reverse">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<span class="font-body-md">مدرب معتمد في تقنيات التعلم التفاعلي</span>
+</li>
+</ul>
+<button class="vibrant-cyan-btn text-white px-8 py-3 rounded-xl font-label-md">تعرف على السيرة الذاتية كاملة</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Featured Courses - Bento Grid Style -->
+<section class="py-section-padding bg-surface-container">
+<div class="container mx-auto px-container-margin">
+<div class="flex flex-row-reverse justify-between items-end mb-12">
+<div class="text-right">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-2">دوراتنا المميزة</h2>
+<p class="text-on-surface-variant font-body-md">اختر تخصصك وابدأ التعلم فوراً</p>
+</div>
+<a class="text-primary font-bold hover:underline flex items-center gap-1 flex-row-reverse" href="#">
+                    عرض الكل
+                    <span class="material-symbols-outlined">arrow_left_alt</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Physics Card (Large) -->
+<div class="md:col-span-2 group relative overflow-hidden rounded-3xl glass shadow-lg hover:shadow-2xl transition-all duration-500">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 opacity-40" data-alt="A macro shot of a complex electrical circuit with glowing copper pathways and pulsating light nodes. The lighting is deep teal and vibrant cyan, creating a high-tech physics aesthetic. The atmosphere is energetic and precise, reflecting a modern corporate scientific style with subtle glass reflections." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAUq7B0lLDZlqWvDihSYR4GxYY21ASJCof8cLUCfYlCBejcJ3BKXyeDEphRo0Rv-1u0Lgx6wTW7oNlxMfVYah1-CVBllaN6L0XDyuH7NbIsFrMZHUUGQAQAFijSCpkQoTeT091-279t48wSWqbBrqt9xmf7TyR7TxCN53mnHciOlfWNyo3p2hpLsgQKFtO-GSWkB747DlM7JK4BKNJog1vd8_kzpy5jRAv2vrKZ8ADmRdAu9ITJhm2_OQ')"></div>
+<div class="relative z-10 p-card-padding h-full flex flex-col justify-end min-h-[400px]">
+<span class="self-start px-3 py-1 bg-primary text-white rounded-lg text-caption mb-4">الفيزياء</span>
+<h3 class="font-display-lg text-headline-lg text-primary mb-2">أسرار الميكانيكا والطاقة</h3>
+<p class="text-on-surface-variant font-body-md mb-6 max-w-md">تعلم قوانين الحركة والكهرباء من خلال تجارب افتراضية مذهلة.</p>
+<div class="flex items-center gap-4">
+<button class="vibrant-cyan-btn text-white px-6 py-2 rounded-xl">اشترك الآن</button>
+<span class="text-primary font-bold">1200 طالب ملتحق</span>
+</div>
+</div>
+</div>
+<!-- Chemistry Card -->
+<div class="group relative overflow-hidden rounded-3xl glass shadow-lg hover:shadow-2xl transition-all duration-500">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 opacity-40" data-alt="Close-up of vibrant chemical reactions occurring in glass test tubes, with colorful bubbles and swirling ethereal smoke. The color palette is dominated by rich purples, deep blues, and accents of neon green. The lighting is dramatic and localized, emphasizing the transparency of the glass and the fluidity of the liquids in a sophisticated, modern corporate science style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuADi1-Nd1udIyYv4G6DTkPnA5A8Tw3Eskc_Rvq78xKpDGD5h9AHpwQTN7wheYSSxNo3A1exmH4E01JZdzJiU2nl41lOYAUnOleh8SnKOcYxUflXVmTn20eFX7J_o3It0oaRkAxR4m2S0I76ysQ7hovMudtCp1qB5shVhynMRX4hNJAY89PXqT6FH2SjhpZ8HlAfT0BuGUYFsJqJACycgDxt4iWT-K0AVRjq-Yv0GG5xj7qJm8GslvYUPw')"></div>
+<div class="relative z-10 p-card-padding h-full flex flex-col justify-end min-h-[400px]">
+<span class="self-start px-3 py-1 bg-secondary text-white rounded-lg text-caption mb-4">الكيمياء</span>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">رحلة في عالم الذرات</h3>
+<p class="text-on-surface-variant font-body-md mb-6">اكتشف أسرار المادة والتفاعلات الكيميائية بطريقة مبسطة.</p>
+<button class="w-full border border-primary text-primary py-2 rounded-xl hover:bg-primary/5">التفاصيل</button>
+</div>
+</div>
+<!-- Biology Card -->
+<div class="group relative overflow-hidden rounded-3xl glass shadow-lg hover:shadow-2xl transition-all duration-500">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 opacity-40" data-alt="A stylized 3D microscopic view of a vibrant plant cell structure, showing detailed mitochondria and chloroplasts glowing with internal life. The lighting is soft and organic, with a palette of deep greens, emeralds, and soft yellow highlights. The overall aesthetic is clean, professional, and high-tech, aligning with a biology-themed learning platform." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAt0qGcq0F8Ffmig9v38q-5dNgOrzy3szINiv1DfEuM7KMjtib32hMekV85_62ox-1Q8guF-XRJBPVFFpUCXYX1e5dHMjuAndoz_IAbxeHMkC7RNc2zS904zTV5bTN9Z29RCK1CbZRHvmNT7IlrlBwfajTAQXRCCaVjuNRQjMgaeKPL1CCXBnJbrVJiucoQKVenJ2zuXATr9v4jL1jrHeFanN-aL1Pir1bRTW2F6VZQ6E_Zy70NNgYHYA')"></div>
+<div class="relative z-10 p-card-padding h-full flex flex-col justify-end min-h-[400px]">
+<span class="self-start px-3 py-1 bg-tertiary text-white rounded-lg text-caption mb-4">الأحياء</span>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">عجائب الخلية الحية</h3>
+<p class="text-on-surface-variant font-body-md mb-6">استكشف تعقيدات الحياة من أصغر خلية إلى أعقد الأجهزة الحيوية.</p>
+<button class="w-full border border-primary text-primary py-2 rounded-xl hover:bg-primary/5">التفاصيل</button>
+</div>
+</div>
+<!-- Geology Card (Medium) -->
+<div class="md:col-span-2 group relative overflow-hidden rounded-3xl glass shadow-lg hover:shadow-2xl transition-all duration-500">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 opacity-40" data-alt="A cross-section of the Earth's layers showing a glowing core and detailed geological strata in earthy tones of orange, deep brown, and obsidian black. The style is modern and scientific, with clean lines and a soft glow emanating from the center. The surface features frosted glass elements and holographic data overlays representing seismic waves." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCL7Jv5inBDgq3Xm7Dyxv27-JO6G8ABR2Bvu5cKuU08bCuYV5wWLyCZGfwaAR_RCvY5sSRQ2WSpiN_Bu8cF5BXUeUBnLaO32RIjDUhReJZ7e1Su69ZlARvzEMySN0hXt4c5oul5D7BJQFwGP9kWW-HmJqUt7pDjUbtNKL_w5d92jKFhu0UhK_jxKyOvUxDKp1ZwrCof2UmGR2f1aeoxkP7HwSf31t4LcW8oLEm0ohPOrBjgZeEfJ2Tc1w')"></div>
+<div class="relative z-10 p-card-padding h-full flex flex-col justify-end min-h-[300px]">
+<span class="self-start px-3 py-1 bg-on-tertiary-fixed-variant text-white rounded-lg text-caption mb-4">علوم الأرض</span>
+<h3 class="font-headline-lg text-headline-lg text-primary mb-2">جيولوجيا الكوكب الأزرق</h3>
+<button class="self-start vibrant-cyan-btn text-white px-8 py-2 rounded-xl">ابدأ الآن</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Student Testimonials -->
+<section class="py-section-padding">
+<div class="container mx-auto px-container-margin">
+<div class="text-center mb-16">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-4">ماذا يقول طلابنا؟</h2>
+<p class="text-on-surface-variant font-body-md">قصص نجاح ملهمة من قلب المختبر</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Testimonial 1 -->
+<div class="glass p-card-padding rounded-3xl relative">
+<span class="material-symbols-outlined text-primary/20 text-6xl absolute top-4 left-4">format_quote</span>
+<div class="flex items-center gap-4 mb-6">
+<img class="w-14 h-14 rounded-full object-cover border-2 border-primary-fixed" data-alt="A portrait of a cheerful middle school girl with a bright smile, wearing a modern school uniform. She has dark hair and friendly eyes. The background is a soft-focus classroom with clean lines and soft daylight, maintaining a pristine, academic, and professional aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrmGHfZODTKGzYlU1GkkyqjD3eurHxNt8S6Fr8xa575psmlm0MGABRgF9Cdwc90KYX5-Se9jquIluneuWenmh8nuVWwXvt4Re2bZm6kukVv7Mz_Gat-xH_Kl6ZhukTTIJV0Xe9fqHvLTXyY5Tjqe_CRmEYqAJSiUhIBc1F1CrH0X1DUEjOOZKzA6TnYlYKBWDJR7MJtakp7Zn_X404P0RTXv81abPKmLnNNXf7RFLdGifRCvz0ld02mw"/>
+<div>
+<h4 class="font-bold text-primary">سارة محمود</h4>
+<p class="text-caption">طالبة في الصف الأول الإعدادي</p>
+</div>
+</div>
+<p class="font-body-md text-on-surface-variant italic">"لم أكن أحب العلوم من قبل، ولكن بفضل الشرح التفاعلي والمختبرات الافتراضية، أصبحت مادتي المفضلة الآن!"</p>
+</div>
+<!-- Testimonial 2 -->
+<div class="glass p-card-padding rounded-3xl relative border-primary-fixed border-2">
+<span class="material-symbols-outlined text-primary/20 text-6xl absolute top-4 left-4">format_quote</span>
+<div class="flex items-center gap-4 mb-6">
+<img class="w-14 h-14 rounded-full object-cover border-2 border-primary-fixed" data-alt="A confident middle school boy with glasses, smiling and holding a science textbook. He is wearing a tidy polo shirt. The background is a minimalist digital library with glowing blue accents and a modern, high-tech corporate learning atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA67P9CeHu-MyiHA3NALoFlDa5j59QRr3OoT8tDbHJng2vC7pDtsb_52borEO-71UlLiZQNdQ0dQFEQlYdqHkQ3UNRutwBF-2zjgZQhLqlm0K25xuOkWmnQD2g2jdcqIzu1YgjqlvEco0rAs6NPiIokbPMYsnRpjpB9Kb2CMOGRlMGGCNhkt4cuevkHbwgXOT-T6ByE1V46VVsGMEcyXYsCNOcHt30a5mnmJmgJIinnwffAG2_dcpVmdA"/>
+<div>
+<h4 class="font-bold text-primary">عمر خالد</h4>
+<p class="text-caption">طالب في الصف الثالث الإعدادي</p>
+</div>
+</div>
+<p class="font-body-md text-on-surface-variant italic">"منصة رائعة جداً، الاختبارات بعد كل درس ساعدتني كثيراً في التفوق في امتحاناتي المدرسية. شكراً أستاذ أحمد!"</p>
+</div>
+<!-- Testimonial 3 -->
+<div class="glass p-card-padding rounded-3xl relative">
+<span class="material-symbols-outlined text-primary/20 text-6xl absolute top-4 left-4">format_quote</span>
+<div class="flex items-center gap-4 mb-6">
+<img class="w-14 h-14 rounded-full object-cover border-2 border-primary-fixed" data-alt="A portrait of a young girl student with an expression of wonder and achievement, wearing casual modern attire. The background is a blurred digital laboratory with holographic atoms and equations, reflecting a clean, light-mode, professional science tutoring platform style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAKBATZKOtJrG6RKZ4-P6js2fHy2ebM1NUIOyuNAlxhl9XsfRoZLYpoyvq5PH6UBXCttxgSZAdsOxAOjrFUhK2CxIODVlRMmsodn3lcJyzCXP6encrOX-ZOkSuyCMNpadVM0WGJuTCrLtV0F_WM_4wPRJqla8W3nfi7E6HlcuHJleNnK0vOz_4Ln_wZ1mxM5plfO_Xoc7-v2HYsVjYOBoeVXuI68wi8Pi3o4PIyFEuaGXZSds4-eHPqw"/>
+<div>
+<h4 class="font-bold text-primary">ليلى يوسف</h4>
+<p class="text-caption">طالبة في الصف الثاني الإعدادي</p>
+</div>
+</div>
+<p class="font-body-md text-on-surface-variant italic">"التجارب العملية التي نقوم بها بأنفسنا على المنصة ممتعة جداً. أشعر أنني في مختبر حقيقي من منزلي."</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="w-full mt-auto bg-primary text-on-primary">
+<div class="flex flex-col md:flex-row-reverse justify-between items-center px-section-padding py-8 w-full max-w-7xl mx-auto">
+<div class="mb-6 md:mb-0">
+<div class="font-headline-md text-headline-md text-on-primary font-bold">مختبر العلوم</div>
+</div>
+<div class="flex flex-wrap justify-center gap-6 mb-6 md:mb-0">
+<a class="text-on-primary/80 hover:text-white transition-opacity text-caption" href="#">اتصل بنا</a>
+<a class="text-on-primary/80 hover:text-white transition-opacity text-caption" href="#">سياسة الخصوصية</a>
+<a class="text-on-primary/80 hover:text-white transition-opacity text-caption" href="#">شروط الاستخدام</a>
+<a class="text-on-primary/80 hover:text-white transition-opacity text-caption" href="#">الأسئلة الشائعة</a>
+</div>
+<div class="text-caption text-on-primary/60">
+                © 2024 مختبر العلوم الرقمي. جميع الحقوق محفوظة
+            </div>
+</div>
+</footer>
+<!-- Scripts -->
+<script>
+        // Simple scroll effect for navbar
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('shadow-md');
+                nav.classList.add('bg-white/95');
+            } else {
+                nav.classList.remove('shadow-md');
+                nav.classList.remove('bg-white/95');
+            }
+        });
+
+        // Hover interaction for cards
+        document.querySelectorAll('.glass').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body></html>

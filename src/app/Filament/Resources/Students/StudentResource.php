@@ -286,36 +286,34 @@ class StudentResource extends Resource
                     ->label('إلغاء الصلاحيات')
                     ->icon('heroicon-o-lock-closed')
                     ->color('danger')
-                    ->modalHeading('صلاحيات الطالب الحالية')
-                    ->modalContent(function (Student $record): string {
-                        $entitlements = $record->entitlements()
-                            ->with('lecture.section.course')
-                            ->latest()
-                            ->get();
+                    ->modalHeading('إلغاء صلاحيات الطالب')
+                    ->modalDescription('اختر المحاضرات التي ترغب في إلغاء صلاحية الوصول إليها لهذا الطالب.')
+                    ->form(fn (Student $record) => [
+                        \Filament\Forms\Components\CheckboxList::make('entitlements')
+                            ->label('الصلاحيات النشطة')
+                            ->options(function () use ($record) {
+                                return $record->entitlements()
+                                    ->with('lecture.section.course')
+                                    ->get()
+                                    ->mapWithKeys(function ($e) {
+                                        $course = $e->lecture?->section?->course?->title ?? '-';
+                                        $section = $e->lecture?->section?->title ?? '-';
+                                        $lecture = $e->lecture?->title ?? '-';
+                                        $expires = $e->expires_at ? ' (ينتهي: ' . $e->expires_at->format('Y-m-d') . ')' : ' (دائم)';
+                                        return [$e->id => "{$course} / {$section} / {$lecture}{$expires}"];
+                                    });
+                            })
+                            ->required(),
+                    ])
+                    ->action(function (array $data): void {
+                        \App\Models\Entitlement::whereIn('id', $data['entitlements'])->delete();
 
-                        if ($entitlements->isEmpty()) {
-                            return '<p class="text-gray-500 text-center py-4">لا توجد صلاحيات وصول لهذا الطالب.</p>';
-                        }
-
-                        $html = '<div class="space-y-2 max-h-96 overflow-y-auto">';
-                        foreach ($entitlements as $e) {
-                            $course = $e->lecture?->section?->course?->title ?? '-';
-                            $section = $e->lecture?->section?->title ?? '-';
-                            $lecture = $e->lecture?->title ?? '-';
-                            $expires = $e->expires_at ? $e->expires_at->format('Y-m-d') : 'دائم';
-                            $html .= "<div class=\"p-3 border rounded-lg flex justify-between items-center\">
-                                <div>
-                                    <strong>{$lecture}</strong>
-                                    <div class=\"text-sm text-gray-500\">{$course} / {$section}</div>
-                                    <div class=\"text-xs text-gray-400\">ينتهي: {$expires}</div>
-                                </div>
-                            </div>";
-                        }
-                        $html .= '</div>';
-                        return $html;
+                        Notification::make()
+                            ->title('تم إلغاء الصلاحيات المحددة بنجاح')
+                            ->success()
+                            ->send();
                     })
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('إغلاق'),
+                    ->visible(fn (Student $record): bool => $record->entitlements()->exists()),
 
                 DeleteAction::make(),
             ])
