@@ -66,74 +66,22 @@ class CourseResource extends Resource
                     ->default(CourseStatus::Draft)
                     ->required(),
 
-                FormSection::make('الأقسام والمحاضرات')
+                FormSection::make('أقسام الدورة (الشهور)')
                     ->schema([
                         Repeater::make('sections')
                             ->relationship()
                             ->schema([
                                 TextInput::make('title')
-                                    ->label('عنوان القسم')
+                                    ->label('عنوان القسم / الشهر')
                                     ->required()
                                     ->maxLength(255),
 
-                                Repeater::make('lectures')
-                                    ->relationship()
-                                    ->schema([
-                                        TextInput::make('title')
-                                            ->label('عنوان المحاضرة')
-                                            ->required()
-                                            ->maxLength(255),
-
-                                        Textarea::make('description')
-                                            ->label('وصف المحاضرة')
-                                            ->rows(2),
-
-                                        TextInput::make('duration')
-                                            ->label('المدة (دقائق)')
-                                            ->numeric()
-                                            ->minValue(0),
-
-                                        TextInput::make('sort_order')
-                                            ->label('الترتيب')
-                                            ->numeric()
-                                            ->default(0),
-
-                                        FileUpload::make('video_path')
-                                            ->label('الفيديو')
-                                            ->disk('minio')
-                                            ->directory('lectures')
-                                            ->visibility('private')
-                                            ->acceptedFileTypes(['video/mp4', 'video/webm', 'video/ogg'])
-                                            ->maxSize(1024000), // 1 GB max size
-
-                                            FileUpload::make('pdf_file')
-                                            ->label('ملف الـ PDF')
-                                            ->disk('minio') // استخدام MinIO
-                                            ->directory('pdfs') // مجلد فرعي تنظيمي داخل الـ Bucket
-                                            ->acceptedFileTypes(['application/pdf']),
-
-                                        Repeater::make('exam')
-                                            ->relationship('exam')
-                                            ->label('الامتحانات')
-                                            ->schema([
-                                                TextInput::make('title')
-                                                    ->label('عنوان الامتحان')
-                                                    ->required()
-                                                    ->maxLength(255),
-                                                TextInput::make('duration')
-                                                    ->label('المدة (دقائق)')
-                                                    ->numeric()
-                                                    ->default(0),
-                                            ])
-                                            ->orderColumn('sort_order')
-                                            ->reorderableWithButtons()
-                                            ->collapsible()
-                                            ->columnSpanFull(),
-                                    ])
-                                    ->columns(2)
-                                    ->label('المحاضرات'),
+                                TextInput::make('sort_order')
+                                    ->label('ترتيب القسم')
+                                    ->numeric()
+                                    ->default(0),
                             ])
-                            ->columns(1)
+                            ->columns(2)
                             ->label('الأقسام'),
                     ])
                     ->columnSpanFull(),

@@ -22,6 +22,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 
 class ProductResource extends Resource
@@ -121,7 +122,13 @@ class ProductResource extends Resource
                         Lecture::class => 'محاضرة',
                         default => $state,
                     })
-                    ->badge(),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        Course::class => 'success',
+                        CourseSection::class => 'warning',
+                        Lecture::class => 'info',
+                        default => 'gray',
+                    }),
 
                 TextColumn::make('sellable.sellable_name')
                     ->label('المرتبط بـ')
@@ -148,6 +155,15 @@ class ProductResource extends Resource
                     ->label('تاريخ الإنشاء')
                     ->dateTime('Y-m-d')
                     ->sortable(),
+            ])
+            ->filters([
+                SelectFilter::make('sellable_type')
+                    ->label('نوع المحتوى')
+                    ->options([
+                        Course::class => 'دورة كاملة',
+                        CourseSection::class => 'شهر / قسم',
+                        Lecture::class => 'محاضرة',
+                    ]),
             ])
             ->defaultSort('created_at', 'desc')
             ->recordActions([
