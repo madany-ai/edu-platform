@@ -22,6 +22,8 @@ class BundleResource extends Resource
 {
     protected static ?string $model = Bundle::class;
 
+    protected static ?int $navigationSort = 3;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGift;
 
     protected static ?string $navigationLabel = 'الباقات';
@@ -41,13 +43,12 @@ class BundleResource extends Resource
                     ->maxLength(255)
                     ->columnSpanFull(),
 
-                TextInput::make('price_cents')
-                    ->label('السعر (بالقرش)')
+                TextInput::make('price')
+                    ->label('السعر (بالجنيه المصري)')
                     ->numeric()
                     ->required()
                     ->minValue(0)
-                    ->default(0)
-                    ->helperText('مثال: 50000 قرش = 500 جنيه'),
+                    ->default(0),
 
                 \Filament\Forms\Components\Select::make('products')
                     ->label('المنتجات المشمولة في الباقة')
@@ -72,9 +73,9 @@ class BundleResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('price_cents')
+                TextColumn::make('price')
                     ->label('السعر')
-                    ->formatStateUsing(fn ($state): string => number_format((int) $state / 100, 2) . ' ج.م'),
+                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' ج.م'),
 
                 TextColumn::make('products_count')
                     ->label('عدد المنتجات')

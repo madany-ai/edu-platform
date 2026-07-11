@@ -25,6 +25,8 @@ class ExamResource extends Resource
 {
     protected static ?string $model = Exam::class;
 
+    protected static ?int $navigationSort = 5;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentCheck;
 
     protected static ?string $navigationLabel = 'الامتحانات';

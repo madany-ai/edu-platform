@@ -59,7 +59,7 @@ class CoursePerformanceWidget extends TableWidget
 
                 Tables\Columns\TextColumn::make('price')
                     ->label('السعر')
-                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' د.م'),
+                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' ج.م'),
             ])
             ->defaultSort('enrollments_count', 'desc');
     }

@@ -22,6 +22,8 @@ class QAResource extends Resource
 {
     protected static ?string $model = QuestionsPost::class;
 
+    protected static ?int $navigationSort = 10;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedQuestionMarkCircle;
 
     protected static ?string $navigationLabel = 'الأسئلة والاستفسارات';

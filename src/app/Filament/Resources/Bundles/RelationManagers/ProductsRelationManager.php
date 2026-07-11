@@ -31,9 +31,9 @@ class ProductsRelationManager extends RelationManager
                     ->label('اسم المنتج')
                     ->searchable(),
 
-                TextColumn::make('price_cents')
+                TextColumn::make('price')
                     ->label('السعر')
-                    ->formatStateUsing(fn ($state): string => number_format((int) $state / 100, 2) . ' ج.م'),
+                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' ج.م'),
 
                 TextColumn::make('access_duration_days')
                     ->label('مدة الوصول')

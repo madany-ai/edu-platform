@@ -11,7 +11,7 @@ class Bundle extends Model
     protected $fillable = [
         'instructor_id',
         'name',
-        'price_cents',
+        'price',
     ];
 
     public function products(): BelongsToMany

@@ -13,7 +13,7 @@ class Product extends Model
         'name',
         'sellable_id',
         'sellable_type',
-        'price_cents',
+        'price',
         'access_duration_days',
         'is_active',
     ];

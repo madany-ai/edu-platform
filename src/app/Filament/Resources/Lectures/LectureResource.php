@@ -31,6 +31,8 @@ class LectureResource extends Resource
 {
     protected static ?string $model = Lecture::class;
 
+    protected static ?int $navigationSort = 4;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPresentationChartBar;
 
     protected static ?string $navigationLabel = 'المحاضرات';

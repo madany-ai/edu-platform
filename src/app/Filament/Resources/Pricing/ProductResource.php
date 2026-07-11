@@ -29,6 +29,8 @@ class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
+    protected static ?int $navigationSort = 7;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
 
     protected static ?string $navigationLabel = 'المنتجات';
@@ -48,13 +50,12 @@ class ProductResource extends Resource
                     ->maxLength(255)
                     ->columnSpanFull(),
 
-                TextInput::make('price_cents')
-                    ->label('السعر (بالقرش)')
+                TextInput::make('price')
+                    ->label('السعر (بالجنيه المصري)')
                     ->numeric()
                     ->required()
                     ->minValue(0)
-                    ->default(0)
-                    ->helperText('مثال: 20000 قرش = 200 جنيه'),
+                    ->default(0),
 
                 TextInput::make('access_duration_days')
                     ->label('مدة الوصول (أيام)')
@@ -139,9 +140,9 @@ class ProductResource extends Resource
                         return '-';
                     }),
 
-                TextColumn::make('price_cents')
+                TextColumn::make('price')
                     ->label('السعر')
-                    ->formatStateUsing(fn ($state): string => number_format((int) $state / 100, 2) . ' ج.م'),
+                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' ج.م'),
 
                 IconColumn::make('is_active')
                     ->label('نشط')

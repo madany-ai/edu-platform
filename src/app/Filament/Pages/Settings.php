@@ -20,6 +20,8 @@ class Settings extends Page implements HasForms
     use InteractsWithForms;
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
+    protected static ?int $navigationSort = 99;
+
     protected static ?string $navigationLabel = 'الإعدادات';
 
     protected static ?string $title = 'الإعدادات';

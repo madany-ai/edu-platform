@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\Order;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -20,7 +21,17 @@ class InstructorStatsOverview extends StatsOverviewWidget
         $totalStudents = Enrollment::whereIn('course_id', $courseIds)->count();
         $recentEnrollments = Enrollment::whereIn('course_id', $courseIds)
             ->where('created_at', '>=', now()->subDays(7))->count();
-        $totalRevenue = Course::whereIn('id', $courseIds)->sum('price');
+        $totalRevenue = 0;
+        if ($user->hasRole('super_admin')) {
+            $totalRevenue = Order::where('status', 'completed')->sum('amount_cents') / 100;
+        } else {
+            $orders = Order::where('status', 'completed')->with('purchasable')->get();
+            foreach ($orders as $order) {
+                if ($order->purchasable && $order->purchasable->instructor_id === $user->id) {
+                    $totalRevenue += ($order->amount_cents / 100);
+                }
+            }
+        }
 
         return [
             Stat::make('إجمالي الدورات', $coursesCount)
@@ -33,8 +44,8 @@ class InstructorStatsOverview extends StatsOverviewWidget
                 ->descriptionIcon('heroicon-o-users')
                 ->color('success'),
 
-            Stat::make('الإيرادات', number_format((float) $totalRevenue, 2) . ' د.م')
-                ->description('إجمالي أسعار الدورات')
+            Stat::make('الإيرادات', number_format((float) $totalRevenue, 2) . ' ج.م')
+                ->description('إجمالي مبيعات الدورات')
                 ->descriptionIcon('heroicon-o-banknotes')
                 ->color('warning'),
 

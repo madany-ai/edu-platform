@@ -28,6 +28,8 @@ class CourseResource extends Resource
 {
     protected static ?string $model = Course::class;
 
+    protected static ?int $navigationSort = 2;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
 
     protected static ?string $navigationLabel = 'الدورات';
@@ -103,7 +105,7 @@ class CourseResource extends Resource
 
                 TextColumn::make('price')
                     ->label('السعر')
-                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' د.م'),
+                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' ج.م'),
 
                 TextColumn::make('status')
                     ->label('الحالة')

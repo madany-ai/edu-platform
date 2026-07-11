@@ -24,6 +24,8 @@ class EnrollmentResource extends Resource
 {
     protected static ?string $model = Enrollment::class;
 
+    protected static ?int $navigationSort = 9;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
     protected static ?string $navigationLabel = 'التسجيلات';

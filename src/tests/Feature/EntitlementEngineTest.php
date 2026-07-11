@@ -94,7 +94,7 @@ class EntitlementEngineTest extends TestCase
             'name' => 'Single Lecture 1',
             'sellable_id' => $this->lecture1->id,
             'sellable_type' => Lecture::class,
-            'price_cents' => 1000,
+            'price' => 10.00,
             'access_duration_days' => 30,
         ]);
 
@@ -131,7 +131,7 @@ class EntitlementEngineTest extends TestCase
             'name' => 'Full Section 1',
             'sellable_id' => $this->section->id,
             'sellable_type' => CourseSection::class,
-            'price_cents' => 3000,
+            'price' => 30.00,
             'access_duration_days' => 60,
         ]);
 
@@ -171,7 +171,7 @@ class EntitlementEngineTest extends TestCase
             'name' => 'Single Lecture 1',
             'sellable_id' => $this->lecture1->id,
             'sellable_type' => Lecture::class,
-            'price_cents' => 1000,
+            'price' => 10.00,
             'access_duration_days' => 15,
         ]);
 
@@ -180,14 +180,14 @@ class EntitlementEngineTest extends TestCase
             'name' => 'Single Lecture 2',
             'sellable_id' => $this->lecture2->id,
             'sellable_type' => Lecture::class,
-            'price_cents' => 1000,
+            'price' => 10.00,
             'access_duration_days' => 30,
         ]);
 
         $bundle = Bundle::create([
             'instructor_id' => $this->instructor->id,
             'name' => 'Bundle of Both',
-            'price_cents' => 1500,
+            'price' => 15.00,
         ]);
 
         $bundle->products()->attach([$product1->id, $product2->id]);
