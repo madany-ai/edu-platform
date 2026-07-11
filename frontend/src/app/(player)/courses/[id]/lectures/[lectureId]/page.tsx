@@ -85,7 +85,7 @@ export default function LectureViewPage() {
       {/* Left/Center Area (Main Content) */}
       <div className="flex-grow flex flex-col h-full overflow-y-auto p-4 md:p-6 space-y-6 lg:w-3/4">
         {/* Video Stage */}
-        <div className="relative aspect-video bg-black rounded-2xl overflow-hidden shadow-xl border border-white/10">
+        <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-xl border border-white/10 shrink-0">
           {lecture.video?.status === "completed" ? (
             <VideoPlayer 
               lectureId={lecture.id} 

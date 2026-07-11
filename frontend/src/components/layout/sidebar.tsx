@@ -50,11 +50,12 @@ export function Sidebar({ className }: SidebarProps) {
           <nav className="flex flex-col gap-1.5">
           {links.map((link) => {
             const Icon = link.icon;
-            const isActive =
-              pathname === link.href ||
-              (link.href !== "/" &&
-                pathname.startsWith(link.href) &&
-                link.href !== ROUTES.COURSES);
+            const isActive = link.href === ROUTES.DASHBOARD
+              ? pathname === link.href
+              : pathname === link.href ||
+                (link.href !== "/" &&
+                  pathname.startsWith(link.href) &&
+                  link.href !== ROUTES.COURSES);
             return (
               <Link
                 key={link.href}

@@ -82,6 +82,12 @@ class LectureResource extends Resource
 
                 FormSection::make('الملفات والفيديو')
                     ->schema([
+                        TextInput::make('youtube_url')
+                            ->label('رابط يوتيوب (بديل لرفع الفيديو)')
+                            ->url()
+                            ->columnSpanFull()
+                            ->helperText('إذا قمت بوضع رابط يوتيوب هنا، سيتم تجاهل ملف الفيديو المرفوع بالأسفل.'),
+
                         FileUpload::make('video_path')
                             ->label('فيديو المحاضرة')
                             ->disk('minio')

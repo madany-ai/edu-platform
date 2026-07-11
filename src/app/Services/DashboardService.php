@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardService
 {
-    public function getInstructorStats(int $instructorId): array
+    public function getInstructorStats(string $instructorId): array
     {
         $courseIds = Course::where('instructor_id', $instructorId)->pluck('id');
 
@@ -62,7 +62,7 @@ class DashboardService
         ];
     }
 
-    public function getInstructorCourses(int $instructorId): Collection
+    public function getInstructorCourses(string $instructorId): Collection
     {
         return Course::withCount(['sections', 'enrollments', 'lectures'])
             ->where('instructor_id', $instructorId)
@@ -70,7 +70,7 @@ class DashboardService
             ->get();
     }
 
-    public function getInstructorRecentEnrollments(int $instructorId, int $limit = 10): Collection
+    public function getInstructorRecentEnrollments(string $instructorId, int $limit = 10): Collection
     {
         $courseIds = Course::where('instructor_id', $instructorId)->pluck('id');
 
@@ -81,7 +81,7 @@ class DashboardService
             ->get();
     }
 
-    public function getInstructorCoursePerformance(int $instructorId): Collection
+    public function getInstructorCoursePerformance(string $instructorId): Collection
     {
         return Course::withCount(['enrollments', 'lectures'])
             ->where('instructor_id', $instructorId)
@@ -100,7 +100,7 @@ class DashboardService
             ]);
     }
 
-    public function getInstructorNotifications(int $instructorId, int $limit = 10): Collection
+    public function getInstructorNotifications(string $instructorId, int $limit = 10): Collection
     {
         return Notification::where('user_id', $instructorId)
             ->latest()
@@ -108,7 +108,7 @@ class DashboardService
             ->get();
     }
 
-    public function getStudentStats(int $studentId): array
+    public function getStudentStats(string $studentId): array
     {
         $enrollmentsCount = Enrollment::where('student_id', $studentId)->count();
         $activeEnrollments = Enrollment::where('student_id', $studentId)
@@ -128,7 +128,7 @@ class DashboardService
         ];
     }
 
-    public function getStudentRecentEnrollments(int $studentId, int $limit = 5): Collection
+    public function getStudentRecentEnrollments(string $studentId, int $limit = 5): Collection
     {
         return Enrollment::with(['course.instructor', 'course.sections'])
             ->where('student_id', $studentId)

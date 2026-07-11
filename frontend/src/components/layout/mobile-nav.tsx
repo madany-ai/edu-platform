@@ -37,11 +37,12 @@ export function MobileNav() {
     <div className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-[#141a15]/90 backdrop-blur-md border-t border-[#3b413c] flex items-center justify-around px-2 lg:hidden">
       {links.map((link) => {
         const Icon = link.icon;
-        const isActive =
-          pathname === link.href ||
-          (link.href !== "/" &&
-            pathname.startsWith(link.href) &&
-            link.href !== ROUTES.COURSES);
+        const isActive = link.href === ROUTES.DASHBOARD
+          ? pathname === link.href
+          : pathname === link.href ||
+            (link.href !== "/" &&
+              pathname.startsWith(link.href) &&
+              link.href !== ROUTES.COURSES);
         return (
           <Link
             key={link.href}

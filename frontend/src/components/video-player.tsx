@@ -138,7 +138,33 @@ export default function VideoPlayer({ lectureId, streamUrl, streamType, initialT
     };
   }, [lectureId, streamUrl, streamType, initialTime]);
 
+  // Handle YouTube links natively
+  if (streamType === "video/youtube" || streamUrl.includes("youtube.com") || streamUrl.includes("youtu.be")) {
+    const videoIdMatch = streamUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})/);
+    const videoId = videoIdMatch ? videoIdMatch[1] : null;
+    
+    if (videoId) {
+      return (
+        <div className="w-full h-full relative rounded-lg overflow-hidden">
+          <iframe
+            className="w-full h-full absolute top-0 left-0"
+            src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0`}
+            title="YouTube video player"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+          {/* Block Top Left (Title and Avatar) */}
+          <div className="absolute top-0 left-0 w-2/3 h-20 z-10 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+          
+          {/* Block the entire bottom to prevent clicking Share, More Videos, and YouTube logo */}
+          <div className="absolute bottom-0 left-0 w-full h-24 z-10 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+        </div>
+      );
+    }
+  }
+
   return (
-    <div className="w-full relative aspect-video" ref={videoRef} />
+    <div className="w-full h-full relative" ref={videoRef} />
   );
 }

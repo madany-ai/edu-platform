@@ -60,13 +60,20 @@ class AuthController extends Controller
     {
         $user = request()->user();
         $user->load('roles');
+        
+        $roles = $user->roles->pluck('name');
+        
+        if ($roles->contains('student')) {
+            $user->load('student');
+        }
 
         return response()->json([
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'status' => $user->status,
-            'roles' => $user->roles->pluck('name'),
+            'roles' => $roles,
+            'student' => $user->relationLoaded('student') ? $user->student : null,
         ]);
     }
 }

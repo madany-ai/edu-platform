@@ -89,9 +89,14 @@ class CourseController extends Controller
         $responseData['progress'] = $progress;
 
         if ($lecture->video && $lecture->video->status === 'completed' && $lecture->video->video_path) {
-            if (str_ends_with(strtolower($lecture->video->video_path), '.mp4')) {
+            $videoPath = $lecture->video->video_path;
+            
+            if (str_contains($videoPath, 'youtube.com') || str_contains($videoPath, 'youtu.be')) {
+                $responseData['video']['stream_url'] = $videoPath;
+                $responseData['video']['stream_type'] = 'video/youtube';
+            } else if (str_ends_with(strtolower($videoPath), '.mp4')) {
                 $responseData['video']['stream_url'] = \Illuminate\Support\Facades\Storage::disk('minio')
-                    ->temporaryUrl($lecture->video->video_path, now()->addHours(2));
+                    ->temporaryUrl($videoPath, now()->addHours(2));
                 $responseData['video']['stream_type'] = 'video/mp4';
             } else {
                 $responseData['video']['stream_url'] = route('lectures.stream', ['lecture' => $lecture->id]);
@@ -147,11 +152,21 @@ class CourseController extends Controller
             'description' => 'nullable|string',
             'duration' => 'nullable|integer|min:0',
             'sort_order' => 'nullable|integer',
+            'youtube_url' => 'nullable|url',
         ]);
 
-        $lecture = $section->lectures()->create($validated);
+        $lecture = $section->lectures()->create(\Illuminate\Support\Arr::except($validated, ['youtube_url']));
 
-        return response()->json($lecture, 201);
+        if (!empty($validated['youtube_url'])) {
+            $lecture->video()->create([
+                'video_path' => $validated['youtube_url'],
+                'status' => 'completed',
+                'bunny_video_id' => 'youtube',
+                'duration' => $validated['duration'] ?? 0,
+            ]);
+        }
+
+        return response()->json($lecture->load('video'), 201);
     }
 
     public function updateLecture(Request $request, \App\Models\CourseSection $section, \App\Models\Lecture $lecture): JsonResponse
@@ -161,11 +176,24 @@ class CourseController extends Controller
             'description' => 'nullable|string',
             'duration' => 'nullable|integer|min:0',
             'sort_order' => 'nullable|integer',
+            'youtube_url' => 'nullable|url',
         ]);
 
-        $lecture->update($validated);
+        $lecture->update(\Illuminate\Support\Arr::except($validated, ['youtube_url']));
 
-        return response()->json($lecture);
+        if (!empty($validated['youtube_url'])) {
+            $lecture->video()->updateOrCreate(
+                ['lecture_id' => $lecture->id],
+                [
+                    'video_path' => $validated['youtube_url'],
+                    'status' => 'completed',
+                    'bunny_video_id' => 'youtube',
+                    'duration' => $validated['duration'] ?? 0,
+                ]
+            );
+        }
+
+        return response()->json($lecture->load('video'));
     }
 
     public function destroyLecture(\App\Models\CourseSection $section, \App\Models\Lecture $lecture): JsonResponse
