@@ -18,6 +18,16 @@ class Lecture extends Model
     use HasUuids;
     protected $fillable = ['section_id', 'title', 'description', 'duration', 'sort_order', 'video_path', 'pdf_url'];
 
+    protected static function booted()
+    {
+        static::saved(function ($lecture) {
+            if ($lecture->video_path && ($lecture->wasChanged('video_path') || $lecture->wasRecentlyCreated)) {
+                // Dispatch background HLS encryption processing
+                \App\Jobs\ProcessVideoHLS::dispatch($lecture);
+            }
+        });
+    }
+
     public function section(): BelongsTo
     {
         return $this->belongsTo(CourseSection::class, 'section_id');

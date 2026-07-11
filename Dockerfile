@@ -3,6 +3,7 @@ FROM php:8.4-fpm-alpine
 
 # System dependencies + PHP extensions Laravel needs
 RUN apk add --no-cache \
+    ffmpeg \
     git \
     curl \
     libpng-dev \

@@ -1,48 +1,63 @@
-import { GraduationCap } from "lucide-react";
 import Link from "next/link";
+import { ROUTES, APP_NAME } from "@/lib/constants";
+
+const footerLinks = [
+  {
+    title: "الدورات",
+    links: [
+      { label: "جميع الدورات", href: ROUTES.COURSES },
+      { label: "دورات العلوم", href: `${ROUTES.COURSES}?category=science` },
+      { label: "دورات الرياضيات", href: `${ROUTES.COURSES}?category=math` },
+    ],
+  },
+  {
+    title: "روابط سريعة",
+    links: [
+      { label: "الرئيسية", href: ROUTES.HOME },
+      { label: "من نحن", href: ROUTES.ABOUT },
+      { label: "الأسئلة الشائعة", href: "/faq" },
+    ],
+  },
+  {
+    title: "تواصل معنا",
+    links: [
+      { label: "info@platform.com", href: "mailto:info@platform.com" },
+      { label: "+123 456 7890", href: "tel:+1234567890" },
+    ],
+  },
+];
 
 export function Footer() {
   return (
-    <footer className="border-t bg-muted/50">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="bg-[#141a15] border-t border-[#3b413c] text-muted-foreground">
+      <div className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="flex items-center gap-2 font-bold text-lg mb-4">
-              <GraduationCap className="h-5 w-5 text-primary" />
-              المنصة التعليمية
-            </div>
-            <p className="text-sm text-muted-foreground">
-              منصة تعليمية متكاملة تهدف إلى تقديم محتوى تعليمي عالي الجودة في مختلف المجالات.
+            <h3 className="mb-4 text-lg font-bold text-foreground">{APP_NAME}</h3>
+            <p className="text-sm text-muted-foreground/80 leading-relaxed">
+              منصة تعليمية شاملة تقدم دورات متنوعة للطلاب والمعلمين.
             </p>
           </div>
-          <div>
-            <h3 className="font-semibold mb-3">دورات</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/courses" className="hover:text-foreground transition-colors">جميع الدورات</Link></li>
-              <li><Link href="/courses?category=programming" className="hover:text-foreground transition-colors">برمجة</Link></li>
-              <li><Link href="/courses?category=design" className="hover:text-foreground transition-colors">تصميم</Link></li>
-              <li><Link href="/courses?category=marketing" className="hover:text-foreground transition-colors">تسويق</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-semibold mb-3">روابط سريعة</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/about" className="hover:text-foreground transition-colors">عن المنصة</Link></li>
-              <li><Link href="/contact" className="hover:text-foreground transition-colors">اتصل بنا</Link></li>
-              <li><Link href="/faq" className="hover:text-foreground transition-colors">الأسئلة الشائعة</Link></li>
-              <li><Link href="/policy" className="hover:text-foreground transition-colors">الشروط والأحكام</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-semibold mb-3">تواصل معنا</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>البريد: info@platform.com</li>
-              <li>الهاتف: +123 456 7890</li>
-            </ul>
-          </div>
+          {footerLinks.map((group) => (
+            <div key={group.title}>
+              <h4 className="mb-4 text-sm font-bold text-foreground">{group.title}</h4>
+              <ul className="space-y-2">
+                {group.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-        <div className="mt-8 border-t pt-6 text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} المنصة التعليمية. جميع الحقوق محفوظة.
+        <div className="mt-8 border-t border-[#3b413c] pt-8 text-center text-xs text-muted-foreground/60">
+          © {new Date().getFullYear()} {APP_NAME}. جميع الحقوق محفوظة.
         </div>
       </div>
     </footer>

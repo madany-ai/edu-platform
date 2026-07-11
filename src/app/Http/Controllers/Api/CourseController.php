@@ -143,4 +143,64 @@ class CourseController extends Controller
 
         return response()->json(['message' => 'تم حذف المحاضرة بنجاح.']);
     }
+
+    public function streamLecture(Request $request, \App\Models\Lecture $lecture, \App\Services\VideoAccessService $accessService)
+    {
+        if (!$accessService->canAccess($request->user(), $lecture)) {
+            return response()->json(['message' => 'غير مصرح لك بمشاهدة هذا الفيديو.'], 403);
+        }
+
+        $video = $lecture->video;
+        if (!$video || $video->status !== 'completed' || !$video->video_path) {
+            return response()->json(['message' => 'الفيديو غير متوفر أو لم يتم معالجته بعد.'], 404);
+        }
+
+        // Fetch .m3u8 content
+        if (!\Illuminate\Support\Facades\Storage::disk('minio')->exists($video->video_path)) {
+            return response()->json(['message' => 'ملف التشغيل غير موجود.'], 404);
+        }
+
+        $playlist = \Illuminate\Support\Facades\Storage::disk('minio')->get($video->video_path);
+
+        // Generate temporary token bound to user, IP, and lecture
+        $token = $accessService->generateSignedToken($request->user(), $lecture, $request->ip());
+
+        // Replace key URI with our dynamic secure route
+        // Original: #EXT-X-KEY:METHOD=AES-128,URI="key.key"
+        // Target: #EXT-X-KEY:METHOD=AES-128,URI="https://yourdomain/api/lectures/{lecture}/key?token={token}"
+        $keyUrl = route('lectures.key', ['lecture' => $lecture->id, 'token' => $token]);
+        $modifiedPlaylist = str_replace('URI="key.key"', 'URI="' . $keyUrl . '"', $playlist);
+
+        // Replace relative segment paths with absolute MinIO URLs
+        $minioBaseUrl = rtrim(\Illuminate\Support\Facades\Storage::disk('minio')->url("hls/{$lecture->id}"), '/') . '/';
+        $modifiedPlaylist = str_replace('segment_', $minioBaseUrl . 'segment_', $modifiedPlaylist);
+
+        return response($modifiedPlaylist)
+            ->header('Content-Type', 'application/x-mpegURL')
+            ->header('Cache-Control', 'no-cache, private');
+    }
+
+    public function streamKey(Request $request, \App\Models\Lecture $lecture, \App\Services\VideoAccessService $accessService)
+    {
+        $token = $request->query('token');
+        if (!$token) {
+            return response()->json(['message' => 'Missing token'], 400);
+        }
+
+        if (!$accessService->validateToken($token, $lecture, $request->ip())) {
+            return response()->json(['message' => 'Invalid or expired token'], 403);
+        }
+
+        $video = $lecture->video;
+        if (!$video || !$video->encryption_key) {
+            return response()->json(['message' => 'Key not found'], 404);
+        }
+
+        // Return the binary raw key (16 bytes)
+        $rawKey = hex2bin($video->encryption_key);
+
+        return response($rawKey)
+            ->header('Content-Type', 'application/octet-stream')
+            ->header('Cache-Control', 'no-cache, private');
+    }
 }

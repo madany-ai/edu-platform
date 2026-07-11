@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { BookOpen, Users } from "lucide-react";
 
 interface CourseCardProps {
-  id: number;
+  id: string;
   title: string;
   instructor: string;
   category: string;

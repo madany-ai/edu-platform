@@ -10,7 +10,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class LectureVideo extends Model
 {
     use HasUuids;
-    protected $fillable = ['lecture_id', 'bunny_video_id', 'duration'];
+    protected $fillable = [
+        'lecture_id', 
+        'bunny_video_id', 
+        'duration', 
+        'original_filename', 
+        'video_path', 
+        'encryption_key', 
+        'status'
+    ];
 
     public function lecture(): BelongsTo
     {

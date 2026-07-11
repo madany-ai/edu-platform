@@ -12,6 +12,8 @@ Route::post('auth/register', [AuthController::class, 'register']);
 Route::post('auth/login', [AuthController::class, 'login']);
 Route::get('courses', [CourseController::class, 'index']);
 Route::get('courses/{course}', [CourseController::class, 'show']);
+Route::get('lectures/{lecture}/key', [CourseController::class, 'streamKey'])
+    ->name('lectures.key');
 
 // Authenticated routes
 Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
@@ -41,9 +43,10 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     Route::put('sections/{section}/lectures/{lecture}', [CourseController::class, 'updateLecture']);
     Route::delete('sections/{section}/lectures/{lecture}', [CourseController::class, 'destroyLecture']);
 
-    // Lecture View (with enrollment check)
     Route::get('lectures/{lecture}', [CourseController::class, 'showLecture'])
         ->middleware(\App\Http\Middleware\CheckEnrollment::class);
+    Route::get('lectures/{lecture}/stream', [CourseController::class, 'streamLecture'])
+        ->name('lectures.stream');
 
     // Enrollments
     Route::get('my-enrollments', [EnrollmentController::class, 'myEnrollments']);

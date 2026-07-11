@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, Atom } from "lucide-react";
 
 interface FieldError {
   field: string;
@@ -45,7 +45,7 @@ export default function RegisterPage() {
   const [secondName, setSecondName] = useState("");
   const [thirdName, setThirdName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [gender, setGender] = useState("");
+  const [gender, setGender] = useState<"male" | "female" | "">("");
   const [birthDate, setBirthDate] = useState("");
   const [phone, setPhone] = useState("");
 
@@ -121,11 +121,11 @@ export default function RegisterPage() {
         second_name: secondName,
         third_name: thirdName,
         last_name: lastName,
-        phone,
-        father_phone: fatherPhone,
-        mother_phone: motherPhone,
+        phone: phone.replace(/[^\d+]/g, ""),
+        father_phone: fatherPhone.replace(/[^\d+]/g, ""),
+        mother_phone: motherPhone.replace(/[^\d+]/g, ""),
         guardian_job: guardianJob,
-        gender,
+        gender: gender as "male" | "female",
         birth_date: birthDate,
       });
       setSubmitted(true);
@@ -149,81 +149,108 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
-
   if (submitted) {
     return (
-      <Card className="w-full max-w-md">
-        <CardContent className="pt-8 text-center">
-          <div className="mb-4 flex justify-center">
-            <div className="rounded-full bg-primary/10 p-4">
-              <CheckCircle2 className="h-12 w-12 text-primary" />
+      <div className="w-full max-w-md p-1 rounded-2xl bg-gradient-to-b from-primary/30 to-secondary/10 cosmic-border-glow animate-fade-in">
+        <div className="glass-card w-full p-8 rounded-2xl text-center">
+          <div className="mb-6 flex justify-center">
+            <div className="rounded-full bg-primary/10 p-4 animate-bounce">
+              <CheckCircle2 className="h-12 w-12 text-primary science-glow-text" />
             </div>
           </div>
-          <CardTitle className="mb-2 text-2xl">تم التسجيل بنجاح</CardTitle>
-          <CardDescription className="mb-6 text-base">
-            تم إنشاء حسابك بنجاح. حسابك قيد المراجعة من قبل الإدارة.
+          <h2 className="mb-2 text-2xl font-bold text-gradient">تم التسجيل بنجاح!</h2>
+          <p className="mb-6 text-sm text-muted-foreground leading-relaxed">
+            تم إنشاء حسابك بنجاح. حسابك حالياً قيد المراجعة والاعتماد من قبل الإدارة.
             <br />
-            سيتم إشعارك عند اعتماد حسابك.
-          </CardDescription>
-          <div className="rounded-lg bg-muted p-4 text-right text-sm text-muted-foreground">
-            <p className="mb-2 font-medium text-foreground">ماذا يحدث الآن؟</p>
-            <ol className="list-inside list-decimal space-y-1">
-              <li>سيتم مراجعة طلبك من قبل الإدارة</li>
-              <li>عند الاعتماد، ستتلقى إشعاراً</li>
-              <li>يمكنك بعدها تسجيل الدخول والبدء في التعلم</li>
+            سيصلك إشعار فور اعتماد الحساب وتفعيله.
+          </p>
+          <div className="rounded-xl bg-muted/30 border border-border/40 p-5 text-right text-sm text-muted-foreground mb-6">
+            <p className="mb-3 font-semibold text-foreground flex items-center gap-2">
+              <Atom className="h-4 w-4 text-primary" />
+              <span>خطواتك التالية:</span>
+            </p>
+            <ol className="space-y-2 list-decimal list-inside pr-1">
+              <li>سيتم مراجعة طلبك من قبل المسؤول المختص.</li>
+              <li>عند اعتماد حسابك، ستصبح قادراً على تسجيل الدخول بكودك أو هاتفك.</li>
+              <li>يمكنك حينها بدء مشاهدة محاضرات الساينس وحل الواجبات.</li>
             </ol>
           </div>
           <Link href="/login">
-            <Button className="mt-6 w-full">تسجيل الدخول</Button>
+            <Button className="w-full py-2 bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold shadow-lg">
+              الانتقال لتسجيل الدخول
+            </Button>
           </Link>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="w-full max-w-lg">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">إنشاء حساب جديد</CardTitle>
-        <CardDescription>
-          {step === 1 && "أدخل بيانات الدخول"}
-          {step === 2 && "البيانات الشخصية"}
-          {step === 3 && "بيانات ولي الأمر"}
-        </CardDescription>
-        <div className="mt-4 flex items-center justify-center gap-2">
-          {[1, 2, 3].map((s) => (
-            <div
-              key={s}
-              className={`h-2 w-12 rounded-full transition-colors ${
-                s <= step ? "bg-primary" : "bg-muted"
-              }`}
-            />
-          ))}
+    <div className="w-full max-w-lg p-1 rounded-2xl bg-gradient-to-b from-primary/30 to-secondary/10 cosmic-border-glow animate-fade-in">
+      <div className="glass-card w-full p-8 rounded-2xl">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10 text-primary mb-3">
+            <Atom className="h-8 w-8 text-primary science-glow-text animate-pulse" />
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight text-gradient mb-1">
+            إنشاء حساب طالب جديد
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            {step === 1 && "الخطوة الأولى: بيانات تسجيل الدخول"}
+            {step === 2 && "الخطوة الثانية: المعلومات الشخصية"}
+            {step === 3 && "الخطوة الثالثة: بيانات ولي الأمر والاتصال"}
+          </p>
+
+          {/* Stepper Indicators */}
+          <div className="mt-6 flex items-center justify-center gap-3">
+            {[1, 2, 3].map((s) => (
+              <div key={s} className="flex items-center">
+                <div
+                  className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                    s === step
+                      ? "bg-primary text-primary-foreground shadow-lg cosmic-border-glow"
+                      : s < step
+                      ? "bg-secondary text-secondary-foreground"
+                      : "bg-muted text-muted-foreground border border-border/60"
+                  }`}
+                >
+                  {s}
+                </div>
+                {s < 3 && (
+                  <div
+                    className={`h-[2px] w-8 mx-1 transition-all ${
+                      s < step ? "bg-secondary" : "bg-muted"
+                    }`}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-      </CardHeader>
-      <CardContent>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {getFieldError("general") && (
-            <div className="flex items-center gap-2 rounded-lg bg-destructive/15 p-3 text-sm text-destructive">
+            <div className="flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>{getFieldError("general")}</span>
             </div>
           )}
 
           {step === 1 && (
-            <>
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">البريد الإلكتروني</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="name@example.com"
+                  placeholder="student@example.com"
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); clearFieldError("email"); }}
                   required
+                  className="bg-background/50 border-border/60 text-foreground"
                 />
                 {getFieldError("email") && (
-                  <p className="text-sm text-destructive">{getFieldError("email")}</p>
+                  <p className="text-xs text-destructive">{getFieldError("email")}</p>
                 )}
               </div>
               <div className="space-y-2">
@@ -235,9 +262,10 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); clearFieldError("password"); }}
                   required
+                  className="bg-background/50 border-border/60 text-foreground"
                 />
                 {getFieldError("password") && (
-                  <p className="text-sm text-destructive">{getFieldError("password")}</p>
+                  <p className="text-xs text-destructive">{getFieldError("password")}</p>
                 )}
               </div>
               <div className="space-y-2">
@@ -249,22 +277,23 @@ export default function RegisterPage() {
                   value={passwordConfirmation}
                   onChange={(e) => { setPasswordConfirmation(e.target.value); clearFieldError("password_confirmation"); }}
                   required
+                  className="bg-background/50 border-border/60 text-foreground"
                 />
                 {getFieldError("password_confirmation") && (
-                  <p className="text-sm text-destructive">{getFieldError("password_confirmation")}</p>
+                  <p className="text-xs text-destructive">{getFieldError("password_confirmation")}</p>
                 )}
               </div>
-              <Button type="button" className="w-full" onClick={handleNext}>
+              <Button type="button" className="w-full mt-2 bg-primary text-primary-foreground font-semibold" onClick={handleNext}>
                 التالي
               </Button>
-            </>
+            </div>
           )}
 
           {step === 2 && (
-            <>
+            <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="first_name">الاسم الأول *</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="first_name" className="text-xs">الاسم الأول *</Label>
                   <Input
                     id="first_name"
                     type="text"
@@ -272,13 +301,14 @@ export default function RegisterPage() {
                     value={firstName}
                     onChange={(e) => { setFirstName(e.target.value); clearFieldError("first_name"); }}
                     required
+                    className="bg-background/50 border-border/60 text-foreground text-sm"
                   />
                   {getFieldError("first_name") && (
-                    <p className="text-sm text-destructive">{getFieldError("first_name")}</p>
+                    <p className="text-[10px] text-destructive">{getFieldError("first_name")}</p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="second_name">الاسم الثاني *</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="second_name" className="text-xs">الاسم الثاني *</Label>
                   <Input
                     id="second_name"
                     type="text"
@@ -286,13 +316,14 @@ export default function RegisterPage() {
                     value={secondName}
                     onChange={(e) => { setSecondName(e.target.value); clearFieldError("second_name"); }}
                     required
+                    className="bg-background/50 border-border/60 text-foreground text-sm"
                   />
                   {getFieldError("second_name") && (
-                    <p className="text-sm text-destructive">{getFieldError("second_name")}</p>
+                    <p className="text-[10px] text-destructive">{getFieldError("second_name")}</p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="third_name">الاسم الثالث *</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="third_name" className="text-xs">الاسم الثالث *</Label>
                   <Input
                     id="third_name"
                     type="text"
@@ -300,13 +331,14 @@ export default function RegisterPage() {
                     value={thirdName}
                     onChange={(e) => { setThirdName(e.target.value); clearFieldError("third_name"); }}
                     required
+                    className="bg-background/50 border-border/60 text-foreground text-sm"
                   />
                   {getFieldError("third_name") && (
-                    <p className="text-sm text-destructive">{getFieldError("third_name")}</p>
+                    <p className="text-[10px] text-destructive">{getFieldError("third_name")}</p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last_name">الاسم الأخير *</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="last_name" className="text-xs">العائلة / اللقب *</Label>
                   <Input
                     id="last_name"
                     type="text"
@@ -314,20 +346,21 @@ export default function RegisterPage() {
                     value={lastName}
                     onChange={(e) => { setLastName(e.target.value); clearFieldError("last_name"); }}
                     required
+                    className="bg-background/50 border-border/60 text-foreground text-sm"
                   />
                   {getFieldError("last_name") && (
-                    <p className="text-sm text-destructive">{getFieldError("last_name")}</p>
+                    <p className="text-[10px] text-destructive">{getFieldError("last_name")}</p>
                   )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="gender">الجنس *</Label>
-                  <Select value={gender} onValueChange={(val) => { setGender(val); clearFieldError("gender"); }}>
-                    <SelectTrigger id="gender">
+                  <Label htmlFor="gender" className="text-xs">الجنس *</Label>
+                  <Select value={gender} onValueChange={(val) => { setGender(val as "male" | "female"); clearFieldError("gender"); }}>
+                    <SelectTrigger id="gender" className="bg-background/50 border-border/60 text-foreground text-sm">
                       <SelectValue placeholder="اختر" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-popover border-border/60 text-foreground">
                       {GENDER_OPTIONS.map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
                           {opt.label}
@@ -336,76 +369,80 @@ export default function RegisterPage() {
                     </SelectContent>
                   </Select>
                   {getFieldError("gender") && (
-                    <p className="text-sm text-destructive">{getFieldError("gender")}</p>
+                    <p className="text-xs text-destructive">{getFieldError("gender")}</p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="birth_date">تاريخ الميلاد *</Label>
+                  <Label htmlFor="birth_date" className="text-xs">تاريخ الميلاد *</Label>
                   <Input
                     id="birth_date"
                     type="date"
                     value={birthDate}
                     onChange={(e) => { setBirthDate(e.target.value); clearFieldError("birth_date"); }}
                     required
+                    className="bg-background/50 border-border/60 text-foreground text-sm"
                   />
                   {getFieldError("birth_date") && (
-                    <p className="text-sm text-destructive">{getFieldError("birth_date")}</p>
+                    <p className="text-xs text-destructive">{getFieldError("birth_date")}</p>
                   )}
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">رقم الهاتف *</Label>
+                <Label htmlFor="phone">رقم هاتف الطالب *</Label>
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="+966501234567"
+                  placeholder="مثال: 01000000000"
                   value={phone}
                   onChange={(e) => { setPhone(e.target.value); clearFieldError("phone"); }}
                   required
+                  className="bg-background/50 border-border/60 text-foreground"
                 />
                 {getFieldError("phone") && (
-                  <p className="text-sm text-destructive">{getFieldError("phone")}</p>
+                  <p className="text-xs text-destructive">{getFieldError("phone")}</p>
                 )}
               </div>
-              <div className="flex gap-3">
-                <Button type="button" variant="outline" className="flex-1" onClick={handleBack}>
+              <div className="flex gap-3 pt-2">
+                <Button type="button" variant="outline" className="flex-1 border-border/60 hover:bg-muted text-foreground" onClick={handleBack}>
                   السابق
                 </Button>
-                <Button type="button" className="flex-1" onClick={handleNext}>
+                <Button type="button" className="flex-1 bg-primary text-primary-foreground font-semibold" onClick={handleNext}>
                   التالي
                 </Button>
               </div>
-            </>
+            </div>
           )}
 
           {step === 3 && (
-            <>
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="father_phone">هاتف الأب *</Label>
+                <Label htmlFor="father_phone">رقم هاتف الأب *</Label>
                 <Input
                   id="father_phone"
                   type="tel"
-                  placeholder="+966501234567"
+                  placeholder="مثال: 01100000000"
                   value={fatherPhone}
                   onChange={(e) => { setFatherPhone(e.target.value); clearFieldError("father_phone"); }}
                   required
+                  className="bg-background/50 border-border/60 text-foreground"
                 />
                 {getFieldError("father_phone") && (
-                  <p className="text-sm text-destructive">{getFieldError("father_phone")}</p>
+                  <p className="text-xs text-destructive">{getFieldError("father_phone")}</p>
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="mother_phone">هاتف الأم *</Label>
+                <Label htmlFor="mother_phone">رقم هاتف الأم *</Label>
                 <Input
                   id="mother_phone"
                   type="tel"
-                  placeholder="+966501234567"
+                  placeholder="مثال: 01200000000"
                   value={motherPhone}
                   onChange={(e) => { setMotherPhone(e.target.value); clearFieldError("mother_phone"); }}
                   required
+                  className="bg-background/50 border-border/60 text-foreground"
                 />
                 {getFieldError("mother_phone") && (
-                  <p className="text-sm text-destructive">{getFieldError("mother_phone")}</p>
+                  <p className="text-xs text-destructive">{getFieldError("mother_phone")}</p>
                 )}
               </div>
               <div className="space-y-2">
@@ -413,35 +450,36 @@ export default function RegisterPage() {
                 <Input
                   id="guardian_job"
                   type="text"
-                  placeholder="مهندس"
+                  placeholder="مثال: مهندس أو محاسب"
                   value={guardianJob}
                   onChange={(e) => { setGuardianJob(e.target.value); clearFieldError("guardian_job"); }}
                   required
+                  className="bg-background/50 border-border/60 text-foreground"
                 />
                 {getFieldError("guardian_job") && (
-                  <p className="text-sm text-destructive">{getFieldError("guardian_job")}</p>
+                  <p className="text-xs text-destructive">{getFieldError("guardian_job")}</p>
                 )}
               </div>
-              <div className="flex gap-3">
-                <Button type="button" variant="outline" className="flex-1" onClick={handleBack}>
+              <div className="flex gap-3 pt-2">
+                <Button type="button" variant="outline" className="flex-1 border-border/60 hover:bg-muted text-foreground" onClick={handleBack}>
                   السابق
                 </Button>
-                <Button type="submit" className="flex-1" disabled={loading}>
+                <Button type="submit" className="flex-1 bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold shadow-lg" disabled={loading}>
                   {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-                  إنشاء حساب
+                  تسجيل في المنصة 🔬
                 </Button>
               </div>
-            </>
+            </div>
           )}
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground pt-3 border-t border-border/20">
             لديك حساب بالفعل؟{" "}
-            <Link href="/login" className="font-medium text-primary hover:underline">
+            <Link href="/login" className="font-semibold text-primary hover:underline hover:text-primary-fixed transition-colors">
               تسجيل الدخول
             </Link>
           </p>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
