@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\Courses;
 
 use App\Enums\CourseStatus;
-use App\Filament\Resources\Courses\Pages\ManageCourses;
+use App\Filament\Resources\Courses\Pages\CreateCourse;
+use App\Filament\Resources\Courses\Pages\EditCourse;
+use App\Filament\Resources\Courses\Pages\ListCourses;
 use App\Models\Course;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -23,6 +25,7 @@ use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class CourseResource extends Resource
 {
@@ -94,8 +97,9 @@ class CourseResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
+                TextColumn::make('course_code')
                     ->label('#')
+                    ->searchable()
                     ->sortable(),
 
                 TextColumn::make('title')
@@ -151,7 +155,9 @@ class CourseResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ManageCourses::route('/'),
+            'index' => ListCourses::route('/'),
+            'create' => CreateCourse::route('/create'),
+            'edit' => EditCourse::route('/{record}/edit'),
         ];
     }
 
@@ -175,5 +181,20 @@ class CourseResource extends Resource
                     $query->whereHas('assistants', fn (Builder $q) => $q->where('user_id', $user->id));
                 }
             });
+    }
+
+    public static function canCreate(): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
     }
 }

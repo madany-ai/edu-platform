@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('exams', function (Blueprint $table) {
-            $table->foreignId('lecture_id')->nullable()->change();
+            $table->foreignUuid('lecture_id')->nullable()->change();
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('exams', function (Blueprint $table) {
-            $table->foreignId('lecture_id')->nullable(false)->change();
+            $table->foreignUuid('lecture_id')->nullable(false)->change();
         });
     }
 };

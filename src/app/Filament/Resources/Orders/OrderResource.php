@@ -32,6 +32,11 @@ class OrderResource extends Resource
 
     protected static ?string $modelLabel = 'طلب';
 
+    public static function canViewAny(): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema
@@ -43,8 +48,9 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('#')
+                TextColumn::make('student.student_code')
+                    ->label('كود الطالب')
+                    ->searchable()
                     ->sortable(),
 
                 TextColumn::make('student.user.name')

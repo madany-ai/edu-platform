@@ -14,6 +14,11 @@ class RecentEnrollmentsWidget extends TableWidget
 
     protected static ?int $sort = 2;
 
+    public static function canView(): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
     public function table(Table $table): Table
     {
         $user = request()->user();

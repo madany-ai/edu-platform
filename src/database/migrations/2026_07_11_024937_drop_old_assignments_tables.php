@@ -21,8 +21,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::create('assignments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('lecture_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('lecture_id')->constrained()->cascadeOnDelete();
             $table->string('title');
             $table->decimal('degree', 5, 2)->default(0);
             $table->text('description')->nullable();
@@ -30,9 +30,9 @@ return new class extends Migration
         });
 
         Schema::create('assignment_submissions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('assignment_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('assignment_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('student_id')->constrained()->cascadeOnDelete();
             $table->string('file')->nullable();
             $table->text('content')->nullable();
             $table->decimal('score', 5, 2)->nullable();

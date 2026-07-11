@@ -6,7 +6,9 @@ use App\Models\CourseSection;
 use App\Models\Enrollment;
 use App\Models\Lecture;
 use App\Models\User;
+use App\Services\CodeGeneratorService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,10 +16,22 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Course extends Model
 {
+    use HasUuids;
     protected $fillable = [
         'title', 'description', 'thumbnail', 'status',
-        'price', 'instructor_id',
+        'price', 'instructor_id', 'course_code',
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function (Course $course) {
+            if (! $course->course_code) {
+                $course->course_code = app(CodeGeneratorService::class)->generateCourseCode();
+            }
+        });
+    }
 
     public function instructor(): BelongsTo
     {
@@ -27,6 +41,7 @@ class Course extends Model
     public function assistants(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'course_assistants')
+            ->using(CourseAssistant::class)
             ->withTimestamps();
     }
 

@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('entitlements', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('lecture_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('student_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('lecture_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('order_id')->constrained()->cascadeOnDelete();
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
         });

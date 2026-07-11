@@ -11,7 +11,7 @@ use App\Models\Enrollment;
 use App\Models\Notification;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {

@@ -9,42 +9,42 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('governorates', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('name');
             $table->timestamps();
         });
 
         Schema::create('cities', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('governorate_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('governorate_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->timestamps();
         });
 
         Schema::create('schools', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('city_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('city_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('type')->nullable();
             $table->timestamps();
         });
 
         Schema::create('grade_levels', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('name');
             $table->integer('sort_order')->default(0);
             $table->timestamps();
         });
 
         Schema::create('academic_tracks', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('name');
             $table->timestamps();
         });
 
         Schema::create('students', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->string('student_code')->unique()->nullable();
             $table->string('first_name')->default('');
             $table->string('second_name');
@@ -54,11 +54,11 @@ return new class extends Migration
             $table->string('father_phone');
             $table->string('mother_phone');
             $table->string('guardian_job');
-            $table->foreignId('governorate_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('city_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('school_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('grade_level_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('academic_track_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('governorate_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('city_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('school_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('grade_level_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('academic_track_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('gender', ['male', 'female']);
             $table->date('birth_date');
             $table->string('profile_image')->nullable();

@@ -24,6 +24,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class ProductResource extends Resource
 {
@@ -176,6 +177,26 @@ class ProductResource extends Resource
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function canViewAny(): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
+    public static function canCreate(): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
     }
 
     public static function getPages(): array

@@ -20,6 +20,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class ExamResource extends Resource
 {
@@ -145,6 +146,21 @@ class ExamResource extends Resource
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function canCreate(): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
     }
 
     public static function getPages(): array

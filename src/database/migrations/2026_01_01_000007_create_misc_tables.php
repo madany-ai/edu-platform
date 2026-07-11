@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('assignments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('lecture_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('lecture_id')->constrained()->cascadeOnDelete();
             $table->string('title');
             $table->decimal('degree', 5, 2)->default(0);
             $table->text('description')->nullable();
@@ -18,9 +18,9 @@ return new class extends Migration
         });
 
         Schema::create('assignment_submissions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('assignment_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('assignment_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('student_id')->constrained()->cascadeOnDelete();
             $table->string('file')->nullable();
             $table->text('content')->nullable();
             $table->decimal('score', 5, 2)->nullable();
@@ -28,24 +28,24 @@ return new class extends Migration
         });
 
         Schema::create('questions_posts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('lecture_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('lecture_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('student_id')->constrained()->cascadeOnDelete();
             $table->text('body');
             $table->timestamps();
         });
 
         Schema::create('question_replies', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('question_id')->constrained('questions_posts')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('question_id')->constrained('questions_posts')->cascadeOnDelete();
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->text('body');
             $table->timestamps();
         });
 
         Schema::create('notifications', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->string('title');
             $table->text('body');
             $table->timestamp('read_at')->nullable();
@@ -53,8 +53,8 @@ return new class extends Migration
         });
 
         Schema::create('activity_logs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->string('action');
             $table->string('entity_type')->nullable();
             $table->unsignedBigInteger('entity_id')->nullable();
@@ -63,7 +63,7 @@ return new class extends Migration
         });
 
         Schema::create('media', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('disk');
             $table->string('path');
             $table->string('mime')->nullable();
@@ -72,8 +72,8 @@ return new class extends Migration
         });
 
         Schema::create('student_statistics', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('student_id')->constrained()->cascadeOnDelete();
             $table->integer('total_watch_minutes')->default(0);
             $table->decimal('attendance_rate', 5, 2)->default(0);
             $table->decimal('average_exam_score', 5, 2)->default(0);
@@ -84,8 +84,8 @@ return new class extends Migration
         });
 
         Schema::create('student_activity', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('student_id')->constrained()->cascadeOnDelete();
             $table->string('type');
             $table->string('entity_type')->nullable();
             $table->unsignedBigInteger('entity_id')->nullable();

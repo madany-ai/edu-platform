@@ -13,7 +13,36 @@ class ManageStudents extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->mutateFormDataUsing(function (array $data): array {
+                    if (empty($data['student_code'])) {
+                        $tempStudent = new \App\Models\Student(['grade_level_id' => $data['grade_level_id'] ?? null]);
+                        $data['student_code'] = app(\App\Services\CodeGeneratorService::class)->generateStudentCode($tempStudent);
+                    }
+
+                    if (empty($data['user_id'])) {
+                        $email = $data['email'] ?? null;
+                        if (!$email) {
+                            throw new \Exception('البريد الإلكتروني مطلوب لإنشاء مستخدم جديد.');
+                        }
+
+                        $fullName = trim(($data['first_name'] ?? '') . ' ' . ($data['second_name'] ?? ''));
+
+                        $user = \App\Models\User::create([
+                            'name' => $fullName,
+                            'email' => $email,
+                            'phone' => $data['phone'] ?? null,
+                            'password' => \Illuminate\Support\Facades\Hash::make($data['phone'] ?? '12345678'),
+                            'status' => 'active',
+                        ]);
+                        $user->assignRole('student');
+
+                        $data['user_id'] = $user->id;
+                    }
+
+                    unset($data['email']);
+                    return $data;
+                }),
         ];
     }
 }

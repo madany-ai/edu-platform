@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Models\Course;
 use App\Models\Student;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Enrollment extends Model
 {
+    use HasUuids;
     protected $fillable = ['student_id', 'course_id', 'status', 'source', 'started_at', 'expires_at'];
 
     protected function casts(): array

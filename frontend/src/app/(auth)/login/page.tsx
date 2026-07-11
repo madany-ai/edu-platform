@@ -58,11 +58,11 @@ export default function LoginPage() {
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="email">البريد الإلكتروني</Label>
+            <Label htmlFor="email">البريد الإلكتروني / الهاتف / الكود</Label>
             <Input
               id="email"
-              type="email"
-              placeholder="name@example.com"
+              type="text"
+              placeholder="مثال: ST30012 أو 01000000000"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

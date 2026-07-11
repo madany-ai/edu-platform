@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('bundles', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('instructor_id')->constrained('users')->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('instructor_id')->constrained('users')->cascadeOnDelete();
             $table->string('name');
             $table->unsignedInteger('price_cents');
             $table->timestamps();

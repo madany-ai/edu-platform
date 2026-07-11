@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::table('orders', function (Blueprint $table) {
             $table->dropForeign(['course_id']);
             $table->dropColumn('course_id');
-            $table->morphs('purchasable');
+            $table->uuidMorphs('purchasable');
             $table->dropColumn('amount');
             $table->unsignedInteger('amount_cents')->default(0);
             $table->timestamp('paid_at')->nullable();
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->dropColumn('amount_cents');
             $table->dropColumn('paid_at');
             $table->decimal('amount', 10, 2)->default(0);
-            $table->foreignId('course_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('course_id')->constrained()->cascadeOnDelete();
         });
     }
 };

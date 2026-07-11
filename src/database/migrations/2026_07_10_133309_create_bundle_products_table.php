@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('bundle_products', function (Blueprint $table) {
-            $table->foreignId('bundle_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('bundle_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('product_id')->constrained()->cascadeOnDelete();
             $table->primary(['bundle_id', 'product_id']);
         });
     }

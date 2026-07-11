@@ -19,6 +19,7 @@ use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class EnrollmentResource extends Resource
 {
@@ -73,8 +74,9 @@ class EnrollmentResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('#')
+                TextColumn::make('student.student_code')
+                    ->label('كود الطالب')
+                    ->searchable()
                     ->sortable(),
 
                 TextColumn::make('student.user.name')
@@ -130,6 +132,21 @@ class EnrollmentResource extends Resource
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function canCreate(): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
     }
 
     public static function getPages(): array

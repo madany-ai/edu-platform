@@ -5,11 +5,13 @@ namespace App\Models;
 use App\Models\AssignmentSubmission;
 use App\Models\Lecture;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Assignment extends Model
 {
+    use HasUuids;
     protected $fillable = ['lecture_id', 'title', 'degree', 'description'];
 
     public function lecture(): BelongsTo

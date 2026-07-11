@@ -26,6 +26,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class StudentResource extends Resource
 {
@@ -48,9 +49,18 @@ class StudentResource extends Resource
                     ->label('المستخدم')
                     ->relationship('user', 'name')
                     ->searchable()
-                    ->required(),
+                    ->reactive(),
+                TextInput::make('email')
+                    ->label('البريد الإلكتروني للجديد')
+                    ->email()
+                    ->required(fn (callable $get) => !$get('user_id'))
+                    ->visible(fn (callable $get) => !$get('user_id'))
+                    ->unique('users', 'email'),
                 TextInput::make('student_code')
-                    ->label('كود الطالب'),
+                    ->label('كود الطالب')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->visible(fn (?Student $record) => $record !== null),
                 TextInput::make('first_name')
                     ->label('الاسم الأول')
                     ->required()
@@ -123,13 +133,14 @@ class StudentResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
+                TextColumn::make('student_code')
                     ->label('#')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('full_name')
                     ->label('الاسم')
-                    ->searchable()
-                    ->sortable()
+                    ->searchable(['first_name', 'second_name', 'third_name', 'last_name'])
+                    ->sortable(['first_name'])
                     ->state(fn (Student $record): string => trim(
                         "{$record->first_name} {$record->second_name} {$record->third_name} {$record->last_name}"
                     )),
@@ -178,7 +189,11 @@ class StudentResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->mutateFormDataUsing(function (array $data): array {
+                        unset($data['email']);
+                        return $data;
+                    }),
                 Action::make('approve')
                     ->label('اعتماد')
                     ->icon('heroicon-o-check-circle')
@@ -322,6 +337,21 @@ class StudentResource extends Resource
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function canCreate(): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
     }
 
     public static function getPages(): array

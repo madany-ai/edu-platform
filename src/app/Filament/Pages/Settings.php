@@ -28,6 +28,11 @@ class Settings extends Page implements HasForms
 
     protected string $view = 'filament.pages.settings';
 
+    public static function canAccess(): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
     public ?array $data = [];
 
     public function mount(): void
@@ -77,6 +82,16 @@ class Settings extends Page implements HasForms
                             ->label('Paymob HMAC')
                             ->password()
                             ->revealable(),
+                    ])
+                    ->columns(2),
+                Section::make('معلومات الحساب')
+                    ->description('تفاصيل حسابك')
+                    ->schema([
+                        TextInput::make('user_name')
+                            ->label('الاسم')
+                            ->default(fn () => auth()->user()->name)
+                            ->disabled()
+                            ->columnSpanFull(),
                     ])
                     ->columns(2),
             ])
@@ -132,7 +147,7 @@ class Settings extends Page implements HasForms
                 ->color('danger')
                 ->icon('heroicon-o-arrow-right-on-rectangle')
                 ->action(function () {
-                    auth()->logout();
+                    \Filament\Facades\Filament::auth()->logout();
                     request()->session()->invalidate();
                     request()->session()->regenerateToken();
                     return redirect('/admin/login');

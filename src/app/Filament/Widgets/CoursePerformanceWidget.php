@@ -13,6 +13,11 @@ class CoursePerformanceWidget extends TableWidget
 
     protected static ?int $sort = 3;
 
+    public static function canView(): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
     public function table(Table $table): Table
     {
         $user = request()->user();

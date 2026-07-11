@@ -57,9 +57,21 @@ class AuthService
     }
 
     /** @return array{user: User, token: string}|string|null */
-    public function login(string $email, string $password): array|string|null
+    public function login(string $emailOrCode, string $password): array|string|null
     {
-        $user = User::where('email', $email)->first();
+        $user = User::where('email', $emailOrCode)
+            ->orWhere('phone', $emailOrCode)
+            ->first();
+
+        // Try login by student_code or student phone
+        if (! $user) {
+            $student = Student::where('student_code', $emailOrCode)
+                ->orWhere('phone', $emailOrCode)
+                ->first();
+            if ($student) {
+                $user = $student->user;
+            }
+        }
 
         if (! $user || ! Hash::check($password, $user->password)) {
             return null;

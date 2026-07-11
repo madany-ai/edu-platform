@@ -6,11 +6,13 @@ use App\Models\ExamAttempt;
 use App\Models\Lecture;
 use App\Models\Question;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Exam extends Model
 {
+    use HasUuids;
     protected $fillable = ['lecture_id', 'title', 'duration', 'sort_order', 'pass_percentage', 'is_blocking', 'is_assignment'];
 
     public function lecture(): BelongsTo

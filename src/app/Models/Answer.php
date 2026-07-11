@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Models\ExamAttempt;
 use App\Models\Question;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Answer extends Model
 {
+    use HasUuids;
     protected $fillable = ['attempt_id', 'question_id', 'answer'];
 
     public function attempt(): BelongsTo

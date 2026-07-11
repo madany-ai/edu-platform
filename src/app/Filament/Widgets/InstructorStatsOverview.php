@@ -10,6 +10,11 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class InstructorStatsOverview extends StatsOverviewWidget
 {
+    public static function canView(): bool
+    {
+        return ! auth()->user()->hasRole('assistant');
+    }
+
     protected function getStats(): array
     {
         $user = request()->user();

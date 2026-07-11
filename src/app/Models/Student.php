@@ -15,20 +15,24 @@ use App\Models\Entitlement;
 use App\Models\StudentActivity;
 use App\Models\StudentStatistic;
 use App\Models\User;
+use App\Services\CodeGeneratorService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Database\Factories\StudentFactory;
 
 class Student extends Model
 {
-    /** @use HasFactory<StudentFactory> */
+    use HasUuids;
+    /** @use HasFactory<\Database\Factories\StudentFactory> */
     use HasFactory;
 
-    protected static function newFactory(): StudentFactory
+    protected static function newFactory(): \Database\Factories\StudentFactory
     {
-        return StudentFactory::new();
+        return \Database\Factories\StudentFactory::new();
     }
 
     protected $fillable = [
@@ -37,6 +41,17 @@ class Student extends Model
         'governorate_id', 'city_id', 'school_id', 'grade_level_id', 'academic_track_id',
         'gender', 'birth_date', 'profile_image', 'is_verified',
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function (Student $student) {
+            if (! $student->student_code) {
+                $student->student_code = app(CodeGeneratorService::class)->generateStudentCode($student);
+            }
+        });
+    }
 
     protected function casts(): array
     {

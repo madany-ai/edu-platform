@@ -4,10 +4,12 @@ namespace App\Models;
 
 use App\Models\City;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class School extends Model
 {
+    use HasUuids;
     protected $fillable = ['city_id', 'name', 'type'];
 
     public function city(): BelongsTo
