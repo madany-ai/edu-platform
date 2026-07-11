@@ -123,4 +123,8 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'instance_logo' => env('INSTANCE_LOGO'),
+    'instance_favicon' => env('INSTANCE_FAVICON'),
+    'instance_primary_color' => env('INSTANCE_PRIMARY_COLOR', '#2563eb'),
+
 ];
