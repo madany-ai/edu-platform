@@ -125,7 +125,7 @@ export default function StudentDashboardPage() {
                             : ""}
                         </p>
                       </div>
-                      <Link href={`/courses/${enrollment.course.id}`}>
+                      <Link href={`/courses/${enrollment.course.id}/play`}>
                         <Button size="sm" className="bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold">
                           متابعة التعلم
                         </Button>

@@ -68,7 +68,7 @@ export default function StudentCoursesPage() {
                     </span>
                   </div>
 
-                  <Link href={`/courses/${course.id}`} className="w-full">
+                  <Link href={`/courses/${course.id}/play`} className="w-full">
                     <Button className="w-full gap-2 mt-2 bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold">
                       متابعة التعلم
                       <ChevronLeft className="h-4 w-4" />

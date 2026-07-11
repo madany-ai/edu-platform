@@ -54,7 +54,13 @@ class EnrollmentResource extends Resource
                     ->label('الدورة')
                     ->relationship('course', 'title')
                     ->searchable()
-                    ->required(),
+                    ->required()
+                    ->unique(ignoreRecord: true, modifyRuleUsing: function (\Illuminate\Validation\Rules\Unique $rule, \Filament\Forms\Get $get) {
+                        return $rule->where('student_id', $get('student_id'));
+                    })
+                    ->validationMessages([
+                        'unique' => 'هذا الطالب مسجل في هذه الدورة بالفعل.',
+                    ]),
 
                 Select::make('status')
                     ->label('الحالة')

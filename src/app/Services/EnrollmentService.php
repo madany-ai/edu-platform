@@ -24,7 +24,7 @@ class EnrollmentService
         );
     }
 
-    public function enrollByUserId(Course $course, int $userId, EnrollmentSource $source = EnrollmentSource::Manual): Enrollment
+    public function enrollByUserId(Course $course, string $userId, EnrollmentSource $source = EnrollmentSource::Manual): Enrollment
     {
         $student = Student::where('user_id', $userId)->firstOrFail();
         return $this->enrollStudent($course, $student, $source);
@@ -37,7 +37,7 @@ class EnrollmentService
             ->update(['status' => EnrollmentStatus::Suspended->value]) > 0;
     }
 
-    public function isEnrolled(int $userId, int $courseId): bool
+    public function isEnrolled(string $userId, string $courseId): bool
     {
         $student = Student::where('user_id', $userId)->first();
         if (! $student) {
@@ -58,7 +58,7 @@ class EnrollmentService
             ->get();
     }
 
-    public function getStudentEnrollments(int $userId): Collection
+    public function getStudentEnrollments(string $userId): Collection
     {
         $student = Student::where('user_id', $userId)->first();
 

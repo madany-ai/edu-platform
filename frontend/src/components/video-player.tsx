@@ -4,17 +4,20 @@
 import { useEffect, useRef } from "react";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
-import env from "@/config/env";
 import { STORAGE_KEYS } from "@/lib/constants";
+import api from "@/services/api.client";
 
 interface VideoPlayerProps {
   lectureId: string;
-  onHeartbeat?: () => void;
+  streamUrl: string;
+  streamType: string;
+  initialTime?: number;
 }
 
-export default function VideoPlayer({ lectureId, onHeartbeat }: VideoPlayerProps) {
+export default function VideoPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLDivElement | null>(null);
   const playerRef = useRef<ReturnType<typeof videojs> | null>(null);
+  const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -27,32 +30,31 @@ export default function VideoPlayer({ lectureId, onHeartbeat }: VideoPlayerProps
     videoElement.setAttribute("x-webkit-airplay", "deny");
     videoRef.current.appendChild(videoElement);
 
-    // Setup HLS authorization header injection using video.js hooks
+    // Setup token injection for HLS stream requests (if using HLS)
     const token = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEYS.TOKEN) : null;
     
-    // Register the Vhs beforeRequest hook to append Authorization header
-    const vhs = (videojs as any).Vhs;
-    if (vhs && vhs.xhr && typeof vhs.xhr.beforeRequest === "function") {
-      const originalBeforeRequest = vhs.xhr.beforeRequest;
-      vhs.xhr.beforeRequest = function (options: any) {
-        const opt = originalBeforeRequest ? originalBeforeRequest(options) : options;
-        if (token) {
-          opt.headers = opt.headers || {};
-          opt.headers.Authorization = `Bearer ${token}`;
-        }
-        return opt;
-      };
-    } else {
-      (videojs as any).hook("beforeRequest", (options: any) => {
-        if (token) {
-          options.headers = options.headers || {};
-          options.headers.Authorization = `Bearer ${token}`;
-        }
-        return options;
-      });
+    if (streamType === "application/x-mpegURL") {
+      const vhs = (videojs as any).Vhs;
+      if (vhs && vhs.xhr && typeof vhs.xhr.beforeRequest === "function") {
+        const originalBeforeRequest = vhs.xhr.beforeRequest;
+        vhs.xhr.beforeRequest = function (options: any) {
+          const opt = originalBeforeRequest ? originalBeforeRequest(options) : options;
+          if (token) {
+            opt.headers = opt.headers || {};
+            opt.headers.Authorization = `Bearer ${token}`;
+          }
+          return opt;
+        };
+      } else {
+        (videojs as any).hook("beforeRequest", (options: any) => {
+          if (token) {
+            options.headers = options.headers || {};
+            options.headers.Authorization = `Bearer ${token}`;
+          }
+          return options;
+        });
+      }
     }
-
-    const streamUrl = `${env.NEXT_PUBLIC_API_URL}/lectures/${lectureId}/stream`;
 
     const player = videojs(videoElement, {
       autoplay: false,
@@ -67,7 +69,7 @@ export default function VideoPlayer({ lectureId, onHeartbeat }: VideoPlayerProps
       sources: [
         {
           src: streamUrl,
-          type: "application/x-mpegURL",
+          type: streamType,
         },
       ],
       controlBar: {
@@ -77,16 +79,43 @@ export default function VideoPlayer({ lectureId, onHeartbeat }: VideoPlayerProps
 
     playerRef.current = player;
 
-    // 20-second heartbeat check
-    const heartbeatInterval = setInterval(() => {
+    // Seek to last watched time once player is ready and metadata is loaded
+    player.ready(() => {
+      if (initialTime > 0) {
+        player.currentTime(initialTime);
+      }
+    });
+
+    // Helper to send progress updates
+    const reportProgress = async (currentTime: number, isCompleted: boolean) => {
+      try {
+        await api.post(`/lectures/${lectureId}/progress`, {
+          current_time: currentTime,
+          is_completed: isCompleted,
+        });
+      } catch (err) {
+        console.error("Failed to save watch progress:", err);
+      }
+    };
+
+    // Periodic 20-second progress tracking heartbeat
+    progressTimerRef.current = setInterval(() => {
       if (player && !player.paused()) {
-        if (onHeartbeat) {
-          onHeartbeat();
-        }
+        const currentTime = player.currentTime() || 0;
+        const duration = player.duration() || 0;
+        // Mark as completed if student watched > 90% of the video duration
+        const isCompleted = duration > 0 && (currentTime / duration) >= 0.9;
+        reportProgress(currentTime, isCompleted);
       }
     }, 20000);
 
-    // Disable right click on video element container
+    // Track completion immediately when video ends
+    player.on("ended", () => {
+      const duration = player.duration() || 0;
+      reportProgress(duration, true);
+    });
+
+    // Disable right click context menu on player elements
     const handleContextMenu = (e: Event) => {
       e.preventDefault();
     };
@@ -97,7 +126,9 @@ export default function VideoPlayer({ lectureId, onHeartbeat }: VideoPlayerProps
     }
 
     return () => {
-      clearInterval(heartbeatInterval);
+      if (progressTimerRef.current) {
+        clearInterval(progressTimerRef.current);
+      }
       if (playerEl) {
         playerEl.removeEventListener("contextmenu", handleContextMenu);
       }
@@ -105,7 +136,7 @@ export default function VideoPlayer({ lectureId, onHeartbeat }: VideoPlayerProps
         player.dispose();
       }
     };
-  }, [lectureId, onHeartbeat]);
+  }, [lectureId, streamUrl, streamType, initialTime]);
 
   return (
     <div className="w-full relative aspect-video" ref={videoRef} />

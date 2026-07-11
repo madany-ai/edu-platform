@@ -68,7 +68,38 @@ class CourseController extends Controller
     {
         $lecture->load(['video', 'files', 'section.course']);
 
-        return response()->json($lecture);
+        $progress = null;
+        $user = request()->user();
+        if ($user) {
+            $student = \App\Models\Student::where('user_id', $user->id)->first();
+            if ($student) {
+                $activity = \App\Models\StudentActivity::where('student_id', $student->id)
+                    ->where('type', 'video_progress')
+                    ->where('entity_type', \App\Models\Lecture::class)
+                    ->where('entity_id', $lecture->id)
+                    ->first();
+                
+                if ($activity) {
+                    $progress = $activity->metadata;
+                }
+            }
+        }
+
+        $responseData = $lecture->toArray();
+        $responseData['progress'] = $progress;
+
+        if ($lecture->video && $lecture->video->status === 'completed' && $lecture->video->video_path) {
+            if (str_ends_with(strtolower($lecture->video->video_path), '.mp4')) {
+                $responseData['video']['stream_url'] = \Illuminate\Support\Facades\Storage::disk('minio')
+                    ->temporaryUrl($lecture->video->video_path, now()->addHours(2));
+                $responseData['video']['stream_type'] = 'video/mp4';
+            } else {
+                $responseData['video']['stream_url'] = route('lectures.stream', ['lecture' => $lecture->id]);
+                $responseData['video']['stream_type'] = 'application/x-mpegURL';
+            }
+        }
+
+        return response()->json($responseData);
     }
 
     public function instructorCourses(): AnonymousResourceCollection
@@ -202,5 +233,63 @@ class CourseController extends Controller
         return response($rawKey)
             ->header('Content-Type', 'application/octet-stream')
             ->header('Cache-Control', 'no-cache, private');
+    }
+
+    public function updateProgress(Request $request, \App\Models\Lecture $lecture): JsonResponse
+    {
+        $validated = $request->validate([
+            'current_time' => 'required|numeric|min:0',
+            'is_completed' => 'required|boolean',
+        ]);
+
+        $user = $request->user();
+        $student = \App\Models\Student::where('user_id', $user->id)->first();
+
+        if (!$student) {
+            return response()->json(['message' => 'Student record not found.'], 404);
+        }
+
+        $activity = \App\Models\StudentActivity::updateOrCreate(
+            [
+                'student_id' => $student->id,
+                'type' => 'video_progress',
+                'entity_type' => \App\Models\Lecture::class,
+                'entity_id' => $lecture->id,
+            ],
+            [
+                'metadata' => [
+                    'current_time' => $validated['current_time'],
+                    'is_completed' => $validated['is_completed'],
+                ]
+            ]
+        );
+
+        $stats = \App\Models\StudentStatistic::firstOrCreate(['student_id' => $student->id]);
+        $stats->total_watch_minutes = ($stats->total_watch_minutes ?? 0) + (20 / 60);
+
+        $wasCompleted = \App\Models\StudentActivity::where('student_id', $student->id)
+            ->where('type', 'video_completed')
+            ->where('entity_type', \App\Models\Lecture::class)
+            ->where('entity_id', $lecture->id)
+            ->exists();
+
+        if ($validated['is_completed'] && !$wasCompleted) {
+            \App\Models\StudentActivity::create([
+                'student_id' => $student->id,
+                'type' => 'video_completed',
+                'entity_type' => \App\Models\Lecture::class,
+                'entity_id' => $lecture->id,
+                'metadata' => ['completed_at' => now()->toDateTimeString()],
+            ]);
+            $stats->completed_lectures = ($stats->completed_lectures ?? 0) + 1;
+        }
+
+        $stats->last_activity_at = now();
+        $stats->save();
+
+        return response()->json([
+            'message' => 'Progress updated successfully.',
+            'progress' => $activity->metadata,
+        ]);
     }
 }
