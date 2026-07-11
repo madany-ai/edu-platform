@@ -22,9 +22,10 @@ class ExamService
     public function createExam(Lecture $lecture, array $data): Exam
     {
         return DB::transaction(function () use ($lecture, $data) {
-            $exam = $lecture->exam()->create([
+            $exam = $lecture->exams()->create([
                 'title' => $data['title'],
                 'duration' => $data['duration'] ?? 30,
+                'is_assignment' => $data['is_assignment'] ?? false,
             ]);
 
             if (! empty($data['questions'])) {
@@ -33,6 +34,7 @@ class ExamService
                         'type' => $questionData['type'] ?? 'multiple_choice',
                         'question' => $questionData['question'],
                         'degree' => $questionData['degree'] ?? 1,
+                        'image_path' => $questionData['image_path'] ?? null,
                     ]);
 
                     if (! empty($questionData['choices'])) {
@@ -56,6 +58,7 @@ class ExamService
             $exam->update([
                 'title' => $data['title'] ?? $exam->title,
                 'duration' => $data['duration'] ?? $exam->duration,
+                'is_assignment' => $data['is_assignment'] ?? $exam->is_assignment,
             ]);
 
             if (! empty($data['questions'])) {
@@ -66,6 +69,7 @@ class ExamService
                         'type' => $questionData['type'] ?? 'multiple_choice',
                         'question' => $questionData['question'],
                         'degree' => $questionData['degree'] ?? 1,
+                        'image_path' => $questionData['image_path'] ?? null,
                     ]);
 
                     if (! empty($questionData['choices'])) {
@@ -139,12 +143,18 @@ class ExamService
             $question = $answer->question;
             $totalPoints += $question->degree;
 
-            $correctChoice = Choice::where('question_id', $question->id)
-                ->where('is_correct', true)
-                ->first();
+            if ($question->type === 'essay') {
+                if ($answer->score !== null) {
+                    $earnedPoints += $answer->score;
+                }
+            } else {
+                $correctChoice = Choice::where('question_id', $question->id)
+                    ->where('is_correct', true)
+                    ->first();
 
-            if ($correctChoice && $correctChoice->id == $answer->answer) {
-                $earnedPoints += $question->degree;
+                if ($correctChoice && $correctChoice->id == $answer->answer) {
+                    $earnedPoints += $question->degree;
+                }
             }
         }
 

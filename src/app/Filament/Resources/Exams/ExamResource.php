@@ -14,6 +14,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -49,10 +50,9 @@ class ExamResource extends Resource
                     ->minValue(1),
 
                 Select::make('lecture_id')
-                    ->label('المحاضرة')
+                    ->label('المحاضرة (اختياري)')
                     ->relationship('lecture', 'title')
-                    ->searchable()
-                    ->required(),
+                    ->searchable(),
 
                 Repeater::make('questions')
                     ->relationship()
@@ -62,17 +62,28 @@ class ExamResource extends Resource
                             ->options([
                                 'multiple_choice' => 'اختيار متعدد',
                                 'true_false' => 'صح / خطأ',
+                                'essay' => 'مقال',
                             ])
+                            ->live()
                             ->default('multiple_choice'),
+
+                        FileUpload::make('image_path')
+                            ->label('صورة للسؤال (اختياري)')
+                            ->disk('minio')
+                            ->directory('questions')
+                            ->image()
+                            ->columnSpanFull(),
 
                         Textarea::make('question')
                             ->label('نص السؤال')
                             ->required()
-                            ->rows(2),
+                            ->rows(2)
+                            ->columnSpanFull(),
 
                         TextInput::make('degree')
                             ->label('النقاط')
                             ->numeric()
+                            ->required()
                             ->default(1),
 
                         Repeater::make('choices')
@@ -85,6 +96,7 @@ class ExamResource extends Resource
                                     ->label('إجابة صحيحة'),
                             ])
                             ->columns(2)
+                            ->hidden(fn ($get): bool => $get('type') === 'essay')
                             ->label('الخيارات'),
                     ])
                     ->label('الأسئلة')
@@ -138,5 +150,20 @@ class ExamResource extends Resource
         return [
             'index' => ManageExams::route('/'),
         ];
+    }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $user = request()->user();
+
+        return parent::getEloquentQuery()
+            ->where('is_assignment', false)
+            ->when($user && ! $user->hasRole('super_admin'), function (\Illuminate\Database\Eloquent\Builder $query) use ($user) {
+                if ($user->hasRole('instructor')) {
+                    $query->whereHas('lecture.section.course', fn ($q) => $q->where('instructor_id', $user->id));
+                } elseif ($user->hasRole('assistant')) {
+                    $query->whereHas('lecture.section.course.assistants', fn ($q) => $q->where('user_id', $user->id));
+                }
+            });
     }
 }

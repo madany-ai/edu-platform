@@ -31,13 +31,13 @@ class Lecture extends Model
         return $this->hasMany(LectureFile::class);
     }
 
-    public function exam(): HasMany
+    public function exams(): HasMany
     {
-        return $this->hasMany(Exam::class);
+        return $this->hasMany(Exam::class)->where('is_assignment', false);
     }
 
-    public function assignment(): HasOne
+    public function assignments(): HasMany
     {
-        return $this->hasOne(Assignment::class);
+        return $this->hasMany(Exam::class)->where('is_assignment', true);
     }
 }

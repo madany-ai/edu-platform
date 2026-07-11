@@ -13,7 +13,8 @@ class ManageExams extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->mutateFormDataUsing(fn (array $data): array => array_merge($data, ['is_assignment' => false])),
         ];
     }
 }

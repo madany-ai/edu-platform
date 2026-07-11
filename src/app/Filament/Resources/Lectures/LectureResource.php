@@ -18,6 +18,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Get;
 use Filament\Schemas\Components\Section as FormSection;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -97,8 +98,8 @@ class LectureResource extends Resource
                 FormSection::make('الامتحانات')
                     ->description('أضف امتحانات لهذه المحاضرة وحدد شروط النجاح')
                     ->schema([
-                        Repeater::make('exam')
-                            ->relationship('exam')
+                        Repeater::make('exams')
+                            ->relationship('exams')
                             ->label('الامتحانات')
                             ->schema([
                                 TextInput::make('title')
@@ -131,17 +132,28 @@ class LectureResource extends Resource
                                             ->options([
                                                 'multiple_choice' => 'اختيار متعدد',
                                                 'true_false' => 'صح / خطأ',
+                                                'essay' => 'مقال',
                                             ])
+                                            ->live()
                                             ->default('multiple_choice'),
+
+                                        FileUpload::make('image_path')
+                                            ->label('صورة للسؤال (اختياري)')
+                                            ->disk('minio')
+                                            ->directory('questions')
+                                            ->image()
+                                            ->columnSpanFull(),
 
                                         Textarea::make('question')
                                             ->label('نص السؤال')
                                             ->required()
-                                            ->rows(2),
+                                            ->rows(2)
+                                            ->columnSpanFull(),
 
                                         TextInput::make('degree')
                                             ->label('النقاط')
                                             ->numeric()
+                                            ->required()
                                             ->default(1),
 
                                         Repeater::make('choices')
@@ -154,6 +166,7 @@ class LectureResource extends Resource
                                                 Toggle::make('is_correct')
                                                     ->label('إجابة صحيحة'),
                                             ])
+                                            ->hidden(fn ($get): bool => $get('type') === 'essay')
                                             ->columns(2)
                                     ])
                                     ->collapsible()
@@ -166,28 +179,71 @@ class LectureResource extends Resource
                     ])->columnSpanFull(),
 
                 FormSection::make('الواجب')
+                    ->description('أضف واجبات لهذه المحاضرة وحدد شروط النجاح')
                     ->schema([
-                        Repeater::make('assignment')
-                            ->relationship('assignment')
-                            ->label('الواجب')
-                            ->maxItems(1)
+                        Repeater::make('assignments')
+                            ->relationship('assignments')
+                            ->label('الواجبات')
+                            ->mutateRelationshipDataBeforeCreateUsing(fn (array $data): array => array_merge($data, ['is_assignment' => true]))
+                            ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): array => array_merge($data, ['is_assignment' => true]))
                             ->schema([
                                 TextInput::make('title')
                                     ->label('عنوان الواجب')
                                     ->required()
                                     ->maxLength(255),
 
-                                TextInput::make('degree')
-                                    ->label('درجة الواجب')
-                                    ->numeric()
-                                    ->default(10)
-                                    ->required(),
+                                Repeater::make('questions')
+                                    ->relationship('questions')
+                                    ->label('الأسئلة')
+                                    ->schema([
+                                        Select::make('type')
+                                            ->label('نوع السؤال')
+                                            ->options([
+                                                'multiple_choice' => 'اختيار متعدد',
+                                                'true_false' => 'صح / خطأ',
+                                                'essay' => 'مقال',
+                                            ])
+                                            ->live()
+                                            ->default('multiple_choice'),
 
-                                Textarea::make('description')
-                                    ->label('وصف الواجب وطريقة التسليم')
-                                    ->rows(3)
-                                    ->columnSpanFull(),
+                                        FileUpload::make('image_path')
+                                            ->label('صورة للسؤال (اختياري)')
+                                            ->disk('minio')
+                                            ->directory('questions')
+                                            ->image()
+                                            ->columnSpanFull(),
+
+                                        Textarea::make('question')
+                                            ->label('نص السؤال')
+                                            ->required()
+                                            ->rows(2)
+                                            ->columnSpanFull(),
+
+                                        TextInput::make('degree')
+                                            ->label('النقاط')
+                                            ->numeric()
+                                            ->required()
+                                            ->default(1),
+
+                                        Repeater::make('choices')
+                                            ->relationship('choices')
+                                            ->label('الخيارات')
+                                            ->schema([
+                                                TextInput::make('answer')
+                                                    ->label('الإجابة')
+                                                    ->required(),
+                                                Toggle::make('is_correct')
+                                                    ->label('إجابة صحيحة'),
+                                            ])
+                                            ->hidden(fn ($get): bool => $get('type') === 'essay')
+                                            ->columns(2)
+                                    ])
+                                    ->collapsible()
+                                    ->columnSpanFull()
                             ])
+                            ->orderColumn('sort_order')
+                            ->reorderableWithButtons()
+                            ->collapsible()
                             ->columnSpanFull(),
                     ])->columnSpanFull(),
             ]);
@@ -216,7 +272,11 @@ class LectureResource extends Resource
 
                 TextColumn::make('exam_count')
                     ->label('عدد الامتحانات')
-                    ->counts('exam'),
+                    ->counts('exams'),
+
+                TextColumn::make('assignment_count')
+                    ->label('عدد الواجبات')
+                    ->counts('assignments'),
 
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')

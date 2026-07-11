@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Question extends Model
 {
-    protected $fillable = ['exam_id', 'type', 'question', 'degree'];
+    protected $fillable = ['exam_id', 'type', 'question', 'degree', 'image_path'];
 
     public function exam(): BelongsTo
     {
