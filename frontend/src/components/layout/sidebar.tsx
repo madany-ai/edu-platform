@@ -17,7 +17,7 @@ import {
 
 const studentLinks = [
   { href: ROUTES.DASHBOARD, label: "لوحة التحكم", icon: LayoutDashboard },
-  { href: ROUTES.COURSES, label: "دوراتي", icon: BookOpen },
+  { href: "/dashboard/courses", label: "دوراتي", icon: BookOpen },
   { href: "/dashboard/certificates", label: "شهاداتي", icon: GraduationCap },
   { href: "/dashboard/notifications", label: "الإشعارات", icon: Bell },
   { href: "/dashboard/settings", label: "الإعدادات", icon: Settings },

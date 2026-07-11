@@ -4,12 +4,9 @@ import { useAuth } from "@/providers/auth-provider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { PageLoading } from "@/components/shared/loading-spinner";
-import { PageHeader } from "@/components/shared/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { dashboardService } from "@/services/dashboard.service";
-import { enrollmentService } from "@/services/enrollment.service";
+import { useStudentDashboard } from "@/hooks/useDashboard";
+import { useMyEnrollments } from "@/hooks/useEnrollment";
 import { ROUTES } from "@/lib/constants";
 import {
   BookOpen,
@@ -32,15 +29,8 @@ export default function StudentDashboardPage() {
     }
   }, [isInstructor, router]);
 
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ["student-dashboard"],
-    queryFn: dashboardService.getStudentDashboard,
-  });
-
-  const { data: enrollmentsData, isLoading: enrollmentsLoading } = useQuery({
-    queryKey: ["my-enrollments"],
-    queryFn: enrollmentService.getMyEnrollments,
-  });
+  const { data: stats, isLoading: statsLoading } = useStudentDashboard();
+  const { data: enrollmentsData, isLoading: enrollmentsLoading } = useMyEnrollments();
 
   if (statsLoading || enrollmentsLoading) return <PageLoading />;
 
@@ -75,7 +65,7 @@ export default function StudentDashboardPage() {
 
   return (
     <div className="p-6 lg:p-10 space-y-8 max-w-7xl mx-auto">
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-primary/10 via-secondary/5 to-transparent border border-white/5">
+      <div className="p-6 rounded-2xl bg-linear-to-r from-primary/10 via-secondary/5 to-transparent border border-white/5">
         <h1 className="text-3xl font-extrabold text-gradient mb-2">
           مرحباً بعودتك إلى المختبر، {user?.name} 🧪
         </h1>
@@ -104,7 +94,7 @@ export default function StudentDashboardPage() {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-gradient">الدورات المسجل فيها</h3>
               <Link
-                href={ROUTES.COURSES}
+                href="/dashboard/courses"
                 className="flex items-center gap-1 text-xs text-primary hover:underline hover:text-primary-fixed transition-all"
               >
                 عرض الكل <ChevronLeft className="h-4 w-4" />

@@ -8,7 +8,7 @@ import { ROUTES } from "@/lib/constants";
 export default function CertificatesPage() {
   return (
     <div className="p-6 lg:p-10 space-y-8 max-w-7xl mx-auto">
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-primary/10 via-secondary/5 to-transparent border border-white/5">
+      <div className="p-6 rounded-2xl bg-linear-to-r from-primary/10 via-secondary/5 to-transparent border border-white/5">
         <h1 className="text-3xl font-extrabold text-gradient mb-2">
           شهاداتي المعتمدة 🏆
         </h1>
@@ -29,7 +29,7 @@ export default function CertificatesPage() {
         </div>
         <div className="pt-2">
           <Link href={ROUTES.COURSES}>
-            <Button className="bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold">
+            <Button className="bg-linear-to-r from-primary to-secondary text-primary-foreground font-bold">
               تصفح المحاضرات وابدأ التعلم
             </Button>
           </Link>

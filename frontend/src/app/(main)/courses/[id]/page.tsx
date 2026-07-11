@@ -1,19 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { courseService } from "@/services/course.service";
-import { enrollmentService } from "@/services/enrollment.service";
 import { useAuth } from "@/providers/auth-provider";
 import { PageHeader } from "@/components/shared/page-header";
 import { PageLoading } from "@/components/shared/loading-spinner";
 import { ErrorState } from "@/components/shared/error-state";
-import type { Course as CourseType } from "@/types";
+import { useCourse } from "@/hooks/useCourses";
+import { useMyEnrollments, useEnroll, usePurchase } from "@/hooks/useEnrollment";
 import {
   CheckCircle2,
   Users,
@@ -27,59 +26,26 @@ import {
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user, isInstructor } = useAuth();
-  const [course, setCourse] = useState<CourseType | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [enrolling, setEnrolling] = useState(false);
-  const [purchasing, setPurchasing] = useState(false);
-  const [enrolled, setEnrolled] = useState(false);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    courseService
-      .getById(id)
-      .then((res) => {
-        setCourse(res.data);
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+  const { data: courseData, isLoading: courseLoading, error: courseError } = useCourse(id);
+  const { data: enrollmentsData } = useMyEnrollments();
+  const enrollMutation = useEnroll();
+  const purchaseMutation = usePurchase();
 
-    if (user) {
-      enrollmentService
-        .getMyEnrollments()
-        .then((res) => {
-          const enrollmentsList = res?.data ?? [];
-          const isEnrolled = enrollmentsList.some(
-            (e) => e.course_id === id || e.course?.id === id
-          );
-          setEnrolled(isEnrolled);
-        })
-        .catch((err) => {
-          console.error("Failed to fetch enrollments:", err);
-        });
-    }
-  }, [id, user]);
+  const course = courseData?.data;
+  const enrolled = enrollmentsData?.data?.some(
+    (e) => e.course_id === id || e.course?.id === id
+  ) ?? false;
 
   const handleEnroll = async () => {
     if (!course) return;
-    setEnrolling(true);
-    try {
-      await enrollmentService.enroll(course.id);
-      setEnrolled(true);
-    } finally {
-      setEnrolling(false);
-    }
+    enrollMutation.mutate(course.id);
   };
 
   const handlePurchase = async () => {
     if (!course) return;
-    setPurchasing(true);
-    try {
-      await enrollmentService.purchase(course.id);
-      setEnrolled(true);
-    } finally {
-      setPurchasing(false);
-    }
+    purchaseMutation.mutate(course.id);
   };
 
   const toggleSection = (sectionId: string) => {
@@ -94,9 +60,9 @@ export default function CourseDetailPage() {
     });
   };
 
-  if (loading) return <PageLoading />;
+  if (courseLoading) return <PageLoading />;
 
-  if (error || !course) {
+  if (courseError || !course) {
     return (
       <ErrorState
         title="الدورة غير موجودة"
@@ -104,6 +70,11 @@ export default function CourseDetailPage() {
       />
     );
   }
+
+  const firstLectureId = course.sections?.[0]?.lectures?.[0]?.id;
+  const continueLearningUrl = firstLectureId
+    ? `/courses/${id}/lectures/${firstLectureId}`
+    : `/courses/${id}`;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
@@ -217,7 +188,7 @@ export default function CourseDetailPage() {
 
                 {user ? (
                   (enrolled || isInstructor) ? (
-                    <Link href={`/courses/${id}`}>
+                    <Link href={continueLearningUrl}>
                       <Button className="w-full gap-2" size="lg">
                         <CheckCircle2 className="h-4 w-4" />
                         متابعة التعلم
@@ -228,9 +199,9 @@ export default function CourseDetailPage() {
                       className="w-full gap-2"
                       size="lg"
                       onClick={handleEnroll}
-                      disabled={enrolling}
+                      disabled={enrollMutation.isPending}
                     >
-                      {enrolling ? "جاري التسجيل..." : "سجل الآن مجاناً"}
+                      {enrollMutation.isPending ? "جاري التسجيل..." : "سجل الآن مجاناً"}
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   ) : (
@@ -238,9 +209,9 @@ export default function CourseDetailPage() {
                       className="w-full gap-2"
                       size="lg"
                       onClick={handlePurchase}
-                      disabled={purchasing}
+                      disabled={purchaseMutation.isPending}
                     >
-                      {purchasing ? "جاري الشراء..." : `شراء - ${course.price} د.م`}
+                      {purchaseMutation.isPending ? "جاري الشراء..." : `شراء - ${course.price} د.م`}
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   )

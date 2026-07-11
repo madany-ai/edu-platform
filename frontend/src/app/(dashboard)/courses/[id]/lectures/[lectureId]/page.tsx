@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/providers/auth-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageLoading } from "@/components/shared/loading-spinner";
-import { courseService } from "@/services/course.service";
-import type { Lecture } from "@/types";
+import { useLecture } from "@/hooks/useCourses";
 import { ArrowRight, Play, FileText } from "lucide-react";
 import Link from "next/link";
 import VideoPlayer from "@/components/video-player";
@@ -15,24 +14,23 @@ export default function LectureViewPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const [lecture, setLecture] = useState<Lecture | null>(null);
-  const [loading, setLoading] = useState(true);
+  const lectureId = params.lectureId as string;
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
+    if (!authLoading && !user) {
       router.push("/login");
-      return;
     }
+  }, [user, authLoading, router]);
 
-    courseService
-      .getLecture(params.lectureId as string)
-      .then((data) => setLecture(data))
-      .catch(() => router.push("/courses"))
-      .finally(() => setLoading(false));
-  }, [user, authLoading, router, params.lectureId, params.id]);
+  const { data: lecture, isLoading: lectureLoading, error: lectureError } = useLecture(lectureId, !!user);
 
-  if (authLoading || loading) return <PageLoading />;
+  useEffect(() => {
+    if (lectureError) {
+      router.push(`/courses/${params.id}`);
+    }
+  }, [lectureError, router, params.id]);
+
+  if (authLoading || lectureLoading) return <PageLoading />;
   if (!lecture) return null;
 
   return (
