@@ -21,24 +21,17 @@ const studentLinks = [
   { href: "/dashboard/settings", label: "الإعدادات", icon: Settings },
 ];
 
-const instructorLinks = [
-  { href: ROUTES.INSTRUCTOR_DASHBOARD, label: "لوحة التحكم", icon: LayoutDashboard },
-  { href: ROUTES.COURSES, label: "الدورات", icon: BookOpen },
-  { href: "/dashboard/instructor/students", label: "الطلاب", icon: GraduationCap },
-  { href: "/dashboard/instructor/notifications", label: "الإشعارات", icon: Bell },
-  { href: "/dashboard/instructor/settings", label: "الإعدادات", icon: Settings },
-];
+
 
 export function MobileNav() {
   const pathname = usePathname();
-  const { isInstructor } = useAuth();
   
   // Only display if route is in dashboard
   if (!pathname.startsWith("/dashboard") && !pathname.startsWith("/courses")) {
     return null;
   }
 
-  const links = isInstructor ? instructorLinks : studentLinks;
+  const links = studentLinks;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-[#141a15]/90 backdrop-blur-md border-t border-[#3b413c] flex items-center justify-around px-2 lg:hidden">

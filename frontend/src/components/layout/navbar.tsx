@@ -15,7 +15,7 @@ const navLinks = [
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, isAuthenticated, isInstructor, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
 
   return (
@@ -33,33 +33,17 @@ export function Navbar() {
 
         <div className="hidden items-center gap-8 md:flex">
           {isAuthenticated && (
-            <>
-              {isInstructor ? (
-                <Link
-                  href={ROUTES.INSTRUCTOR_DASHBOARD}
-                  className={cn(
-                    "text-sm font-medium transition-colors hover:text-primary",
-                    pathname.startsWith("/dashboard/instructor")
-                      ? "border-b-2 border-primary pb-1 font-bold text-primary"
-                      : "text-on-surface-variant"
-                  )}
-                >
-                  لوحة المدرب
-                </Link>
-              ) : (
-                <Link
-                  href={ROUTES.DASHBOARD}
-                  className={cn(
-                    "text-sm font-medium transition-colors hover:text-primary",
-                    pathname.startsWith("/dashboard") && !isInstructor
-                      ? "border-b-2 border-primary pb-1 font-bold text-primary"
-                      : "text-on-surface-variant"
-                  )}
-                >
-                  لوحة التحكم
-                </Link>
+            <Link
+              href={ROUTES.DASHBOARD}
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary",
+                pathname.startsWith("/dashboard")
+                  ? "border-b-2 border-primary pb-1 font-bold text-primary"
+                  : "text-on-surface-variant"
               )}
-            </>
+            >
+              لوحة التحكم
+            </Link>
           )}
           {navLinks.map((link) => (
             <Link
@@ -109,31 +93,16 @@ export function Navbar() {
         <div className="glass border-t border-white/20 px-4 pb-4 pt-2 md:hidden">
           <div className="flex flex-col gap-2">
             {isAuthenticated && (
-              <>
-                {isInstructor ? (
-                  <Link
-                    href={ROUTES.INSTRUCTOR_DASHBOARD}
-                    onClick={() => setMobileOpen(false)}
-                    className={cn(
-                      "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-                      pathname.startsWith("/dashboard/instructor") ? "bg-primary/10 text-primary" : "text-on-surface-variant hover:bg-muted"
-                    )}
-                  >
-                    لوحة المدرب
-                  </Link>
-                ) : (
-                  <Link
-                    href={ROUTES.DASHBOARD}
-                    onClick={() => setMobileOpen(false)}
-                    className={cn(
-                      "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-                      pathname.startsWith("/dashboard") ? "bg-primary/10 text-primary" : "text-on-surface-variant hover:bg-muted"
-                    )}
-                  >
-                    لوحة التحكم
-                  </Link>
+              <Link
+                href={ROUTES.DASHBOARD}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                  pathname.startsWith("/dashboard") ? "bg-primary/10 text-primary" : "text-on-surface-variant hover:bg-muted"
                 )}
-              </>
+              >
+                لوحة التحكم
+              </Link>
             )}
             {navLinks.map((link) => (
               <Link

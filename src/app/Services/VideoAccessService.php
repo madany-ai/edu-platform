@@ -35,15 +35,31 @@ class VideoAccessService
                 ->exists();
         }
 
-        // 4. Students must have a valid Entitlement
+        // 4. Students must have a valid Entitlement OR be enrolled in a Free course
         $student = Student::where('user_id', $user->id)->first();
         if (!$student) {
             return false;
         }
 
-        return Entitlement::where('student_id', $student->id)
+        // Check strict entitlement
+        $hasEntitlement = Entitlement::where('student_id', $student->id)
             ->where('lecture_id', $lecture->id)
             ->exists();
+        if ($hasEntitlement) {
+            return true;
+        }
+
+        // Check if course is free and student is enrolled
+        $lecture->loadMissing('section.course');
+        $course = $lecture->section->course;
+        if ($course && floatval($course->price) == 0) {
+            return \App\Models\Enrollment::where('student_id', $student->id)
+                ->where('course_id', $course->id)
+                ->where('status', 'active')
+                ->exists();
+        }
+
+        return false;
     }
 
     /**

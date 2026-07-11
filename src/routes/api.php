@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExamController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\OrderController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -50,6 +52,7 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
 
     // Enrollments
     Route::get('my-enrollments', [EnrollmentController::class, 'myEnrollments']);
+    Route::get('my-entitlements', [EnrollmentController::class, 'myEntitlements']);
     Route::post('courses/{course}/enroll', [EnrollmentController::class, 'enroll']);
     Route::post('courses/{course}/purchase', [EnrollmentController::class, 'purchase']);
     Route::get('courses/{course}/enrollments', [EnrollmentController::class, 'courseEnrollments'])
@@ -74,4 +77,12 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
         ->middleware('role:instructor');
     Route::delete('exams/{exam}', [ExamController::class, 'destroy'])
         ->middleware('role:instructor');
+
+    // Products & Bundles
+    Route::get('products', [ProductController::class, 'index']);
+    Route::get('products/{product}', [ProductController::class, 'show']);
+    Route::get('bundles', [ProductController::class, 'bundles']);
+
+    // Orders & Purchases
+    Route::post('orders', [OrderController::class, 'store']);
 });

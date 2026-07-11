@@ -23,13 +23,7 @@ const studentLinks = [
   { href: "/dashboard/settings", label: "الإعدادات", icon: Settings },
 ];
 
-const instructorLinks = [
-  { href: ROUTES.INSTRUCTOR_DASHBOARD, label: "لوحة التحكم", icon: LayoutDashboard },
-  { href: ROUTES.COURSES, label: "الدورات", icon: BookOpen },
-  { href: "/dashboard/instructor/students", label: "الطلاب", icon: GraduationCap },
-  { href: "/dashboard/instructor/notifications", label: "الإشعارات", icon: Bell },
-  { href: "/dashboard/instructor/settings", label: "الإعدادات", icon: Settings },
-];
+
 
 interface SidebarProps {
   className?: string;
@@ -37,8 +31,8 @@ interface SidebarProps {
 
 export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
-  const { isInstructor, logout } = useAuth();
-  const links = isInstructor ? instructorLinks : studentLinks;
+  const { logout } = useAuth();
+  const links = studentLinks;
 
   return (
     <aside

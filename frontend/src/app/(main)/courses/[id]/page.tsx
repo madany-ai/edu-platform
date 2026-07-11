@@ -12,7 +12,9 @@ import { PageHeader } from "@/components/shared/page-header";
 import { PageLoading } from "@/components/shared/loading-spinner";
 import { ErrorState } from "@/components/shared/error-state";
 import { useCourse } from "@/hooks/useCourses";
-import { useMyEnrollments, useEnroll, usePurchase } from "@/hooks/useEnrollment";
+import { useMyEnrollments, useEnroll, usePurchase, useMyEntitlements } from "@/hooks/useEnrollment";
+import { useProducts, useCreateOrder } from "@/hooks/useProducts";
+import { toast } from "sonner";
 import {
   CheckCircle2,
   Users,
@@ -21,22 +23,29 @@ import {
   Share2,
   Heart,
   ChevronDown,
+  Lock,
 } from "lucide-react";
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { user, isInstructor } = useAuth();
+  const { user } = useAuth();
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
 
   const { data: courseData, isLoading: courseLoading, error: courseError } = useCourse(id);
   const { data: enrollmentsData } = useMyEnrollments();
+  const { data: entitlements } = useMyEntitlements();
+  const { data: lectureProducts } = useProducts("lecture");
+  
   const enrollMutation = useEnroll();
   const purchaseMutation = usePurchase();
+  const createOrderMutation = useCreateOrder();
 
   const course = courseData?.data;
   const enrolled = enrollmentsData?.data?.some(
     (e) => e.course_id === id || e.course?.id === id
   ) ?? false;
+
+  const unlockedLectures = new Set(entitlements?.map((e: any) => e.lecture_id) || []);
 
   const handleEnroll = async () => {
     if (!course) return;
@@ -46,6 +55,26 @@ export default function CourseDetailPage() {
   const handlePurchase = async () => {
     if (!course) return;
     purchaseMutation.mutate(course.id);
+  };
+
+  const handleBuyLecture = (product: any) => {
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول أولاً لإتمام عملية الشراء");
+      return;
+    }
+    toast.info(`جاري معالجة شراء: ${product.name}...`);
+    createOrderMutation.mutate(
+      { purchasable_id: product.id, purchasable_type: 'product' },
+      {
+        onSuccess: () => {
+          toast.success("تم شراء المحاضرة بنجاح! تم تفعيل المحتوى.");
+        },
+        onError: (err: any) => {
+          const errMsg = err.response?.data?.message || "فشلت عملية الشراء، يرجى المحاولة مرة أخرى.";
+          toast.error(errMsg);
+        }
+      }
+    );
   };
 
   const toggleSection = (sectionId: string) => {
@@ -148,14 +177,40 @@ export default function CourseDetailPage() {
                               <span className="text-xs text-muted-foreground">
                                 {lecture.duration} دقيقة
                               </span>
-                              {(enrolled || isInstructor) && (
-                                <Link href={`/courses/${id}/lectures/${lecture.id}`}>
-                                  <Button variant="ghost" size="sm">
-                                    مشاهدة
-                                    <ArrowRight className="h-3 w-3 mr-1" />
-                                  </Button>
-                                </Link>
-                              )}
+                              {(() => {
+                                const hasAccess = enrolled || unlockedLectures.has(lecture.id);
+                                const lectureProduct = lectureProducts?.find((p: any) => p.sellable_id === lecture.id);
+                                
+                                if (hasAccess) {
+                                  return (
+                                    <Link href={`/courses/${id}/lectures/${lecture.id}`}>
+                                      <Button variant="ghost" size="sm">
+                                        مشاهدة
+                                        <ArrowRight className="h-3 w-3 mr-1" />
+                                      </Button>
+                                    </Link>
+                                  );
+                                } else if (lectureProduct) {
+                                  return (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-xs border-primary/30 text-primary hover:bg-primary/10 gap-1"
+                                      disabled={createOrderMutation.isPending}
+                                      onClick={() => handleBuyLecture(lectureProduct)}
+                                    >
+                                      شراء المحاضرة ({lectureProduct.price} EGP)
+                                    </Button>
+                                  );
+                                } else {
+                                  return (
+                                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <Lock className="h-3.5 w-3.5" />
+                                      مغلق
+                                    </span>
+                                  );
+                                }
+                              })()}
                             </div>
                           </div>
                         ))}
@@ -187,7 +242,7 @@ export default function CourseDetailPage() {
                 </div>
 
                 {user ? (
-                  (enrolled || isInstructor) ? (
+                  enrolled ? (
                     <Link href={continueLearningUrl}>
                       <Button className="w-full gap-2" size="lg">
                         <CheckCircle2 className="h-4 w-4" />

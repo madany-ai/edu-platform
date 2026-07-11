@@ -12,6 +12,8 @@ use App\Models\Notification;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Role;
+use App\Models\Product;
+use App\Models\Bundle;
 
 class DatabaseSeeder extends Seeder
 {
@@ -244,6 +246,62 @@ class DatabaseSeeder extends Seeder
                 'body' => $text,
                 'read_at' => $i < 2 ? now()->subHours($i) : null,
             ]);
+        }
+
+        // Seed Products for Courses (Paid Courses)
+        foreach ($courseModels as $course) {
+            if ($course->price > 0) {
+                Product::create([
+                    'instructor_id' => $instructor->id,
+                    'name' => "شراء كورس: {$course->title}",
+                    'sellable_id' => $course->id,
+                    'sellable_type' => Course::class,
+                    'price' => $course->price,
+                    'access_duration_days' => null, // Lifetime
+                    'is_active' => true,
+                ]);
+            }
+        }
+
+        // Seed Lecture Product (Single Lecture)
+        $lecturePhp = Lecture::where('title', 'متغيرات PHP')->first();
+        if ($lecturePhp) {
+            Product::create([
+                'instructor_id' => $instructor->id,
+                'name' => 'شراء محاضرة منفردة: متغيرات PHP 🧪',
+                'sellable_id' => $lecturePhp->id,
+                'sellable_type' => Lecture::class,
+                'price' => 15.00,
+                'access_duration_days' => 14, // 14 days access
+                'is_active' => true,
+            ]);
+        }
+
+        // Seed Section Product (Month / Section)
+        $sectionPhp = CourseSection::where('title', 'أساسيات PHP')->first();
+        if ($sectionPhp) {
+            Product::create([
+                'instructor_id' => $instructor->id,
+                'name' => 'اشتراك شهر: أساسيات لغة PHP 📅',
+                'sellable_id' => $sectionPhp->id,
+                'sellable_type' => CourseSection::class,
+                'price' => 45.00,
+                'access_duration_days' => 30, // 30 days access
+                'is_active' => true,
+            ]);
+        }
+
+        // Seed Bundle (Full Package Subscription)
+        $bundle = Bundle::create([
+            'instructor_id' => $instructor->id,
+            'name' => 'اشتراك كامل الباقة: التطوير الشامل بالـ PHP و الويب 💎',
+            'price' => 399.99,
+        ]);
+
+        // Attach all products to this bundle
+        $products = Product::all();
+        foreach ($products as $p) {
+            $bundle->products()->attach($p->id);
         }
     }
 }

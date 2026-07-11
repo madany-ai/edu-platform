@@ -1,5 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { enrollmentService } from "@/services/enrollment.service";
+import api from "@/services/api.client";
+
+export function useMyEntitlements() {
+  return useQuery({
+    queryKey: ["entitlements", "me"],
+    queryFn: async () => {
+      const { data } = await api.get<{ status: string; data: any[] }>("/my-entitlements");
+      return data.data;
+    },
+  });
+}
 
 export function useMyEnrollments() {
   return useQuery({

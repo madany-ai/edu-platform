@@ -20,14 +20,8 @@ import {
 import Link from "next/link";
 
 export default function StudentDashboardPage() {
-  const { user, isInstructor } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
-
-  useEffect(() => {
-    if (isInstructor) {
-      router.replace(ROUTES.INSTRUCTOR_DASHBOARD);
-    }
-  }, [isInstructor, router]);
 
   const { data: stats, isLoading: statsLoading } = useStudentDashboard();
   const { data: enrollmentsData, isLoading: enrollmentsLoading } = useMyEnrollments();
