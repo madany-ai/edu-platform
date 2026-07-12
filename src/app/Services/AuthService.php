@@ -18,38 +18,46 @@ class AuthService
      * @return array{user: User, token?: string, message?: string} */
     public function register(array $data): array
     {
-        $user = User::create([
-            'name' => $data['first_name'] . ' ' . $data['last_name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'status' => 'pending',
-        ]);
+        $user = \Illuminate\Support\Facades\DB::transaction(function () use ($data) {
+            $user = User::create([
+                'name' => $data['first_name'] . ' ' . $data['last_name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'status' => 'pending',
+            ]);
 
-        $user->assignRole(Role::firstOrCreate(['name' => 'student']));
+            $user->assignRole(Role::firstOrCreate(['name' => 'student']));
 
-        Student::create([
-            'user_id' => $user->id,
-            'first_name' => $data['first_name'],
-            'second_name' => $data['second_name'],
-            'third_name' => $data['third_name'],
-            'last_name' => $data['last_name'],
-            'phone' => $data['phone'],
-            'father_phone' => $data['father_phone'],
-            'mother_phone' => $data['mother_phone'],
-            'guardian_job' => $data['guardian_job'],
-            'gender' => $data['gender'],
-            'birth_date' => $data['birth_date'],
-            'governorate_id' => $data['governorate_id'],
-            'grade_level_id' => $data['grade_level_id'],
-        ]);
+            Student::create([
+                'user_id' => $user->id,
+                'first_name' => $data['first_name'],
+                'second_name' => $data['second_name'],
+                'third_name' => $data['third_name'],
+                'last_name' => $data['last_name'],
+                'phone' => $data['phone'],
+                'father_phone' => $data['father_phone'],
+                'mother_phone' => $data['mother_phone'],
+                'guardian_job' => $data['guardian_job'],
+                'gender' => $data['gender'],
+                'birth_date' => $data['birth_date'],
+                'governorate_id' => $data['governorate_id'],
+                'grade_level_id' => $data['grade_level_id'],
+            ]);
 
-        $instructors = User::role('instructor')->get();
-        foreach ($instructors as $instructor) {
-            $this->notificationService->send(
-                $instructor,
-                'تسجيل طالب جديد',
-                "قام {$data['first_name']} {$data['last_name']} بالتسجيل في المنصة. يرجى مراجعة واعتماد الحساب.",
-            );
+            return $user;
+        });
+
+        try {
+            $instructors = User::role('instructor')->get();
+            foreach ($instructors as $instructor) {
+                $this->notificationService->send(
+                    $instructor,
+                    'تسجيل طالب جديد',
+                    "قام {$data['first_name']} {$data['last_name']} بالتسجيل في المنصة. يرجى مراجعة واعتماد الحساب.",
+                );
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Failed to send registration notifications: ' . $e->getMessage());
         }
 
         return [

@@ -16,7 +16,8 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class CourseController extends Controller
 {
     public function __construct(
-        private readonly CourseService $courseService
+        private readonly CourseService $courseService,
+        private readonly \App\Services\ProgressService $progressService
     ) {}
 
     public function index(Request $request): AnonymousResourceCollection
@@ -30,6 +31,24 @@ class CourseController extends Controller
     {
         $course->load(['instructor', 'sections.lectures'])
             ->loadCount(['sections', 'enrollments']);
+
+        $user = auth('sanctum')->user();
+        if ($user) {
+            $student = \App\Models\Student::where('user_id', $user->id)->first();
+            if ($student) {
+                $lectureIds = $course->sections->flatMap(fn($s) => $s->lectures->pluck('id'))->toArray();
+                $progressMap = \App\Models\StudentActivity::where('student_id', $student->id)
+                    ->where('type', 'video_progress')
+                    ->where('entity_type', \App\Models\Lecture::class)
+                    ->whereIn('entity_id', $lectureIds)
+                    ->get()
+                    ->keyBy('entity_id')
+                    ->map(fn($a) => $a->metadata)
+                    ->toArray();
+
+                $course->setAttribute('progress_map', $progressMap);
+            }
+        }
 
         return new CourseResource($course);
     }
@@ -64,47 +83,11 @@ class CourseController extends Controller
         return response()->json(['message' => 'Course deleted']);
     }
 
-    public function showLecture(\App\Models\Lecture $lecture): JsonResponse
+    public function showLecture(\App\Models\Lecture $lecture): \App\Http\Resources\LectureResource
     {
         $lecture->load(['video', 'files', 'section.course']);
 
-        $progress = null;
-        $user = request()->user();
-        if ($user) {
-            $student = \App\Models\Student::where('user_id', $user->id)->first();
-            if ($student) {
-                $activity = \App\Models\StudentActivity::where('student_id', $student->id)
-                    ->where('type', 'video_progress')
-                    ->where('entity_type', \App\Models\Lecture::class)
-                    ->where('entity_id', $lecture->id)
-                    ->first();
-                
-                if ($activity) {
-                    $progress = $activity->metadata;
-                }
-            }
-        }
-
-        $responseData = $lecture->toArray();
-        $responseData['progress'] = $progress;
-
-        if ($lecture->video && $lecture->video->status === 'completed' && $lecture->video->video_path) {
-            $videoPath = $lecture->video->video_path;
-            
-            if (str_contains($videoPath, 'youtube.com') || str_contains($videoPath, 'youtu.be')) {
-                $responseData['video']['stream_url'] = $videoPath;
-                $responseData['video']['stream_type'] = 'video/youtube';
-            } else if (str_ends_with(strtolower($videoPath), '.mp4')) {
-                $responseData['video']['stream_url'] = \Illuminate\Support\Facades\Storage::disk('minio')
-                    ->temporaryUrl($videoPath, now()->addHours(2));
-                $responseData['video']['stream_type'] = 'video/mp4';
-            } else {
-                $responseData['video']['stream_url'] = route('lectures.stream', ['lecture' => $lecture->id]);
-                $responseData['video']['stream_type'] = 'application/x-mpegURL';
-            }
-        }
-
-        return response()->json($responseData);
+        return new \App\Http\Resources\LectureResource($lecture);
     }
 
     public function instructorCourses(): AnonymousResourceCollection
@@ -277,50 +260,11 @@ class CourseController extends Controller
             return response()->json(['message' => 'Student record not found.'], 404);
         }
 
-        $activity = \App\Models\StudentActivity::updateOrCreate(
-            [
-                'student_id' => $student->id,
-                'type' => 'video_progress',
-                'entity_type' => \App\Models\Lecture::class,
-                'entity_id' => $lecture->id,
-            ],
-            [
-                'metadata' => [
-                    'current_time' => $validated['current_time'],
-                    'is_completed' => $validated['is_completed'],
-                ]
-            ]
-        );
-
-        $stats = \App\Models\StudentStatistic::firstOrCreate(['student_id' => $student->id]);
-        if ($validated['is_completed']) {
-            $durationMinutes = $lecture && $lecture->duration ? (int)$lecture->duration : 10;
-            $stats->total_watch_minutes = ($stats->total_watch_minutes ?? 0) + $durationMinutes;
-        }
-
-        $wasCompleted = \App\Models\StudentActivity::where('student_id', $student->id)
-            ->where('type', 'video_completed')
-            ->where('entity_type', \App\Models\Lecture::class)
-            ->where('entity_id', $lecture->id)
-            ->exists();
-
-        if ($validated['is_completed'] && !$wasCompleted) {
-            \App\Models\StudentActivity::create([
-                'student_id' => $student->id,
-                'type' => 'video_completed',
-                'entity_type' => \App\Models\Lecture::class,
-                'entity_id' => $lecture->id,
-                'metadata' => ['completed_at' => now()->toDateTimeString()],
-            ]);
-            $stats->completed_lectures = ($stats->completed_lectures ?? 0) + 1;
-        }
-
-        $stats->last_activity_at = now();
-        $stats->save();
+        $result = $this->progressService->updateLectureProgress($student, $lecture, $validated);
 
         return response()->json([
             'message' => 'Progress updated successfully.',
-            'progress' => $activity->metadata,
+            'progress' => $result['progress'],
         ]);
     }
 }

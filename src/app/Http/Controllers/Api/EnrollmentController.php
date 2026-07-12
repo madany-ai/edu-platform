@@ -27,15 +27,8 @@ class EnrollmentController extends Controller
 
     public function myEntitlements(Request $request): JsonResponse
     {
-        $student = Student::where('user_id', $request->user()->id)->first();
-        if (!$student) {
-            return response()->json([
-                'status' => 'success',
-                'data' => []
-            ]);
-        }
+        $entitlements = $this->enrollmentService->getStudentEntitlements($request->user()->id);
 
-        $entitlements = \App\Models\Entitlement::where('student_id', $student->id)->get();
         return response()->json([
             'status' => 'success',
             'data' => $entitlements

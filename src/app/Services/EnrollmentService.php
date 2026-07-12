@@ -71,4 +71,14 @@ class EnrollmentService
             ->latest()
             ->get();
     }
+
+    public function getStudentEntitlements(string $userId): \Illuminate\Support\Collection
+    {
+        $student = Student::where('user_id', $userId)->first();
+        if (!$student) {
+            return collect();
+        }
+
+        return \App\Models\Entitlement::where('student_id', $student->id)->get();
+    }
 }

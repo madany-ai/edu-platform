@@ -18,8 +18,6 @@ class Lecture extends Model
     use HasUuids;
     protected $fillable = ['section_id', 'title', 'description', 'duration', 'sort_order', 'video_path', 'pdf_url'];
 
-    protected $appends = ['progress'];
-
     public function getProgressAttribute()
     {
         $user = auth('sanctum')->user();
