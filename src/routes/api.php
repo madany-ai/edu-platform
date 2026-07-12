@@ -16,6 +16,8 @@ Route::get('courses', [CourseController::class, 'index']);
 Route::get('courses/{course}', [CourseController::class, 'show']);
 Route::get('lectures/{lecture}/key', [CourseController::class, 'streamKey'])
     ->name('lectures.key');
+Route::get('governorates', [\App\Http\Controllers\Api\MiscController::class, 'governorates']);
+Route::get('grade-levels', [\App\Http\Controllers\Api\MiscController::class, 'gradeLevels']);
 
 // Authenticated routes
 Route::middleware(['auth:sanctum', 'user.active'])->group(function () {

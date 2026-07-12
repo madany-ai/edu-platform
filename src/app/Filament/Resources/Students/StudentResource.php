@@ -77,6 +77,13 @@ class StudentResource extends Resource
                     ->label('الاسم الأخير')
                     ->required()
                     ->maxLength(255),
+                TextInput::make('email')
+                    ->label('البريد الإلكتروني')
+                    ->email()
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->visible(fn (?Student $record) => $record !== null)
+                    ->required(),
                 TextInput::make('phone')
                     ->label('رقم الهاتف')
                     ->required()

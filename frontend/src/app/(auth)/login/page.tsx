@@ -41,7 +41,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login({ email: identifier, password });
-      router.push("/");
+      router.push("/dashboard");
     } catch (err: unknown) {
       if (err && typeof err === "object" && "response" in err) {
         const resp = (err as { response: { data?: { message?: string } } }).response;

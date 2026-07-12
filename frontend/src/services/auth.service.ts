@@ -25,6 +25,8 @@ export interface RegisterPayload {
   guardian_job: string;
   gender: "male" | "female";
   birth_date: string;
+  governorate_id: string;
+  grade_level_id: string;
 }
 
 export interface RegisterResponse {

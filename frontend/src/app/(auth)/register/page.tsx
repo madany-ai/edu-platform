@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/providers/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AlertCircle, CheckCircle2, Loader2, Atom } from "lucide-react";
+import { miscService, type GovernorateInfo, type GradeLevelInfo } from "@/services/misc.service";
 
 interface FieldError {
   field: string;
@@ -53,8 +54,29 @@ export default function RegisterPage() {
   const [motherPhone, setMotherPhone] = useState("");
   const [guardianJob, setGuardianJob] = useState("");
 
+  const [governorates, setGovernorates] = useState<GovernorateInfo[]>([]);
+  const [gradeLevels, setGradeLevels] = useState<GradeLevelInfo[]>([]);
+  const [governorateId, setGovernorateId] = useState("");
+  const [gradeLevelId, setGradeLevelId] = useState("");
+
   const [errors, setErrors] = useState<FieldError[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [govs, grades] = await Promise.all([
+          miscService.getGovernorates(),
+          miscService.getGradeLevels(),
+        ]);
+        setGovernorates(govs);
+        setGradeLevels(grades);
+      } catch (err) {
+        console.error("Failed to load registration dropdowns:", err);
+      }
+    };
+    loadData();
+  }, []);
 
   const getFieldError = (field: string) =>
     errors.find((e) => e.field === field)?.message;
@@ -84,6 +106,8 @@ export default function RegisterPage() {
       if (!gender) newErrors.push({ field: "gender", message: "الجنس مطلوب" });
       if (!birthDate) newErrors.push({ field: "birth_date", message: "تاريخ الميلاد مطلوب" });
       if (!phone) newErrors.push({ field: "phone", message: "رقم الهاتف مطلوب" });
+      if (!governorateId) newErrors.push({ field: "governorate_id", message: "المحافظة مطلوبة" });
+      if (!gradeLevelId) newErrors.push({ field: "grade_level_id", message: "الصف الدراسي مطلوب" });
       if (newErrors.length > 0) {
         setErrors(newErrors);
         return;
@@ -127,6 +151,8 @@ export default function RegisterPage() {
         guardian_job: guardianJob,
         gender: gender as "male" | "female",
         birth_date: birthDate,
+        governorate_id: governorateId,
+        grade_level_id: gradeLevelId,
       });
       setSubmitted(true);
     } catch (err: unknown) {
@@ -384,6 +410,44 @@ export default function RegisterPage() {
                   />
                   {getFieldError("birth_date") && (
                     <p className="text-xs text-destructive">{getFieldError("birth_date")}</p>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="governorate_id" className="text-xs">المحافظة *</Label>
+                  <Select value={governorateId} onValueChange={(val) => { setGovernorateId(val); clearFieldError("governorate_id"); }}>
+                    <SelectTrigger id="governorate_id" className="bg-background/50 border-border/60 text-foreground text-sm">
+                      <SelectValue placeholder="اختر المحافظة" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border/60 text-foreground max-h-[200px] overflow-y-auto">
+                      {governorates.map((gov) => (
+                        <SelectItem key={gov.id} value={gov.id}>
+                          {gov.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {getFieldError("governorate_id") && (
+                    <p className="text-xs text-destructive">{getFieldError("governorate_id")}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="grade_level_id" className="text-xs">الصف الدراسي *</Label>
+                  <Select value={gradeLevelId} onValueChange={(val) => { setGradeLevelId(val); clearFieldError("grade_level_id"); }}>
+                    <SelectTrigger id="grade_level_id" className="bg-background/50 border-border/60 text-foreground text-sm">
+                      <SelectValue placeholder="اختر الصف الدراسي" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border/60 text-foreground">
+                      {gradeLevels.map((grade) => (
+                        <SelectItem key={grade.id} value={grade.id}>
+                          {grade.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {getFieldError("grade_level_id") && (
+                    <p className="text-xs text-destructive">{getFieldError("grade_level_id")}</p>
                   )}
                 </div>
               </div>

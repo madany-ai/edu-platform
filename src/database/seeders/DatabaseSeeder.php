@@ -49,9 +49,26 @@ class DatabaseSeeder extends Seeder
             '0506789012', '0517890123', '0528901234', '0539012345', '0540123456',
         ];
 
-        $governorates = ['الرياض', 'جدة', 'مكة', 'المدينة', 'الدمام'];
+        $govNames = ['القاهرة', 'الجيزة', 'الإسكندرية', 'القليوبية', 'الشرقية', 'المنوفية', 'الغربية', 'الدقهلية', 'البحيرة', 'كفر الشيخ', 'دمياط', 'بورسعيد', 'الإسماعيلية', 'السويس', 'شمال سيناء', 'جنوب سيناء', 'البحر الأحمر', 'الوادي الجديد', 'مطروح', 'الفيوم', 'بني سويف', 'المنيا', 'أسيوط', 'سوهاج', 'قنا', 'الأقصر', 'أسوان'];
+        $dbGovs = [];
+        foreach ($govNames as $govName) {
+            $dbGovs[] = \App\Models\Governorate::firstOrCreate(['name' => $govName]);
+        }
+
+        $gradeNames = [
+            ['name' => 'الصف الأول الإعدادي', 'sort_order' => 1],
+            ['name' => 'الصف الثاني الإعدادي', 'sort_order' => 2],
+            ['name' => 'الصف الثالث الإعدادي', 'sort_order' => 3],
+        ];
+        $dbGrades = [];
+        foreach ($gradeNames as $gradeInfo) {
+            $dbGrades[] = \App\Models\GradeLevel::firstOrCreate(
+                ['name' => $gradeInfo['name']],
+                ['sort_order' => $gradeInfo['sort_order']]
+            );
+        }
+
         $schools = ['مدرسة النور', 'مدرسة التميز', 'مدرسة الأمل', 'مدرسة المعرفة', 'مدرسة الإبداع'];
-        $grades = ['الصف الأول الثانوي', 'الصف الثاني الثانوي', 'الصف الثالث الثانوي'];
 
         $students = [];
         foreach ($studentNames as $i => $name) {
@@ -72,10 +89,12 @@ class DatabaseSeeder extends Seeder
                 'phone' => $phones[$i],
                 'father_phone' => '05' . str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
                 'mother_phone' => '05' . str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
-                'guardian_job' => ['مهندس', 'طبيب', 'معلم', 'موظف', 'حرفي', 'متاجر', 'محاسب', 'مبرمج', 'مستشار', 'فن'][array_rand(['工程师', 'doctor', 'teacher', 'employee', 'trader', 'merchant', 'accountant', 'developer', 'advisor', 'artist'])],
+                'guardian_job' => ['مهندس', 'طبيب', 'معلم', 'موظف', 'حرفي', 'متاجر', 'محاسب', 'مبرمج', 'مستشار', 'فنان'][array_rand(['مهندس', 'طبيب', 'معلم', 'موظف', 'حرفي', 'متاجر', 'محاسب', 'مبرمج', 'مستشار', 'فنان'])],
                 'gender' => $name['gender'],
                 'birth_date' => '200' . mt_rand(2, 8) . '-' . str_pad(mt_rand(1, 12), 2, '0', STR_PAD_LEFT) . '-' . str_pad(mt_rand(1, 28), 2, '0', STR_PAD_LEFT),
                 'is_verified' => $i < 8,
+                'governorate_id' => $dbGovs[array_rand($dbGovs)]->id,
+                'grade_level_id' => $dbGrades[array_rand($dbGrades)]->id,
             ]);
         }
 

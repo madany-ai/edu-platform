@@ -293,7 +293,10 @@ class CourseController extends Controller
         );
 
         $stats = \App\Models\StudentStatistic::firstOrCreate(['student_id' => $student->id]);
-        $stats->total_watch_minutes = ($stats->total_watch_minutes ?? 0) + (20 / 60);
+        if ($validated['is_completed']) {
+            $durationMinutes = $lecture && $lecture->duration ? ceil($lecture->duration / 60) : 10;
+            $stats->total_watch_minutes = ($stats->total_watch_minutes ?? 0) + (int)$durationMinutes;
+        }
 
         $wasCompleted = \App\Models\StudentActivity::where('student_id', $student->id)
             ->where('type', 'video_completed')

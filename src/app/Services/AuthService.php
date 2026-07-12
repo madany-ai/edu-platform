@@ -39,6 +39,8 @@ class AuthService
             'guardian_job' => $data['guardian_job'],
             'gender' => $data['gender'],
             'birth_date' => $data['birth_date'],
+            'governorate_id' => $data['governorate_id'],
+            'grade_level_id' => $data['grade_level_id'],
         ]);
 
         $instructors = User::role('instructor')->get();

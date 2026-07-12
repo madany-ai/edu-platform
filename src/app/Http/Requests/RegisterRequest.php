@@ -27,6 +27,8 @@ class RegisterRequest extends FormRequest
             'guardian_job' => 'required|string|max:255',
             'gender' => 'required|in:male,female',
             'birth_date' => 'required|date',
+            'governorate_id' => 'required|uuid|exists:governorates,id',
+            'grade_level_id' => 'required|uuid|exists:grade_levels,id',
         ];
     }
 }

@@ -9,6 +9,7 @@ import { ArrowRight, Play, FileText, CheckCircle, Lock, PlayCircle, ArrowLeft, D
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
+import api from "@/services/api.client";
 
 const VideoPlayer = dynamic(() => import("@/components/video-player"), {
   ssr: false,
@@ -111,35 +112,71 @@ export default function LectureViewPage() {
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between items-center bg-card rounded-xl p-4 shadow-sm border">
-          {prevLecture ? (
-            <Link href={`/courses/${courseId}/lectures/${prevLecture.id}`}>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg border hover:bg-muted transition-colors text-sm font-medium">
-                <ArrowRight className="h-4 w-4" />
-                الدرس السابق
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-center bg-card rounded-xl p-4 shadow-sm border">
+            {prevLecture ? (
+              <Link href={`/courses/${courseId}/lectures/${prevLecture.id}`}>
+                <button className="flex items-center gap-2 px-4 py-2 rounded-lg border hover:bg-muted transition-colors text-sm font-medium">
+                  <ArrowRight className="h-4 w-4" />
+                  الدرس السابق
+                </button>
+              </Link>
+            ) : (
+              <div />
+            )}
+            
+            <div className="flex flex-col items-center gap-2">
+              <h1 className="text-lg md:text-xl font-bold text-center mx-4">{lecture.title}</h1>
+              <button 
+                onClick={async () => {
+                  try {
+                    await api.post(`/lectures/${lectureId}/progress`, {
+                      current_time: lecture.duration || 0,
+                      is_completed: true,
+                    });
+                    window.location.reload();
+                  } catch (err) {
+                    console.error(err);
+                  }
+                }}
+                disabled={lecture.progress?.is_completed}
+                className={cn(
+                  "flex items-center gap-2 px-6 py-2.5 rounded-full font-bold transition-all shadow-md",
+                  lecture.progress?.is_completed 
+                    ? "bg-green-500/10 text-green-600 border border-green-200 cursor-not-allowed" 
+                    : "bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95"
+                )}
+              >
+                {lecture.progress?.is_completed ? (
+                  <>
+                    <CheckCircle className="h-5 w-5" />
+                    تم إكمال الدرس بنجاح
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-5 w-5" />
+                    إكمال المشاهدة
+                  </>
+                )}
               </button>
-            </Link>
-          ) : (
-            <div />
-          )}
-          
-          <h1 className="text-lg md:text-xl font-bold text-center mx-4">{lecture.title}</h1>
-          
-          {nextLecture ? (
-            <Link href={`/courses/${courseId}/lectures/${nextLecture.id}`}>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium">
-                الدرس التالي
-                <ArrowLeft className="h-4 w-4" />
-              </button>
-            </Link>
-          ) : (
-            <Link href={`/courses/${courseId}`}>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors text-sm font-medium">
-                إنهاء الدورة
-                <CheckCircle className="h-4 w-4" />
-              </button>
-            </Link>
-          )}
+            </div>
+            
+            {nextLecture ? (
+              <Link href={`/courses/${courseId}/lectures/${nextLecture.id}`}>
+                <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors text-sm font-medium">
+                  الدرس التالي
+                  <ArrowLeft className="h-4 w-4" />
+                </button>
+              </Link>
+            ) : (
+              <Link href={`/courses/${courseId}`}>
+                <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors text-sm font-medium">
+                  إنهاء الدورة
+                  <CheckCircle className="h-4 w-4" />
+                </button>
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Tabs Section */}
@@ -265,10 +302,37 @@ export default function LectureViewPage() {
           <div className="mt-4">
             <div className="flex justify-between items-center text-xs mb-2">
               <span className="text-muted-foreground">تقدم الدورة</span>
-              <span className="text-primary font-bold">0% مكتمل</span>
+              <span className="text-primary font-bold">
+                {(() => {
+                  let total = 0;
+                  let completed = 0;
+                  course.sections?.forEach(s => {
+                    s.lectures?.forEach(l => {
+                      total++;
+                      if (l.progress?.is_completed) completed++;
+                    });
+                  });
+                  return total > 0 ? Math.round((completed / total) * 100) : 0;
+                })()}% مكتمل
+              </span>
             </div>
             <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-              <div className="h-full bg-primary transition-all duration-700 w-[0%]"></div>
+              <div 
+                className="h-full bg-primary transition-all duration-700" 
+                style={{
+                  width: `${(() => {
+                    let total = 0;
+                    let completed = 0;
+                    course.sections?.forEach(s => {
+                      s.lectures?.forEach(l => {
+                        total++;
+                        if (l.progress?.is_completed) completed++;
+                      });
+                    });
+                    return total > 0 ? Math.round((completed / total) * 100) : 0;
+                  })()}%`
+                }}
+              ></div>
             </div>
           </div>
         </div>

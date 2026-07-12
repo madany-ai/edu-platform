@@ -230,16 +230,18 @@ export default function CourseDetailPage() {
                 <PlayCircle className="h-16 w-16 text-primary/60" />
               </div>
               <CardContent className="p-6 space-y-4">
-                <div className="flex items-end gap-2">
-                  <span className="text-3xl font-bold text-primary">
-                    {course.price === 0 ? "مجاني" : `${course.price} د.م`}
-                  </span>
-                  {course.price > 0 && (
-                    <span className="text-sm text-muted-foreground line-through mb-1">
-                      {Math.round(course.price * 2)} د.م
+                {!enrolled && (
+                  <div className="flex items-end gap-2">
+                    <span className="text-3xl font-bold text-primary">
+                      {course.price === 0 ? "مجاني" : `${course.price} د.م`}
                     </span>
-                  )}
-                </div>
+                    {course.price > 0 && (
+                      <span className="text-sm text-muted-foreground line-through mb-1">
+                        {Math.round(course.price * 2)} د.م
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {user ? (
                   enrolled ? (
