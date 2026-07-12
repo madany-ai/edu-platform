@@ -31,6 +31,13 @@ class OrderController extends Controller
             ], 404);
         }
 
+        if (!$student->is_verified) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'عفواً، لا تملك الصلاحيات لشراء هذا المحتوى. يرجى التواصل مع الإدارة.'
+            ], 403);
+        }
+
         $type = $request->input('purchasable_type');
         $id = $request->input('purchasable_id');
 

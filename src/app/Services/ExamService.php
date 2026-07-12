@@ -145,8 +145,9 @@ class ExamService
             $totalPoints += $question->degree;
 
             if ($question->type === 'essay') {
-                if ($answer->score !== null) {
-                    $earnedPoints += $answer->score;
+                // Automatically give full degree for essay questions if answered
+                if (trim($answer->answer) !== '') {
+                    $earnedPoints += $question->degree;
                 }
             } else {
                 $correctChoice = Choice::where('question_id', $question->id)
@@ -159,7 +160,7 @@ class ExamService
             }
         }
 
-        if ($totalPoints === 0) {
+        if ($totalPoints == 0) {
             return 0;
         }
 

@@ -105,37 +105,37 @@ export default function LectureViewPage() {
           is_locked?: boolean;
         }[] = [];
         
-        // Video
-        if (lec.video) {
-          items.push({
-            type: "video" as const,
-            id: lec.id,
-            title: lec.title,
-            sort_order: 1.5, // Video defaults to 1.5 to sort between exam/assignment if they are 1 or 2
-            is_locked: lec.is_locked || lec.video_locked,
-          });
-        }
-        
         // Exams
-        lec.exams?.forEach(exam => {
+        lec.exams?.forEach((exam, idx) => {
           items.push({
             type: "exam" as const,
             id: exam.id,
             title: exam.title,
-            sort_order: exam.sort_order,
+            sort_order: 1 + (idx * 0.1), // Force exams to appear first
             is_blocking: exam.is_blocking,
             passed: exam.passed,
             is_locked: lec.is_locked,
           });
         });
         
+        // Video
+        if (lec.video) {
+          items.push({
+            type: "video" as const,
+            id: lec.id,
+            title: lec.title,
+            sort_order: 2, // Force video to appear second
+            is_locked: lec.is_locked || lec.video_locked,
+          });
+        }
+        
         // Assignments
-        lec.assignments?.forEach(assign => {
+        lec.assignments?.forEach((assign, idx) => {
           items.push({
             type: "assignment" as const,
             id: assign.id,
             title: assign.title,
-            sort_order: assign.sort_order,
+            sort_order: 3 + (idx * 0.1), // Force assignments to appear last
             is_blocking: assign.is_blocking,
             passed: assign.passed,
             is_locked: lec.is_locked,
