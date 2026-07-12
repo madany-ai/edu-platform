@@ -66,7 +66,7 @@ export default function ExamsPage() {
               <div key={attempt.id} className="glass-card p-5 rounded-2xl border border-white/5 flex flex-col gap-4 hover:border-primary/20 transition-colors">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-bold text-foreground line-clamp-1">{exam?.title || "امتحان بدون عنوان"}</h3>
+                    <h3 className="font-bold text-foreground line-clamp-1">{exam?.title || (exam?.is_assignment ? "واجب بدون عنوان" : "امتحان بدون عنوان")}</h3>
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
                       {course?.title} - {lecture?.title}
                     </p>
@@ -88,7 +88,7 @@ export default function ExamsPage() {
                 </div>
 
                 {course && lecture && (
-                  <Link href={`/courses/${course.id}/lectures/${lecture.id}?tab=quiz&exam_id=${exam.id}`} className="mt-auto">
+                  <Link href={`/courses/${course.id}/lectures/${lecture.id}?tab=${exam?.is_assignment ? 'assignment' : 'quiz'}&exam_id=${exam.id}`} className="mt-auto">
                     <Button variant="outline" size="sm" className="w-full gap-2 border-primary/20 text-primary hover:bg-primary/10">
                       مراجعة الإجابات
                       <ExternalLink className="h-3 w-3" />

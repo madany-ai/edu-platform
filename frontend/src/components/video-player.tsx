@@ -2,11 +2,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useRef, useState } from "react";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, Maximize, Minimize } from "lucide-react";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
 import { STORAGE_KEYS } from "@/lib/constants";
 import api from "@/services/api.client";
+
 
 interface VideoPlayerProps {
   lectureId: string;
@@ -152,22 +153,130 @@ export default function VideoPlayer({ lectureId, streamUrl, streamType, initialT
   );
 }
 
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
+
 function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isApiReady, setIsApiReady] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    // Load YouTube IFrame API
+    if (!window.YT) {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName("script")[0];
+      if (firstScriptTag && firstScriptTag.parentNode) {
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      }
+      window.onYouTubeIframeAPIReady = () => {
+        setIsApiReady(true);
+      };
+    } else {
+      setIsApiReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isApiReady && videoId && containerRef.current && !playerRef.current) {
+      playerRef.current = new window.YT.Player(containerRef.current, {
+        videoId: videoId,
+        playerVars: {
+          controls: 0,
+          disablekb: 1,
+          rel: 0,
+          modestbranding: 1,
+          iv_load_policy: 3,
+          fs: 0,
+          playsinline: 1
+        },
+        events: {
+          onReady: (event: any) => {
+            setDuration(event.target.getDuration());
+          },
+          onStateChange: (event: any) => {
+            if (event.data === window.YT.PlayerState.PLAYING) {
+              setIsPlaying(true);
+              setDuration(event.target.getDuration());
+            } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
+              setIsPlaying(false);
+            }
+          }
+        }
+      });
+    }
+
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
+    };
+  }, [isApiReady, videoId]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPlaying && playerRef.current && playerRef.current.getCurrentTime) {
+      interval = setInterval(() => {
+        setCurrentTime(playerRef.current.getCurrentTime());
+      }, 500);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
 
   const togglePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const iframe = iframeRef.current;
-    if (!iframe || !iframe.contentWindow || !videoId) return;
+    if (!playerRef.current) return;
+    
+    if (isPlaying) {
+      playerRef.current.pauseVideo();
+    } else {
+      playerRef.current.playVideo();
+    }
+  };
 
-    const command = isPlaying ? "pauseVideo" : "playVideo";
-    iframe.contentWindow.postMessage(
-      JSON.stringify({ event: "command", func: command, args: [] }),
-      "*"
-    );
-    setIsPlaying(!isPlaying);
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTime = parseFloat(e.target.value);
+    setCurrentTime(newTime);
+    if (playerRef.current && playerRef.current.seekTo) {
+      playerRef.current.seekTo(newTime, true);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      wrapperRef.current?.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    if (isNaN(seconds)) return "0:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
   if (!videoId) {
@@ -180,33 +289,57 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
 
   return (
     <div 
-      className="w-full h-full relative rounded-lg overflow-hidden bg-black select-none group"
+      ref={wrapperRef}
+      className="w-full h-full relative rounded-lg overflow-hidden bg-black select-none group flex flex-col"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={togglePlay}
       onContextMenu={(e) => e.preventDefault()}
     >
-      {/* YouTube Iframe with pointer-events-none to prevent direct clicks and context menu */}
-      <iframe
-        ref={iframeRef}
-        className="w-full h-full absolute top-0 left-0 pointer-events-none scale-[1.05]"
-        src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&disablekb=1&fs=0&iv_load_policy=3`}
-        title="YouTube video player"
-        frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      ></iframe>
+      <div className="flex-1 relative w-full h-full" onClick={togglePlay}>
+        <div className="absolute inset-0 pointer-events-none scale-[1.05]">
+          {/* YT API replaces this div with iframe */}
+          <div ref={containerRef} className="w-full h-full" />
+        </div>
 
-      {/* Transparent Click Overlay */}
-      <div className="absolute inset-0 z-10 bg-transparent cursor-pointer" />
+        {/* Transparent Click Overlay */}
+        <div className="absolute inset-0 z-10 bg-transparent cursor-pointer" />
 
-      {/* Play/Pause HUD overlay */}
-      <div className={`absolute inset-0 z-20 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${(!isPlaying || isHovered) ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-        <div className="w-16 h-16 rounded-full bg-primary/95 text-primary-foreground flex items-center justify-center shadow-lg transition-transform active:scale-95 hover:bg-primary">
-          {isPlaying ? (
-            <Pause className="h-8 w-8 fill-current" />
-          ) : (
-            <Play className="h-8 w-8 fill-current ml-1" />
-          )}
+        {/* Play/Pause HUD overlay */}
+        <div className={`absolute inset-0 z-20 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${(!isPlaying || isHovered) ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+          <div className="w-16 h-16 rounded-full bg-primary/95 text-primary-foreground flex items-center justify-center shadow-lg transition-transform active:scale-95 hover:bg-primary">
+            {isPlaying ? (
+              <Pause className="h-8 w-8 fill-current" />
+            ) : (
+              <Play className="h-8 w-8 fill-current ml-1" />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Custom Control Bar */}
+      <div className={`absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/90 to-transparent p-4 transition-opacity duration-300 ${isHovered || !isPlaying ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="flex items-center gap-4 text-white text-xs font-medium">
+          <button onClick={togglePlay} className="hover:text-primary transition-colors focus:outline-none">
+            {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+          </button>
+          
+          <span>{formatTime(currentTime)}</span>
+          
+          <input
+            type="range"
+            min={0}
+            max={duration || 100}
+            value={currentTime}
+            onChange={handleSeek}
+            className="flex-1 h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
+            style={{ direction: "ltr" }}
+          />
+          
+          <span>{formatTime(duration)}</span>
+
+          <button onClick={toggleFullscreen} className="hover:text-primary transition-colors focus:outline-none ml-2">
+            {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+          </button>
         </div>
       </div>
     </div>
