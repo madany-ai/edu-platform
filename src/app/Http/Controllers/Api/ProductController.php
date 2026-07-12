@@ -46,10 +46,27 @@ class ProductController extends Controller
 
     public function show(Product $product): JsonResponse
     {
-        $product->load('sellable');
+        if ($product->sellable_type === \App\Models\CourseSection::class) {
+            $product->load('sellable.lectures');
+        } elseif ($product->sellable_type === \App\Models\Course::class) {
+            $product->load('sellable.sections.lectures');
+        } else {
+            $product->load('sellable');
+        }
+
         return response()->json([
             'status' => 'success',
             'data' => $product
+        ]);
+    }
+
+    public function showBundle(Bundle $bundle): JsonResponse
+    {
+        $bundle->load(['products.sellable']);
+        
+        return response()->json([
+            'status' => 'success',
+            'data' => $bundle
         ]);
     }
 }

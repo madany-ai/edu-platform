@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useCourses } from "@/hooks/useCourses";
 import { useProducts, useBundles, useCreateOrder } from "@/hooks/useProducts";
 import { CourseCard } from "@/components/course-card";
@@ -155,7 +156,7 @@ function CoursesContent() {
               )}
             </div>
 
-            <div className="border-t border-[#3b413c] pt-4 mt-6 flex items-center justify-between">
+              <div className="border-t border-[#3b413c] pt-4 mt-6 flex items-center justify-between">
               <div>
                 <span className="text-xs text-muted-foreground block">السعر</span>
                 <span className="text-lg font-black text-primary science-glow-text">
@@ -163,15 +164,26 @@ function CoursesContent() {
                 </span>
               </div>
               
-              <Button
-                onClick={() => handlePurchase(item.id, 'product', item.price, item.name)}
-                disabled={createOrderMutation.isPending}
-                size="sm"
-                className="bg-primary hover:bg-primary-hover text-primary-foreground font-bold rounded-xl gap-1.5"
-              >
-                <Sparkles className="h-4 w-4" />
-                {createOrderMutation.isPending ? "جاري المعالجة..." : "شراء الآن"}
-              </Button>
+              <div className="flex gap-2">
+                <Link href={`/products/${item.id}`}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-primary/20 text-foreground font-bold rounded-xl"
+                  >
+                    عرض التفاصيل
+                  </Button>
+                </Link>
+                <Button
+                  onClick={() => handlePurchase(item.id, 'product', item.price, item.name)}
+                  disabled={createOrderMutation.isPending}
+                  size="sm"
+                  className="bg-primary hover:bg-primary-hover text-primary-foreground font-bold rounded-xl gap-1.5 hidden sm:flex"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  {createOrderMutation.isPending ? "جاري..." : "شراء"}
+                </Button>
+              </div>
             </div>
           </div>
         ))}
@@ -232,21 +244,32 @@ function CoursesContent() {
 
             <div className="border-t border-[#3b413c] pt-4 mt-6 flex items-center justify-between">
               <div>
-                <span className="text-xs text-muted-foreground block">السعر الإجمالي للجمعة</span>
+                <span className="text-xs text-muted-foreground block">السعر الإجمالي للباقة</span>
                 <span className="text-lg font-black text-primary science-glow-text">
                   {bundle.price} EGP
                 </span>
               </div>
               
-              <Button
-                onClick={() => handlePurchase(bundle.id, 'bundle', bundle.price, bundle.name)}
-                disabled={createOrderMutation.isPending}
-                size="sm"
-                className="bg-primary hover:bg-primary-hover text-primary-foreground font-bold rounded-xl gap-1.5"
-              >
-                <Sparkles className="h-4 w-4" />
-                {createOrderMutation.isPending ? "جاري المعالجة..." : "شراء الباقة"}
-              </Button>
+              <div className="flex gap-2">
+                <Link href={`/bundles/${bundle.id}`}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-primary/20 text-foreground font-bold rounded-xl"
+                  >
+                    عرض التفاصيل
+                  </Button>
+                </Link>
+                <Button
+                  onClick={() => handlePurchase(bundle.id, 'bundle', bundle.price, bundle.name)}
+                  disabled={createOrderMutation.isPending}
+                  size="sm"
+                  className="bg-primary hover:bg-primary-hover text-primary-foreground font-bold rounded-xl gap-1.5 hidden sm:flex"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  {createOrderMutation.isPending ? "جاري..." : "شراء"}
+                </Button>
+              </div>
             </div>
           </div>
         ))}

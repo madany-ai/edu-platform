@@ -66,10 +66,43 @@ class EnrollmentService
             return collect();
         }
 
-        return Enrollment::with(['course.instructor', 'course.sections'])
+        $enrollments = Enrollment::with(['course.instructor', 'course.sections'])
             ->where('student_id', $student->id)
             ->latest()
             ->get();
+
+        $entitlementCourseIds = \App\Models\Entitlement::where('student_id', $student->id)
+            ->with('lecture.section')
+            ->get()
+            ->map(fn($e) => $e->lecture->section->course_id ?? null)
+            ->filter()
+            ->unique();
+
+        $enrolledCourseIds = $enrollments->pluck('course_id');
+        $missingCourseIds = $entitlementCourseIds->diff($enrolledCourseIds);
+
+        if ($missingCourseIds->isNotEmpty()) {
+            $courses = \App\Models\Course::with(['instructor', 'sections'])
+                ->whereIn('id', $missingCourseIds)
+                ->get();
+
+            foreach ($courses as $course) {
+                $fakeEnrollment = new Enrollment([
+                    'course_id' => $course->id,
+                    'student_id' => $student->id,
+                    'status' => 'active',
+                    'source' => 'purchase',
+                ]);
+                // Ensure it has an ID for the frontend key (we can use course id)
+                $fakeEnrollment->id = 'entitlement-fake-' . $course->id;
+                $fakeEnrollment->started_at = now();
+                $fakeEnrollment->created_at = now();
+                $fakeEnrollment->setRelation('course', $course);
+                $enrollments->push($fakeEnrollment);
+            }
+        }
+
+        return $enrollments;
     }
 
     public function getStudentEntitlements(string $userId): \Illuminate\Support\Collection

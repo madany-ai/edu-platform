@@ -92,6 +92,7 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     Route::get('products', [ProductController::class, 'index']);
     Route::get('products/{product}', [ProductController::class, 'show']);
     Route::get('bundles', [ProductController::class, 'bundles']);
+    Route::get('bundles/{bundle}', [ProductController::class, 'showBundle']);
 
     // Orders & Purchases
     Route::post('orders', [OrderController::class, 'store']);

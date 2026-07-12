@@ -135,6 +135,10 @@ class StudentResource extends Resource
                     ->label('الشعبة')
                     ->relationship('academicTrack', 'name')
                     ->searchable(),
+                \Filament\Forms\Components\Toggle::make('is_verified')
+                    ->label('مُفعل / معتمد (صلاحية الشراء)')
+                    ->helperText('تفعيل هذا الخيار يسمح للطالب بشراء وتفعيل الكورسات من المتجر مباشرة.')
+                    ->default(false),
             ]);
     }
 
@@ -176,6 +180,10 @@ class StudentResource extends Resource
                 TextColumn::make('created_at')
                     ->label('تاريخ التسجيل')
                     ->dateTime('Y-m-d')
+                    ->sortable(),
+                \Filament\Tables\Columns\IconColumn::make('is_verified')
+                    ->label('معتمد للشراء')
+                    ->boolean()
                     ->sortable(),
             ])
             ->filters([
