@@ -10,6 +10,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import api from "@/services/api.client";
+import { useQueryClient } from "@tanstack/react-query";
 
 const VideoPlayer = dynamic(() => import("@/components/video-player"), {
   ssr: false,
@@ -26,6 +27,7 @@ export default function LectureViewPage() {
   const params = useParams();
   const lectureId = params.lectureId as string;
   const courseId = params.id as string;
+  const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<"overview" | "resources" | "qa">("overview");
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
@@ -134,7 +136,8 @@ export default function LectureViewPage() {
                       current_time: lecture.duration || 0,
                       is_completed: true,
                     });
-                    window.location.reload();
+                    queryClient.invalidateQueries({ queryKey: ["lecture", lectureId] });
+                    queryClient.invalidateQueries({ queryKey: ["course", courseId] });
                   } catch (err) {
                     console.error(err);
                   }
@@ -358,7 +361,7 @@ export default function LectureViewPage() {
                       const isActive = lec.id === lectureId;
                       // For now, assume all are accessible since we passed CheckEnrollment. 
                       // In a real app, you'd check lecture completion status.
-                      const isCompleted = false; 
+                      const isCompleted = !!lec.progress?.is_completed; 
 
                       return (
                         <Link key={lec.id} href={`/courses/${courseId}/lectures/${lec.id}`}>

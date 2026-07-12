@@ -83,7 +83,9 @@ class StudentResource extends Resource
                     ->disabled()
                     ->dehydrated(false)
                     ->visible(fn (?Student $record) => $record !== null)
-                    ->required(),
+                    ->afterStateHydrated(function ($component, ?Student $record) {
+                        $component->state($record?->user?->email);
+                    }),
                 TextInput::make('phone')
                     ->label('رقم الهاتف')
                     ->required()

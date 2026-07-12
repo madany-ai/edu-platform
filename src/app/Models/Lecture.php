@@ -18,6 +18,24 @@ class Lecture extends Model
     use HasUuids;
     protected $fillable = ['section_id', 'title', 'description', 'duration', 'sort_order', 'video_path', 'pdf_url'];
 
+    protected $appends = ['progress'];
+
+    public function getProgressAttribute()
+    {
+        $user = auth('sanctum')->user();
+        if (!$user) return null;
+        $student = \App\Models\Student::where('user_id', $user->id)->first();
+        if (!$student) return null;
+
+        $activity = \App\Models\StudentActivity::where('student_id', $student->id)
+            ->where('type', 'video_progress')
+            ->where('entity_type', self::class)
+            ->where('entity_id', $this->id)
+            ->first();
+
+        return $activity ? $activity->metadata : null;
+    }
+
     protected static function booted()
     {
         static::saved(function ($lecture) {
