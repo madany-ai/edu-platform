@@ -10,11 +10,14 @@ use App\Http\Controllers\Api\OrderController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
-Route::post('auth/register', [AuthController::class, 'register']);
-Route::post('auth/login', [AuthController::class, 'login']);
+Route::middleware('throttle:login')->group(function () {
+    Route::post('auth/register', [AuthController::class, 'register']);
+    Route::post('auth/login', [AuthController::class, 'login']);
+});
 Route::get('courses', [CourseController::class, 'index']);
 Route::get('courses/{course}', [CourseController::class, 'show']);
 Route::get('lectures/{lecture}/key', [CourseController::class, 'streamKey'])
+    ->middleware('throttle:video')
     ->name('lectures.key');
 Route::get('governorates', [\App\Http\Controllers\Api\MiscController::class, 'governorates']);
 Route::get('grade-levels', [\App\Http\Controllers\Api\MiscController::class, 'gradeLevels']);
@@ -50,6 +53,7 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     Route::get('lectures/{lecture}', [CourseController::class, 'showLecture'])
         ->middleware(\App\Http\Middleware\CheckEnrollment::class);
     Route::get('lectures/{lecture}/stream', [CourseController::class, 'streamLecture'])
+        ->middleware('throttle:video')
         ->name('lectures.stream');
     Route::post('lectures/{lecture}/progress', [CourseController::class, 'updateProgress'])
         ->middleware(\App\Http\Middleware\CheckEnrollment::class);

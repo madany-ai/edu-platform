@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\ActivityResource\Pages;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Models\Activity;
+
+class ActivityResource extends Resource
+{
+    protected static ?string $model = Activity::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static ?string $navigationGroup = 'الإعدادات والنظام';
+    protected static ?string $modelLabel = 'سجل النشاط';
+    protected static ?string $pluralModelLabel = 'سجلات الأنشطة';
+
+    public static function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    {
+        return $schema
+            ->schema([
+                Forms\Components\TextInput::make('log_name')->label('اسم السجل'),
+                Forms\Components\TextInput::make('description')->label('الوصف'),
+                Forms\Components\TextInput::make('subject_type')->label('نوع العنصر'),
+                Forms\Components\TextInput::make('causer_type')->label('الفاعل'),
+                Forms\Components\KeyValue::make('properties')->label('الخصائص'),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('id')->sortable(),
+                Tables\Columns\TextColumn::make('log_name')->label('النوع')->badge(),
+                Tables\Columns\TextColumn::make('description')->label('الوصف')->searchable(),
+                Tables\Columns\TextColumn::make('subject_type')->label('الكيان المتاثر')->searchable(),
+                Tables\Columns\TextColumn::make('causer.name')->label('بواسطة')->searchable(),
+                Tables\Columns\TextColumn::make('created_at')->label('التاريخ')->dateTime()->sortable(),
+            ])
+            ->filters([
+                //
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ])
+            ->defaultSort('created_at', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListActivities::route('/'),
+        ];
+    }
+    
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+    
+    public static function canEdit(Model|Activity $record): bool
+    {
+        return false;
+    }
+}
