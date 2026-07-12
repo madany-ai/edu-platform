@@ -12,10 +12,11 @@ use Illuminate\Support\Facades\DB;
 
 class ExamService
 {
-    public function getExamByLecture(int $lectureId): ?Exam
+    public function getExamByLecture(string $lectureId, bool $isAssignment = false): ?Exam
     {
         return Exam::with('questions.choices')
             ->where('lecture_id', $lectureId)
+            ->where('is_assignment', $isAssignment)
             ->first();
     }
 

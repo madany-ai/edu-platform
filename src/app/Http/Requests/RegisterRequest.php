@@ -32,4 +32,11 @@ class RegisterRequest extends FormRequest
             'cf-turnstile-response' => ['required', 'string', new \App\Rules\TurnstileRule],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'cf-turnstile-response.required' => 'يرجى التحقق من أنك لست روبوت لإكمال التسجيل.',
+        ];
+    }
 }

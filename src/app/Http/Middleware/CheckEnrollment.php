@@ -55,6 +55,12 @@ class CheckEnrollment
             return response()->json(['message' => 'غير مسجل في هذه الدورة أو المحاضرة.'], 403);
         }
 
+        // Check if blocked by exam in preceding lectures
+        $videoAccessService = app(\App\Services\VideoAccessService::class);
+        if ($videoAccessService->isBlockedByExam($user, $lecture, 'lecture_access')) {
+            return response()->json(['message' => 'هذه المحاضرة مغلقة حتى تجتاز الاختبار المطلوب أولاً.'], 403);
+        }
+
         return $next($request);
     }
 }

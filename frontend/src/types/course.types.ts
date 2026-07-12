@@ -31,6 +31,31 @@ export interface Lecture {
   video?: LectureVideo;
   files?: LectureFile[];
   section?: CourseSection;
+  has_exam?: boolean;
+  has_assignment?: boolean;
+  progress?: {
+    current_time?: string | number;
+    is_completed?: boolean;
+  };
+  is_locked?: boolean;
+  video_locked?: boolean;
+  exams?: CourseExam[];
+  assignments?: CourseExam[];
+}
+
+export interface CourseExam {
+  id: string;
+  title: string;
+  sort_order: number;
+  is_blocking: boolean;
+  pass_percentage: number;
+  duration: number;
+  latest_attempt: {
+    id: string;
+    score: number | null;
+    submitted_at: string | null;
+  } | null;
+  passed: boolean;
 }
 
 export interface LectureVideo {
@@ -39,6 +64,8 @@ export interface LectureVideo {
   duration: number;
   status?: string;
   video_path?: string;
+  stream_url?: string;
+  stream_type?: string;
 }
 
 export interface LectureFile {

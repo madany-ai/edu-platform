@@ -29,7 +29,7 @@ class CourseController extends Controller
 
     public function show(Course $course): CourseResource
     {
-        $course->load(['instructor', 'sections.lectures'])
+        $course->load(['instructor', 'sections.lectures.video', 'sections.lectures.exams', 'sections.lectures.assignments'])
             ->loadCount(['sections', 'enrollments']);
 
         $user = auth('sanctum')->user();
@@ -85,7 +85,22 @@ class CourseController extends Controller
 
     public function showLecture(\App\Models\Lecture $lecture): \App\Http\Resources\LectureResource
     {
-        $lecture->load(['video', 'files', 'section.course']);
+        $lecture->load(['video', 'files', 'section.course', 'exams', 'assignments']);
+
+        $user = auth('sanctum')->user();
+        if ($user) {
+            $student = \App\Models\Student::where('user_id', $user->id)->first();
+            if ($student) {
+                $progress = \App\Models\StudentActivity::where('student_id', $student->id)
+                    ->where('type', 'video_progress')
+                    ->where('entity_type', \App\Models\Lecture::class)
+                    ->where('entity_id', $lecture->id)
+                    ->first();
+                if ($progress) {
+                    $lecture->setAttribute('progress', $progress->metadata);
+                }
+            }
+        }
 
         return new \App\Http\Resources\LectureResource($lecture);
     }

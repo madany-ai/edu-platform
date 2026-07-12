@@ -23,4 +23,24 @@ class Question extends Model
     {
         return $this->hasMany(Choice::class);
     }
+
+    public function getImagePathAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        try {
+            $url = \Illuminate\Support\Facades\Storage::disk('minio')
+                ->temporaryUrl($value, now()->addHours(2));
+            return str_replace('http://minio:9000', 'http://localhost:9000', $url);
+        } catch (\Exception $e) {
+            $url = \Illuminate\Support\Facades\Storage::disk('minio')->url($value);
+            return str_replace('http://minio:9000', 'http://localhost:9000', $url);
+        }
+    }
 }

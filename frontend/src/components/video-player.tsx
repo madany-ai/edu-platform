@@ -1,7 +1,8 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Play, Pause } from "lucide-react";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
 import { STORAGE_KEYS } from "@/lib/constants";
@@ -143,28 +144,71 @@ export default function VideoPlayer({ lectureId, streamUrl, streamType, initialT
     const videoIdMatch = streamUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})/);
     const videoId = videoIdMatch ? videoIdMatch[1] : null;
     
-    if (videoId) {
-      return (
-        <div className="w-full h-full relative rounded-lg overflow-hidden">
-          <iframe
-            className="w-full h-full absolute top-0 left-0"
-            src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0`}
-            title="YouTube video player"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
-          {/* Block Top Left (Title and Avatar) */}
-          <div className="absolute top-0 left-0 w-2/3 h-20 z-10 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
-          
-          {/* Block the entire bottom to prevent clicking Share, More Videos, and YouTube logo */}
-          <div className="absolute bottom-0 left-0 w-full h-24 z-10 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
-        </div>
-      );
-    }
+    return <YouTubeSecurePlayer videoId={videoId} />;
   }
 
   return (
     <div className="w-full h-full relative" ref={videoRef} />
+  );
+}
+
+function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const togglePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const iframe = iframeRef.current;
+    if (!iframe || !iframe.contentWindow || !videoId) return;
+
+    const command = isPlaying ? "pauseVideo" : "playVideo";
+    iframe.contentWindow.postMessage(
+      JSON.stringify({ event: "command", func: command, args: "" }),
+      "*"
+    );
+    setIsPlaying(!isPlaying);
+  };
+
+  if (!videoId) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-black text-white text-sm">
+        رابط الفيديو غير صالح
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="w-full h-full relative rounded-lg overflow-hidden bg-black select-none group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={togglePlay}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      {/* YouTube Iframe with pointer-events-none to prevent direct clicks and context menu */}
+      <iframe
+        ref={iframeRef}
+        className="w-full h-full absolute top-0 left-0 pointer-events-none scale-[1.05]"
+        src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&disablekb=1&fs=0&iv_load_policy=3`}
+        title="YouTube video player"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      ></iframe>
+
+      {/* Transparent Click Overlay */}
+      <div className="absolute inset-0 z-10 bg-transparent cursor-pointer" />
+
+      {/* Play/Pause HUD overlay */}
+      <div className={`absolute inset-0 z-20 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${(!isPlaying || isHovered) ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+        <div className="w-16 h-16 rounded-full bg-primary/95 text-primary-foreground flex items-center justify-center shadow-lg transition-transform active:scale-95 hover:bg-primary">
+          {isPlaying ? (
+            <Pause className="h-8 w-8 fill-current" />
+          ) : (
+            <Play className="h-8 w-8 fill-current ml-1" />
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

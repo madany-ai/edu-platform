@@ -18,7 +18,7 @@ export const courseService = {
   },
 
   getLecture: async (lectureId: string): Promise<Lecture> => {
-    const { data } = await api.get<Lecture>(`/lectures/${lectureId}`);
-    return data;
+    const { data } = await api.get<{data: Lecture}>(`/lectures/${lectureId}`);
+    return data.data;
   },
 };

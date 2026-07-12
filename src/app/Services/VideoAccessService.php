@@ -46,6 +46,10 @@ class VideoAccessService
             ->where('lecture_id', $lecture->id)
             ->exists();
         if ($hasEntitlement) {
+            // Entitled students must still pass blocking exams
+            if ($this->isBlockedByExam($user, $lecture, 'video')) {
+                return false;
+            }
             return true;
         }
 
@@ -53,10 +57,108 @@ class VideoAccessService
         $lecture->loadMissing('section.course');
         $course = $lecture->section->course;
         if ($course && floatval($course->price) == 0) {
-            return \App\Models\Enrollment::where('student_id', $student->id)
+            $isEnrolled = \App\Models\Enrollment::where('student_id', $student->id)
                 ->where('course_id', $course->id)
                 ->where('status', 'active')
                 ->exists();
+            
+            if ($isEnrolled) {
+                if ($this->isBlockedByExam($user, $lecture, 'video')) {
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if a content item is blocked by preceding exams.
+     */
+    public function isBlockedByExam(User $user, Lecture $lecture, string $itemType = 'video', ?string $itemId = null): bool
+    {
+        // Admins and instructors are never blocked
+        if ($user->hasRole('super_admin') || $user->hasRole('admin')) {
+            return false;
+        }
+        
+        $lecture->loadMissing('section.course');
+        $course = $lecture->section->course;
+        if (!$course) {
+            return false;
+        }
+
+        if ($user->hasRole('instructor') && $course->instructor_id === $user->id) {
+            return false;
+        }
+
+        $student = Student::where('user_id', $user->id)->first();
+        if (!$student) {
+            return true; // Block by default if student record not found
+        }
+
+        // Determine target sort order
+        $targetSortOrder = 0; // Default for video/lecture_access
+        if (($itemType === 'exam' || $itemType === 'assignment') && $itemId) {
+            $currentExam = \App\Models\Exam::find($itemId);
+            if ($currentExam) {
+                $targetSortOrder = $currentExam->sort_order;
+            }
+        }
+
+        // Get all blocking exams in the course
+        $blockingExams = \App\Models\Exam::where('is_blocking', true)
+            ->whereHas('lecture.section', function ($q) use ($course) {
+                $q->where('course_id', $course->id);
+            })
+            ->with(['lecture.section'])
+            ->get();
+
+        foreach ($blockingExams as $exam) {
+            // Don't block itself
+            if (($itemType === 'exam' || $itemType === 'assignment') && $exam->id === $itemId) {
+                continue;
+            }
+
+            $examLecture = $exam->lecture;
+            $examSection = $examLecture->section;
+            $currentSection = $lecture->section;
+
+            if (!$examSection || !$currentSection) {
+                continue;
+            }
+
+            // Determine if this exam precedes the target item
+            $precedes = false;
+            if ($examSection->sort_order < $currentSection->sort_order) {
+                $precedes = true;
+            } elseif ($examSection->sort_order === $currentSection->sort_order) {
+                if ($examLecture->sort_order < $lecture->sort_order) {
+                    $precedes = true;
+                } elseif ($examLecture->sort_order === $lecture->sort_order) {
+                    if ($itemType !== 'lecture_access') {
+                        // For video (0), only exams with sort_order < 0 precede it.
+                        // For other exams/assignments, lower sort_order precedes.
+                        if ($exam->sort_order < $targetSortOrder) {
+                            $precedes = true;
+                        }
+                    }
+                }
+            }
+
+            if ($precedes) {
+                // Check if student passed this exam
+                $passed = \App\Models\ExamAttempt::where('exam_id', $exam->id)
+                    ->where('student_id', $student->id)
+                    ->whereNotNull('submitted_at')
+                    ->where('score', '>=', $exam->pass_percentage)
+                    ->exists();
+
+                if (!$passed) {
+                    return true; // Blocked!
+                }
+            }
         }
 
         return false;

@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 const guestRoutes = ["/login", "/register", "/forgot-password"];
 
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("edu_platform_token")?.value;
 

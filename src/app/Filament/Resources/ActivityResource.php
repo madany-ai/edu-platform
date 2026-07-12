@@ -15,10 +15,25 @@ class ActivityResource extends Resource
 {
     protected static ?string $model = Activity::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
-    protected static ?string $navigationGroup = 'الإعدادات والنظام';
-    protected static ?string $modelLabel = 'سجل النشاط';
-    protected static ?string $pluralModelLabel = 'سجلات الأنشطة';
+    public static function getNavigationIcon(): string|\BackedEnum|null
+    {
+        return 'heroicon-o-clipboard-document-list';
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'الإعدادات والنظام';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'سجل النشاط';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'سجلات الأنشطة';
+    }
 
     public static function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
@@ -45,14 +60,6 @@ class ActivityResource extends Resource
             ])
             ->filters([
                 //
-            ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
             ])
             ->defaultSort('created_at', 'desc');
     }

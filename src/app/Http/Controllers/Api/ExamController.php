@@ -19,13 +19,66 @@ class ExamController extends Controller
 
     public function show(Lecture $lecture): JsonResponse
     {
-        $exam = $this->examService->getExamByLecture($lecture->id);
+        $examId = request()->query('exam_id');
+        if ($examId) {
+            $exam = Exam::with('questions.choices')
+                ->where('lecture_id', $lecture->id)
+                ->where('id', $examId)
+                ->first();
+        } else {
+            $exam = $this->examService->getExamByLecture($lecture->id, false);
+        }
 
         if (! $exam) {
             return response()->json(['message' => 'لا يوجد امتحان لهذه المحاضرة.'], 404);
         }
 
-        return response()->json($exam);
+        $user = request()->user();
+        $student = $user ? \App\Models\Student::where('user_id', $user->id)->first() : null;
+        $latestAttempt = null;
+        if ($student) {
+            $latestAttempt = \App\Models\ExamAttempt::where('exam_id', $exam->id)
+                ->where('student_id', $student->id)
+                ->latest()
+                ->first();
+        }
+
+        return response()->json([
+            'exam' => $exam,
+            'latest_attempt' => $latestAttempt,
+        ]);
+    }
+
+    public function showAssignment(Lecture $lecture): JsonResponse
+    {
+        $examId = request()->query('exam_id');
+        if ($examId) {
+            $exam = Exam::with('questions.choices')
+                ->where('lecture_id', $lecture->id)
+                ->where('id', $examId)
+                ->first();
+        } else {
+            $exam = $this->examService->getExamByLecture($lecture->id, true);
+        }
+
+        if (! $exam) {
+            return response()->json(['message' => 'لا يوجد واجب لهذه المحاضرة.'], 404);
+        }
+
+        $user = request()->user();
+        $student = $user ? \App\Models\Student::where('user_id', $user->id)->first() : null;
+        $latestAttempt = null;
+        if ($student) {
+            $latestAttempt = \App\Models\ExamAttempt::where('exam_id', $exam->id)
+                ->where('student_id', $student->id)
+                ->latest()
+                ->first();
+        }
+
+        return response()->json([
+            'exam' => $exam,
+            'latest_attempt' => $latestAttempt,
+        ]);
     }
 
     public function store(Request $request, Lecture $lecture): JsonResponse

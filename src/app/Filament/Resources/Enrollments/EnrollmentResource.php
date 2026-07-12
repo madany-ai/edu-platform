@@ -55,7 +55,7 @@ class EnrollmentResource extends Resource
                     ->relationship('course', 'title')
                     ->searchable()
                     ->required()
-                    ->unique(ignoreRecord: true, modifyRuleUsing: function (\Illuminate\Validation\Rules\Unique $rule, \Filament\Forms\Get $get) {
+                    ->unique(ignoreRecord: true, modifyRuleUsing: function (\Illuminate\Validation\Rules\Unique $rule, $get) {
                         return $rule->where('student_id', $get('student_id'));
                     })
                     ->validationMessages([

@@ -4,6 +4,7 @@ import type { User } from "@/types";
 export interface LoginPayload {
   email: string;
   password: string;
+  "cf-turnstile-response"?: string;
 }
 
 export interface LoginResponse {
@@ -15,6 +16,7 @@ export interface RegisterPayload {
   email: string;
   password: string;
   password_confirmation: string;
+  "cf-turnstile-response"?: string;
   first_name: string;
   second_name: string;
   third_name: string;

@@ -57,6 +57,8 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
         ->name('lectures.stream');
     Route::post('lectures/{lecture}/progress', [CourseController::class, 'updateProgress'])
         ->middleware(\App\Http\Middleware\CheckEnrollment::class);
+    Route::get('lectures/{lecture}/assignment', [ExamController::class, 'showAssignment'])
+        ->middleware(\App\Http\Middleware\CheckEnrollment::class);
 
     // Enrollments
     Route::get('my-enrollments', [EnrollmentController::class, 'myEnrollments']);

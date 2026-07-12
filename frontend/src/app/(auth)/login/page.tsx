@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2, Atom, Phone, KeyRound } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +42,7 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      await login({ email: identifier, password });
+      await login({ email: identifier, password, "cf-turnstile-response": turnstileToken });
       router.push("/dashboard");
     } catch (err: unknown) {
       if (err && typeof err === "object" && "response" in err) {
@@ -162,6 +164,15 @@ export default function LoginPage() {
               }}
               required
               className="w-full bg-background/50 border-border/60 focus-visible:ring-primary/50 text-foreground"
+            />
+          </div>
+
+          <div className="flex justify-center my-4">
+            <Turnstile
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
+              onSuccess={(token) => setTurnstileToken(token)}
+              onError={() => setError("حدث خطأ في التحقق. يرجى إعادة تحميل الصفحة.")}
+              options={{ theme: "dark" }}
             />
           </div>
 
