@@ -75,6 +75,7 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
         ->middleware('role:instructor');
 
     // Exams (student)
+    Route::get('my-attempts', [ExamController::class, 'myAttempts']);
     Route::get('lectures/{lecture}/exam', [ExamController::class, 'show']);
     Route::post('exams/{exam}/start', [ExamController::class, 'startAttempt']);
     Route::post('attempts/{attempt}/submit', [ExamController::class, 'submitAttempt']);

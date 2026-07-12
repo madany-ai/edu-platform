@@ -153,4 +153,22 @@ class ExamController extends Controller
     {
         return response()->json($attempt->load('answers.question.choices'));
     }
+
+    public function myAttempts(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $student = Student::where('user_id', $user->id)->first();
+        
+        if (!$student) {
+            return response()->json(['data' => []]);
+        }
+
+        $attempts = ExamAttempt::with(['exam.lecture.section.course'])
+            ->where('student_id', $student->id)
+            ->whereNotNull('submitted_at')
+            ->latest()
+            ->get();
+
+        return response()->json(['data' => $attempts]);
+    }
 }
