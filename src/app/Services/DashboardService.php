@@ -114,6 +114,33 @@ class DashboardService
         $activeEnrollments = Enrollment::where('student_id', $studentId)
             ->where('status', 'active')->count();
 
+        // Calculate completed courses dynamically
+        $completedCoursesCount = 0;
+        $enrollments = Enrollment::where('student_id', $studentId)->with('course.sections.lectures')->get();
+        foreach ($enrollments as $enrollment) {
+            $course = $enrollment->course;
+            if ($course) {
+                $lectureIds = [];
+                foreach ($course->sections as $section) {
+                    foreach ($section->lectures as $lecture) {
+                        $lectureIds[] = $lecture->id;
+                    }
+                }
+                
+                if (count($lectureIds) > 0) {
+                    $completedCount = \App\Models\StudentActivity::where('student_id', $studentId)
+                        ->where('type', 'video_completed')
+                        ->where('entity_type', \App\Models\Lecture::class)
+                        ->whereIn('entity_id', $lectureIds)
+                        ->count();
+                    
+                    if ($completedCount === count($lectureIds)) {
+                        $completedCoursesCount++;
+                    }
+                }
+            }
+        }
+
         $stats = DB::table('student_statistics')
             ->where('student_id', $studentId)
             ->first();
@@ -124,7 +151,7 @@ class DashboardService
             'completed_lectures' => $stats?->completed_lectures ?? 0,
             'total_watch_minutes' => $stats?->total_watch_minutes ?? 0,
             'average_exam_score' => $stats?->average_exam_score ?? 0,
-            'completed_courses' => $stats?->completed_courses ?? 0,
+            'completed_courses' => $completedCoursesCount,
         ];
     }
 

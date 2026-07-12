@@ -45,8 +45,14 @@ export default function StudentDashboardPage() {
     },
     {
       icon: Clock,
-      label: "ساعات التعلم",
-      value: Math.round((stats?.total_watch_minutes ?? 0) / 60),
+      label: "وقت التعلم",
+      value: (() => {
+        const mins = stats?.total_watch_minutes ?? 0;
+        if (mins === 0) return "0";
+        if (mins < 60) return `${mins} د`;
+        const hrs = mins / 60;
+        return hrs % 1 === 0 ? `${hrs} س` : `${hrs.toFixed(1)} س`;
+      })(),
       color: "text-accent bg-accent/10 border-accent/20",
     },
     {
@@ -155,7 +161,13 @@ export default function StudentDashboardPage() {
             <div className="flex items-center justify-between pb-3 border-b border-white/5">
               <span className="text-xs text-muted-foreground">إجمالي وقت التعلم</span>
               <span className="font-bold text-foreground text-sm">
-                {Math.round((stats?.total_watch_minutes ?? 0) / 60)} ساعة
+                {(() => {
+                  const mins = stats?.total_watch_minutes ?? 0;
+                  if (mins < 60) return `${mins} دقيقة`;
+                  const hrs = mins / 60;
+                  const formattedHrs = hrs % 1 === 0 ? hrs : hrs.toFixed(1);
+                  return `${formattedHrs} ساعة`;
+                })()}
               </span>
             </div>
             <div className="flex items-center justify-between">
