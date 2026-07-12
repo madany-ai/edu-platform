@@ -43,7 +43,11 @@ export default function StudentCoursesPage() {
                 className="glass-card overflow-hidden rounded-2xl border border-white/5 flex flex-col justify-between hover:translate-y-[-4px] transition-all"
               >
                 <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center relative">
-                  <BookOpen className="h-12 w-12 text-primary/40" />
+                  {course.thumbnail ? (
+                    <img src={course.thumbnail} alt={course.title} className="h-full w-full object-cover" />
+                  ) : (
+                    <BookOpen className="h-12 w-12 text-primary/40" />
+                  )}
                   <span className="absolute bottom-3 right-3 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                     {enrollment.status === "active" ? "نشط" : enrollment.status}
                   </span>

@@ -58,6 +58,12 @@ class CourseResource extends Resource
                     ->rows(4)
                     ->columnSpanFull(),
 
+                FileUpload::make('thumbnail')
+                    ->label('صورة مصغرة للكورس (اختياري)')
+                    ->image()
+                    ->directory('courses/thumbnails')
+                    ->columnSpanFull(),
+
                 TextInput::make('price')
                     ->label('السعر')
                     ->required()

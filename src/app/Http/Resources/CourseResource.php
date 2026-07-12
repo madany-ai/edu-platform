@@ -15,7 +15,7 @@ class CourseResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'price' => (float) $this->price,
-            'thumbnail' => $this->thumbnail,
+            'thumbnail' => $this->thumbnail ? asset('storage/' . $this->thumbnail) : null,
             'status' => $this->status,
             'instructor' => $this->whenLoaded('instructor', fn () => [
                 'id' => $this->instructor->id,

@@ -257,6 +257,17 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
           </div>
 
           <div className="flex items-center justify-center gap-4">
+            {passed && (
+              <button
+                onClick={() => {
+                  window.location.href = `/courses/${courseId}/lectures/${lectureId}`;
+                }}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-colors text-sm"
+              >
+                <Play className="h-4 w-4" />
+                متابعة المحاضرة
+              </button>
+            )}
             <button
               onClick={() => setShowReview(!showReview)}
               className="flex items-center gap-2 px-6 py-2.5 rounded-xl border font-bold hover:bg-muted transition-colors text-sm"

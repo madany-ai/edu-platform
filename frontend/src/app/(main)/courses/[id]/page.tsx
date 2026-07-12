@@ -233,11 +233,11 @@ export default function CourseDetailPage() {
                 {!enrolled && (
                   <div className="flex items-end gap-2">
                     <span className="text-3xl font-bold text-primary">
-                      {course.price === 0 ? "مجاني" : `${course.price} د.م`}
+                      {course.price === 0 ? "مجاني" : `${course.price} ج.م`}
                     </span>
                     {course.price > 0 && (
                       <span className="text-sm text-muted-foreground line-through mb-1">
-                        {Math.round(course.price * 2)} د.م
+                        {Math.round(course.price * 2)} ج.م
                       </span>
                     )}
                   </div>
@@ -268,7 +268,7 @@ export default function CourseDetailPage() {
                       onClick={handlePurchase}
                       disabled={purchaseMutation.isPending}
                     >
-                      {purchaseMutation.isPending ? "جاري الشراء..." : `شراء - ${course.price} د.م`}
+                      {purchaseMutation.isPending ? "جاري الشراء..." : `شراء - ${course.price} ج.م`}
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   )

@@ -104,6 +104,7 @@ function CoursesContent() {
             lessons={course.sections_count ?? 0}
             students={course.students_count ?? 0}
             price={course.price}
+            image={course.thumbnail || undefined}
           />
         ))}
       </div>

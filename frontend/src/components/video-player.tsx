@@ -164,7 +164,7 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
 
     const command = isPlaying ? "pauseVideo" : "playVideo";
     iframe.contentWindow.postMessage(
-      JSON.stringify({ event: "command", func: command, args: "" }),
+      JSON.stringify({ event: "command", func: command, args: [] }),
       "*"
     );
     setIsPlaying(!isPlaying);

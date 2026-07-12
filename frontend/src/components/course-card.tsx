@@ -49,7 +49,7 @@ export function CourseCard({ id, title, instructor, category, lessons, students,
         </CardContent>
         <CardFooter className="p-4 pt-0 flex items-center justify-between">
           <span className="text-lg font-bold text-primary">
-            {price === 0 ? "مجاني" : `${price} د.م`}
+            {price === 0 ? "مجاني" : `${price} ج.م`}
           </span>
         </CardFooter>
       </Card>
