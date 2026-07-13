@@ -144,17 +144,17 @@ class AssignmentResource extends Resource
 
     public static function canCreate(): bool
     {
-        return ! auth()->user()->hasRole('assistant');
+        return true;
     }
 
     public static function canEdit(Model $record): bool
     {
-        return ! auth()->user()->hasRole('assistant');
+        return true;
     }
 
     public static function canDelete(Model $record): bool
     {
-        return ! auth()->user()->hasRole('assistant');
+        return true;
     }
 
     public static function getPages(): array
@@ -172,9 +172,15 @@ class AssignmentResource extends Resource
             ->where('is_assignment', true)
             ->when($user && ! $user->hasRole('super_admin'), function (\Illuminate\Database\Eloquent\Builder $query) use ($user) {
                 if ($user->hasRole('instructor')) {
-                    $query->whereHas('lecture.section.course', fn ($q) => $q->where('instructor_id', $user->id));
+                    $query->where(function ($q) use ($user) {
+                        $q->whereHas('lecture.section.course', fn ($c) => $c->where('instructor_id', $user->id))
+                          ->orWhereNull('lecture_id');
+                    });
                 } elseif ($user->hasRole('assistant')) {
-                    $query->whereHas('lecture.section.course.assistants', fn ($q) => $q->where('user_id', $user->id));
+                    $query->where(function ($q) use ($user) {
+                        $q->whereHas('lecture.section.course.assistants', fn ($c) => $c->where('user_id', $user->id))
+                          ->orWhereNull('lecture_id');
+                    });
                 }
             });
     }

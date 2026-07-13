@@ -87,4 +87,9 @@ class ActivityResource extends Resource
     {
         return false;
     }
+
+    public static function canViewAny(): bool
+    {
+        return ! auth()->user()?->hasRole('assistant');
+    }
 }

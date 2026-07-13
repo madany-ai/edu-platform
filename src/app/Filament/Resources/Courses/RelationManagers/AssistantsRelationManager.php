@@ -12,6 +12,10 @@ class AssistantsRelationManager extends RelationManager
 {
     protected static string $relationship = 'assistants';
 
+    protected static ?string $inverseRelationship = 'assistedCourses';
+
+    protected static ?string $recordTitleAttribute = 'name';
+
     protected static ?string $title = 'المساعدون التعليميون';
 
     public function form(Schema $schema): Schema
@@ -44,7 +48,8 @@ class AssistantsRelationManager extends RelationManager
             ])
             ->headerActions([
                 \Filament\Actions\AttachAction::make()
-                    ->preloadRecordSelect(),
+                    ->preloadRecordSelect()
+                    ->recordSelectOptionsQuery(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->role('assistant')),
             ])
             ->recordActions([
                 \Filament\Actions\DetachAction::make(),

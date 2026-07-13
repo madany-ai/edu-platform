@@ -42,7 +42,7 @@ export function Navbar() {
                   : "text-on-surface-variant"
               )}
             >
-              لوحة التحكم
+              حساب الطالب
             </Link>
           )}
           {navLinks.map((link) => (
@@ -101,7 +101,7 @@ export function Navbar() {
                   pathname.startsWith("/dashboard") ? "bg-primary/10 text-primary" : "text-on-surface-variant hover:bg-muted"
                 )}
               >
-                لوحة التحكم
+                حساب الطالب
               </Link>
             )}
             {navLinks.map((link) => (

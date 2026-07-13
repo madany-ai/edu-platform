@@ -5,24 +5,14 @@ const footerLinks = [
   {
     title: "الدورات",
     links: [
-      { label: "جميع الدورات", href: ROUTES.COURSES },
-      { label: "دورات العلوم", href: `${ROUTES.COURSES}?category=science` },
-      { label: "دورات الرياضيات", href: `${ROUTES.COURSES}?category=math` },
-    ],
-  },
-  {
-    title: "روابط سريعة",
-    links: [
-      { label: "الرئيسية", href: ROUTES.HOME },
-      { label: "من نحن", href: ROUTES.ABOUT },
-      { label: "الأسئلة الشائعة", href: "/faq" },
+      { label: "جميع المحاضرات", href: ROUTES.COURSES },
     ],
   },
   {
     title: "تواصل معنا",
     links: [
-      { label: "info@platform.com", href: "mailto:info@platform.com" },
-      { label: "+123 456 7890", href: "tel:+1234567890" },
+      { label: "info@science-mr-islam.com", href: "mailto:info@science-mr-islam.com" },
+      { label: "+20 12 10382495", href: "tel:+201210382495" },
     ],
   },
 ];

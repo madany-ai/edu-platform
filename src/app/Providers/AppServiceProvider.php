@@ -17,6 +17,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Course::class, CoursePolicy::class);
+        Gate::policy(\App\Models\Lecture::class, \App\Policies\LecturePolicy::class);
         \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(\App\Models\PersonalAccessToken::class);
 
         \Illuminate\Support\Facades\RateLimiter::for('api', function (\Illuminate\Http\Request $request) {

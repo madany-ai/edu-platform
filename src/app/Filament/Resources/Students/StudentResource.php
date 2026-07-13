@@ -55,7 +55,8 @@ class StudentResource extends Resource
                     ->email()
                     ->required(fn (callable $get) => !$get('user_id'))
                     ->visible(fn (callable $get) => !$get('user_id'))
-                    ->unique('users', 'email'),
+                    ->unique('users', 'email')
+                    ->extraInputAttributes(['autocomplete' => 'new-email']),
                 TextInput::make('student_code')
                     ->label('كود الطالب')
                     ->disabled()
@@ -90,7 +91,12 @@ class StudentResource extends Resource
                     ->label('رقم الهاتف')
                     ->required()
                     ->tel()
-                    ->maxLength(20),
+                    ->maxLength(20)
+                    ->unique(
+                        table: 'users',
+                        column: 'phone',
+                        ignorable: fn (?Student $record) => $record?->user
+                    ),
                 TextInput::make('father_phone')
                     ->label('هاتف الأب')
                     ->required()
@@ -117,24 +123,71 @@ class StudentResource extends Resource
                     ->required(),
                 Select::make('governorate_id')
                     ->label('المحافظة')
-                    ->relationship('governorate', 'name')
-                    ->searchable(),
-                Select::make('city_id')
-                    ->label('المدينة')
-                    ->relationship('city', 'name')
-                    ->searchable(),
-                Select::make('school_id')
+                    ->searchable()
+                    ->getSearchResultsUsing(function (string $search): array {
+                        $normalized = str_replace(['أ', 'إ', 'آ', 'ة', 'ى'], ['ا', 'ا', 'ا', 'ه', 'ي'], $search);
+                        return \App\Models\Governorate::query()
+                            ->whereRaw("translate(name, 'أإآةى', 'ااايه') ilike ?", ["%{$normalized}%"])
+                            ->limit(50)
+                            ->pluck('name', 'id')
+                            ->toArray();
+                    })
+                    ->getOptionLabelUsing(fn ($value): ?string => \App\Models\Governorate::find($value)?->name),
+                TextInput::make('school_name')
                     ->label('المدرسة')
-                    ->relationship('school', 'name')
-                    ->searchable(),
+                    ->maxLength(255),
                 Select::make('grade_level_id')
                     ->label('الصف الدراسي')
-                    ->relationship('gradeLevel', 'name')
-                    ->searchable(),
+                    ->searchable()
+                    ->getSearchResultsUsing(function (string $search): array {
+                        $normalized = str_replace(['أ', 'إ', 'آ', 'ة', 'ى'], ['ا', 'ا', 'ا', 'ه', 'ي'], $search);
+                        return \App\Models\GradeLevel::query()
+                            ->whereRaw("translate(name, 'أإآةى', 'ااايه') ilike ?", ["%{$normalized}%"])
+                            ->limit(50)
+                            ->pluck('name', 'id')
+                            ->toArray();
+                    })
+                    ->getOptionLabelUsing(fn ($value): ?string => \App\Models\GradeLevel::find($value)?->name)
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if (!$state) {
+                            $set('academic_track_id', null);
+                            return;
+                        }
+                        $gradeLevel = \App\Models\GradeLevel::find($state);
+                        if (!$gradeLevel || !(str_contains($gradeLevel->name, 'ثانوي') || str_contains($gradeLevel->name, 'الثانوي'))) {
+                            $set('academic_track_id', null);
+                        }
+                    }),
                 Select::make('academic_track_id')
                     ->label('الشعبة')
-                    ->relationship('academicTrack', 'name')
-                    ->searchable(),
+                    ->searchable()
+                    ->getSearchResultsUsing(function (string $search): array {
+                        $normalized = str_replace(['أ', 'إ', 'آ', 'ة', 'ى'], ['ا', 'ا', 'ا', 'ه', 'ي'], $search);
+                        return \App\Models\AcademicTrack::query()
+                            ->whereRaw("translate(name, 'أإآةى', 'ااايه') ilike ?", ["%{$normalized}%"])
+                            ->limit(50)
+                            ->pluck('name', 'id')
+                            ->toArray();
+                    })
+                    ->getOptionLabelUsing(fn ($value): ?string => \App\Models\AcademicTrack::find($value)?->name)
+                    ->visible(function (callable $get) {
+                        $gradeLevelId = $get('grade_level_id');
+                        if (!$gradeLevelId) {
+                            return false;
+                        }
+                        $gradeLevel = \App\Models\GradeLevel::find($gradeLevelId);
+                        return $gradeLevel && (str_contains($gradeLevel->name, 'ثانوي') || str_contains($gradeLevel->name, 'الثانوي'));
+                    }),
+                TextInput::make('password')
+                    ->label('كلمة المرور')
+                    ->password()
+                    ->revealable()
+                    ->minLength(8)
+                    ->dehydrated(false)
+                    ->helperText(fn (?Student $record) => $record !== null ? 'اتركه فارغاً إذا كنت لا تريد تغيير كلمة المرور.' : 'إذا تركته فارغاً، ستكون كلمة المرور هي كود الطالب.')
+                    ->extraInputAttributes(['autocomplete' => 'new-password']),
+
                 \Filament\Forms\Components\Toggle::make('is_verified')
                     ->label('مُفعل / معتمد (صلاحية الشراء)')
                     ->helperText('تفعيل هذا الخيار يسمح للطالب بشراء وتفعيل الكورسات من المتجر مباشرة.')
@@ -210,6 +263,13 @@ class StudentResource extends Resource
                     ->mutateFormDataUsing(function (array $data): array {
                         unset($data['email']);
                         return $data;
+                    })
+                    ->after(function (Student $record, array $data): void {
+                        if (!empty($data['password'])) {
+                            $record->user->update([
+                                'password' => \Illuminate\Support\Facades\Hash::make($data['password']),
+                            ]);
+                        }
                     }),
                 Action::make('approve')
                     ->label('اعتماد')
@@ -307,12 +367,12 @@ class StudentResource extends Resource
 
     public static function canCreate(): bool
     {
-        return ! auth()->user()->hasRole('assistant');
+        return true;
     }
 
     public static function canEdit(Model $record): bool
     {
-        return ! auth()->user()->hasRole('assistant');
+        return true;
     }
 
     public static function canDelete(Model $record): bool

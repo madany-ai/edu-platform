@@ -29,7 +29,7 @@ api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiError>) => {
     if (error.response?.status === 401) {
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
         localStorage.removeItem(STORAGE_KEYS.TOKEN);
         window.location.href = "/login";
       }

@@ -52,7 +52,8 @@ class AssistantResource extends Resource
                     ->required()
                     ->email()
                     ->maxLength(255)
-                    ->unique(ignoreRecord: true),
+                    ->unique(ignoreRecord: true)
+                    ->extraInputAttributes(['autocomplete' => 'new-email']),
 
                 TextInput::make('phone')
                     ->label('رقم الهاتف')
@@ -66,7 +67,8 @@ class AssistantResource extends Resource
                     ->password()
                     ->revealable()
                     ->required(fn (string $operation): bool => $operation === 'create')
-                    ->minLength(8),
+                    ->minLength(8)
+                    ->extraInputAttributes(['autocomplete' => 'new-password']),
 
                 Select::make('assigned_courses')
                     ->label('الدورات المساعد بها')
@@ -146,7 +148,10 @@ class AssistantResource extends Resource
             ->when($user && ! $user->hasRole('super_admin'), function (Builder $query) use ($user) {
                 if ($user->hasRole('instructor')) {
                     $courseIds = Course::where('instructor_id', $user->id)->pluck('id');
-                    $query->whereHas('assistedCourses', fn (Builder $q) => $q->whereIn('course_assistants.course_id', $courseIds));
+                    $query->where(function (Builder $q) use ($courseIds) {
+                        $q->whereHas('assistedCourses', fn (Builder $sub) => $sub->whereIn('course_assistants.course_id', $courseIds))
+                            ->orDoesntHave('assistedCourses');
+                    });
                 }
             });
     }

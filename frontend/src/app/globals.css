@@ -68,12 +68,12 @@
 
 :root {
   /* User-supplied theme primary colors */
-  --cffy-theme-primary-a0: #076a25;
-  --cffy-theme-primary-a10: #2e783b;
-  --cffy-theme-primary-a20: #488750;
-  --cffy-theme-primary-a30: #5f9665;
-  --cffy-theme-primary-a40: #76a47a;
-  --cffy-theme-primary-a50: #8cb38f;
+  --cffy-theme-primary-a0: #8d6638;
+  --cffy-theme-primary-a10: #98754c;
+  --cffy-theme-primary-a20: #a4835f;
+  --cffy-theme-primary-a30: #af9272;
+  --cffy-theme-primary-a40: #baa186;
+  --cffy-theme-primary-a50: #c6b099;
 
   /* User-supplied theme surface colors */
   --cffy-theme-surface-a0: #121212;
@@ -84,12 +84,12 @@
   --cffy-theme-surface-a50: #7d7d7d;
 
   /* User-supplied theme tonal surface colors */
-  --cffy-theme-surface-tonal-a0: #141a15;
-  --cffy-theme-surface-tonal-a10: #272d28;
-  --cffy-theme-surface-tonal-a20: #3b413c;
-  --cffy-theme-surface-tonal-a30: #515652;
-  --cffy-theme-surface-tonal-a40: #676c68;
-  --cffy-theme-surface-tonal-a50: #7f837f;
+  --cffy-theme-surface-tonal-a0: #1d1a16;
+  --cffy-theme-surface-tonal-a10: #302d29;
+  --cffy-theme-surface-tonal-a20: #43413d;
+  --cffy-theme-surface-tonal-a30: #585653;
+  --cffy-theme-surface-tonal-a40: #6e6c69;
+  --cffy-theme-surface-tonal-a50: #858380;
 
   /* User-supplied Success colors */
   --cffy-theme-success-a0: #7dff95;
@@ -210,9 +210,9 @@
   body {
     @apply bg-background text-foreground;
     background-image: 
-      radial-gradient(at 0% 0%, rgba(46, 120, 59, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(125, 255, 149, 0.1) 0px, transparent 50%),
-      radial-gradient(at 50% 100%, rgba(135, 209, 255, 0.05) 0px, transparent 50%);
+      radial-gradient(at 0% 0%, rgba(141, 102, 56, 0.12) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(255, 188, 94, 0.08) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(135, 209, 255, 0.03) 0px, transparent 50%);
     background-attachment: fixed;
     min-height: 100vh;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
@@ -221,14 +221,14 @@
 
 @layer utilities {
   .glass {
-    background: rgba(39, 45, 40, 0.55);
+    background: rgba(48, 45, 41, 0.55);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--cffy-theme-surface-tonal-a20);
   }
 
   .glass-card {
-    background: rgba(39, 45, 40, 0.65);
+    background: rgba(48, 45, 41, 0.65);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--cffy-theme-surface-tonal-a20);
@@ -236,7 +236,7 @@
   }
 
   .cosmic-border-glow {
-    box-shadow: 0 0 15px rgba(125, 255, 149, 0.15);
+    box-shadow: 0 0 15px rgba(141, 102, 56, 0.15);
     border-color: var(--cffy-theme-primary-a20);
   }
 
@@ -246,17 +246,17 @@
   }
 
   .gradient-cosmic {
-    background: linear-gradient(135deg, var(--cffy-theme-primary-a0) 0%, var(--cffy-theme-primary-a30) 50%, var(--cffy-theme-success-a0) 100%);
+    background: linear-gradient(135deg, var(--cffy-theme-primary-a0) 0%, var(--cffy-theme-primary-a30) 50%, var(--cffy-theme-warning-a0) 100%);
   }
 
   .text-gradient {
-    background: linear-gradient(135deg, var(--cffy-theme-success-a0) 0%, var(--cffy-theme-info-a0) 100%);
+    background: linear-gradient(135deg, var(--cffy-theme-primary-a10) 0%, var(--cffy-theme-warning-a0) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .science-glow-text {
-    text-shadow: 0 0 10px rgba(125, 255, 149, 0.4);
+    text-shadow: 0 0 10px rgba(141, 102, 56, 0.4);
   }
 }

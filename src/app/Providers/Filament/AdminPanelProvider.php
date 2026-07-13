@@ -32,6 +32,10 @@ class AdminPanelProvider extends PanelProvider
                 \Filament\View\PanelsRenderHook::HEAD_END,
                 fn (): string => \Illuminate\Support\Facades\View::make('filament.hooks.head')->render(),
             )
+            ->renderHook(
+                \Filament\View\PanelsRenderHook::BODY_START,
+                fn (): string => '<form style="position: absolute; left: -9999px; top: -9999px;"><input type="text" name="fakeusernameremembered"/><input type="password" name="fakepasswordremembered"/></form>',
+            )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

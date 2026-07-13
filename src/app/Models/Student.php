@@ -38,7 +38,7 @@ class Student extends Model
     protected $fillable = [
         'user_id', 'student_code', 'first_name', 'second_name', 'third_name', 'last_name',
         'phone', 'father_phone', 'mother_phone', 'guardian_job',
-        'governorate_id', 'city_id', 'school_id', 'grade_level_id', 'academic_track_id',
+        'governorate_id', 'city_id', 'school_id', 'school_name', 'grade_level_id', 'academic_track_id',
         'gender', 'birth_date', 'profile_image', 'is_verified',
     ];
 

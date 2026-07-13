@@ -193,9 +193,9 @@ export default function LectureViewPage() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row w-full h-full">
+    <div className="flex flex-col lg:flex-row w-full lg:h-full min-h-full">
       {/* Left/Center Area (Main Content) */}
-      <div className="flex-grow flex flex-col h-full overflow-y-auto p-4 md:p-6 space-y-6 lg:w-3/4">
+      <div className="flex-grow flex flex-col lg:h-full lg:overflow-y-auto p-4 md:p-6 space-y-6 lg:w-3/4">
         {activeType === "video" ? (
           <>
             {/* Video Stage */}
@@ -470,7 +470,7 @@ export default function LectureViewPage() {
       </div>
 
       {/* Right Sidebar: Curriculum */}
-      <aside className="lg:w-1/4 w-full bg-card border-r flex flex-col h-full shrink-0">
+      <aside className="lg:w-1/4 w-full lg:h-full border-t lg:border-t-0 lg:border-r border-white/5 bg-secondary/5 lg:overflow-y-auto flex flex-col shrink-0">
         <div className="p-4 md:p-6 border-b">
           <Link href={`/courses/${courseId}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
             <ArrowRight className="h-4 w-4" />

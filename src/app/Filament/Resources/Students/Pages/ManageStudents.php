@@ -32,7 +32,7 @@ class ManageStudents extends ManageRecords
                             'name' => $fullName,
                             'email' => $email,
                             'phone' => $data['phone'] ?? null,
-                            'password' => \Illuminate\Support\Facades\Hash::make($data['phone'] ?? '12345678'),
+                            'password' => \Illuminate\Support\Facades\Hash::make(!empty($data['password']) ? $data['password'] : $data['student_code']),
                             'status' => 'active',
                         ]);
                         $user->assignRole('student');
@@ -41,6 +41,7 @@ class ManageStudents extends ManageRecords
                     }
 
                     unset($data['email']);
+                    unset($data['password']);
                     return $data;
                 }),
         ];
