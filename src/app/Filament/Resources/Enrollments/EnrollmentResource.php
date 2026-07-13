@@ -45,7 +45,7 @@ class EnrollmentResource extends Resource
                     ->options(function () {
                         return \App\Models\Student::with('user')
                             ->get()
-                            ->mapWithKeys(fn ($s) => [$s->id => $s->user?->name ?? 'غير معروف']);
+                            ->mapWithKeys(fn ($s) => [$s->id => ($s->student_code ? "{$s->student_code} - " : "") . ($s->user?->name ?? 'غير معروف')]);
                     })
                     ->searchable()
                     ->required(),

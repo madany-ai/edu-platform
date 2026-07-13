@@ -111,7 +111,7 @@ class StudentResource extends Resource
                     ->label('وظيفة ولي الأمر')
                     ->required()
                     ->maxLength(255),
-                Select::make('gender')
+                Select::make('gender')  
                     ->label('الجنس')
                     ->options([
                         'male' => 'ذكر',

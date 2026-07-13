@@ -278,11 +278,11 @@ class LectureResource extends Resource
                     ->label('القسم')
                     ->searchable(),
 
-                TextColumn::make('exam_count')
+                TextColumn::make('exams_count')
                     ->label('عدد الامتحانات')
                     ->counts('exams'),
 
-                TextColumn::make('assignment_count')
+                TextColumn::make('assignments_count')
                     ->label('عدد الواجبات')
                     ->counts('assignments'),
 

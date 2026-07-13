@@ -24,6 +24,8 @@ import {
   Heart,
   ChevronDown,
   Lock,
+  FileText,
+  Download,
 } from "lucide-react";
 
 export default function CourseDetailPage() {
@@ -52,29 +54,16 @@ export default function CourseDetailPage() {
     enrollMutation.mutate(course.id);
   };
 
-  const handlePurchase = async () => {
-    if (!course) return;
-    purchaseMutation.mutate(course.id);
+  const handlePurchase = () => {
+    toast.info("خدمات الدفع الإلكتروني قيد الإعداد حالياً. يرجى التواصل مع الإدارة أو الدعم الفني لتفعيل هذه الدورة لحسابك.");
   };
 
   const handleBuyLecture = (product: any) => {
     if (!user) {
-      toast.error("يرجى تسجيل الدخول أولاً لإتمام عملية الشراء");
+      toast.error("يرجى تسجيل الدخول أولاً");
       return;
     }
-    toast.info(`جاري معالجة شراء: ${product.name}...`);
-    createOrderMutation.mutate(
-      { purchasable_id: product.id, purchasable_type: 'product' },
-      {
-        onSuccess: () => {
-          toast.success("تم شراء المحاضرة بنجاح! تم تفعيل المحتوى.");
-        },
-        onError: (err: any) => {
-          const errMsg = err.response?.data?.message || "فشلت عملية الشراء، يرجى المحاولة مرة أخرى.";
-          toast.error(errMsg);
-        }
-      }
-    );
+    toast.info("خدمات الدفع الإلكتروني قيد الإعداد حالياً. يرجى التواصل مع الإدارة أو الدعم الفني لتفعيل هذه المحاضرة لحسابك.");
   };
 
   const toggleSection = (sectionId: string) => {
@@ -163,55 +152,81 @@ export default function CourseDetailPage() {
                       />
                     </button>
                     {openSections.has(section.id) && section.lectures && (
-                      <div className="border-t">
+                      <div className="border-t divide-y divide-border/40">
                         {section.lectures.map((lecture) => (
                           <div
                             key={lecture.id}
-                            className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors"
+                            className="p-4 hover:bg-muted/10 transition-colors"
                           >
-                            <div className="flex items-center gap-3">
-                              <PlayCircle className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{lecture.title}</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <span className="text-xs text-muted-foreground">
-                                {lecture.duration} دقيقة
-                              </span>
-                              {(() => {
-                                const hasAccess = enrolled || unlockedLectures.has(lecture.id);
-                                const lectureProduct = lectureProducts?.find((p: any) => p.sellable_id === lecture.id);
-                                
-                                if (hasAccess) {
-                                  return (
-                                    <Link href={`/courses/${id}/lectures/${lecture.id}`}>
-                                      <Button variant="ghost" size="sm">
-                                        مشاهدة
-                                        <ArrowRight className="h-3 w-3 mr-1" />
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <PlayCircle className="h-4 w-4 text-primary" />
+                                <span className="text-sm font-semibold">{lecture.title}</span>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="text-xs text-muted-foreground">
+                                  {lecture.duration} دقيقة
+                                </span>
+                                {(() => {
+                                  const hasAccess = enrolled || unlockedLectures.has(lecture.id);
+                                  const lectureProduct = lectureProducts?.find((p: any) => p.sellable_id === lecture.id);
+                                  
+                                  if (hasAccess) {
+                                    return (
+                                      <Link href={`/courses/${id}/lectures/${lecture.id}`}>
+                                        <Button variant="ghost" size="sm" className="h-8">
+                                          مشاهدة
+                                          <ArrowRight className="h-3 w-3 mr-1" />
+                                        </Button>
+                                      </Link>
+                                    );
+                                  } else if (lectureProduct) {
+                                    return (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-xs h-8 border-primary/30 text-primary hover:bg-primary/10 gap-1"
+                                        disabled={createOrderMutation.isPending}
+                                        onClick={() => handleBuyLecture(lectureProduct)}
+                                      >
+                                        شراء المحاضرة ({lectureProduct.price} EGP)
                                       </Button>
-                                    </Link>
-                                  );
-                                } else if (lectureProduct) {
-                                  return (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="text-xs border-primary/30 text-primary hover:bg-primary/10 gap-1"
-                                      disabled={createOrderMutation.isPending}
-                                      onClick={() => handleBuyLecture(lectureProduct)}
-                                    >
-                                      شراء المحاضرة ({lectureProduct.price} EGP)
-                                    </Button>
-                                  );
-                                } else {
-                                  return (
-                                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                      <Lock className="h-3.5 w-3.5" />
-                                      مغلق
-                                    </span>
-                                  );
-                                }
-                              })()}
+                                    );
+                                  } else {
+                                    return (
+                                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                        <Lock className="h-3.5 w-3.5" />
+                                        مغلق
+                                      </span>
+                                    );
+                                  }
+                                })()}
+                              </div>
                             </div>
+
+                            {/* Sub-items (Exams, Assignments, Files) */}
+                            {(lecture.exams?.length || lecture.assignments?.length || lecture.files?.length) ? (
+                              <div className="mr-7 mt-2 space-y-1.5 border-r border-border/80 pr-3">
+                                {lecture.exams?.map((exam) => (
+                                  <div key={exam.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <FileText className="h-3.5 w-3.5 text-secondary" />
+                                    <span>امتحان: {exam.title} ({exam.duration} دقيقة)</span>
+                                  </div>
+                                ))}
+                                {lecture.assignments?.map((assign) => (
+                                  <div key={assign.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                                    <span>واجب: {assign.title}</span>
+                                  </div>
+                                ))}
+                                {lecture.files?.map((file) => (
+                                  <div key={file.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <Download className="h-3.5 w-3.5 text-blue-500" />
+                                    <span>ملف مرفق</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
                           </div>
                         ))}
                       </div>

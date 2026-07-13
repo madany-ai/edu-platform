@@ -78,8 +78,8 @@ class EnrollmentService
             ->filter()
             ->unique();
 
-        $enrolledCourseIds = $enrollments->pluck('course_id');
-        $missingCourseIds = $entitlementCourseIds->diff($enrolledCourseIds);
+        $enrolledCourseIds = $enrollments->pluck('course_id')->toBase();
+        $missingCourseIds = $entitlementCourseIds->toBase()->diff($enrolledCourseIds);
 
         if ($missingCourseIds->isNotEmpty()) {
             $courses = \App\Models\Course::with(['instructor', 'sections'])
