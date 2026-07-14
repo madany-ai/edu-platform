@@ -41,16 +41,18 @@ export default function VideoPlayer({ lectureId, streamUrl, streamType, initialT
         const originalBeforeRequest = vhs.xhr.beforeRequest;
         vhs.xhr.beforeRequest = function (options: any) {
           const opt = originalBeforeRequest ? originalBeforeRequest(options) : options;
+          opt.headers = opt.headers || {};
+          opt.headers.Accept = "application/json";
           if (token) {
-            opt.headers = opt.headers || {};
             opt.headers.Authorization = `Bearer ${token}`;
           }
           return opt;
         };
       } else {
         (videojs as any).hook("beforeRequest", (options: any) => {
+          options.headers = options.headers || {};
+          options.headers.Accept = "application/json";
           if (token) {
-            options.headers = options.headers || {};
             options.headers.Authorization = `Bearer ${token}`;
           }
           return options;

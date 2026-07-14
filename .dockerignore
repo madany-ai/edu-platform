@@ -1,0 +1,6 @@
+src/storage
+src/vendor
+frontend/node_modules
+.git
+.idea
+.vscode

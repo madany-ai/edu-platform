@@ -205,14 +205,12 @@ class StudentResource extends Resource
                     ->sortable(),
                 TextColumn::make('full_name')
                     ->label('الاسم')
-                    ->searchable(['first_name', 'second_name', 'third_name', 'last_name'])
                     ->sortable(['first_name'])
                     ->state(fn (Student $record): string => trim(
                         "{$record->first_name} {$record->second_name} {$record->third_name} {$record->last_name}"
                     )),
                 TextColumn::make('user.email')
-                    ->label('البريد الإلكتروني')
-                    ->searchable(),
+                    ->label('البريد الإلكتروني'),
                 TextColumn::make('phone')
                     ->label('رقم الهاتف'),
                 TextColumn::make('user.status')

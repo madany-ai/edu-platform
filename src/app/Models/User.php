@@ -58,6 +58,15 @@ class User extends Authenticatable implements FilamentUser
             ->withTimestamps();
     }
 
+    /** 
+     * Alias for assistedCourses used by Filament AttachAction
+     * @return BelongsToMany<Course, $this> 
+     */
+    public function courses(): BelongsToMany
+    {
+        return $this->assistedCourses();
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {

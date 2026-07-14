@@ -47,7 +47,10 @@ class Lecture extends Model
     protected static function booted()
     {
         static::saved(function ($lecture) {
-            if ($lecture->video_path && ($lecture->wasChanged('video_path') || $lecture->wasRecentlyCreated)) {
+            $hasVideo = $lecture->video()->exists();
+            $isFailed = $lecture->video && $lecture->video->status === 'failed';
+
+            if ($lecture->video_path && ($lecture->wasChanged('video_path') || $lecture->wasRecentlyCreated || !$hasVideo || $isFailed)) {
                 // Dispatch background HLS encryption processing
                 \App\Jobs\ProcessVideoHLS::dispatch($lecture);
             }

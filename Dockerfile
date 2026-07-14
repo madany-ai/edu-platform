@@ -41,8 +41,8 @@ WORKDIR /var/www/html
 
 # Recommended php.ini settings for an LMS handling file uploads (PDFs, assignment submissions)
 RUN { \
-    echo 'upload_max_filesize=50M'; \
-    echo 'post_max_size=55M'; \
+    echo 'upload_max_filesize=2G'; \
+    echo 'post_max_size=2G'; \
     echo 'memory_limit=512M'; \
     echo 'max_execution_time=120'; \
     echo 'opcache.enable=1'; \

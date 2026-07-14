@@ -208,19 +208,39 @@ export default function CourseDetailPage() {
                             {(lecture.exams?.length || lecture.assignments?.length || lecture.files?.length) ? (
                               <div className="mr-7 mt-2 space-y-1.5 border-r border-border/80 pr-3">
                                 {lecture.exams?.map((exam) => (
-                                  <div key={exam.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <FileText className="h-3.5 w-3.5 text-secondary" />
-                                    <span>امتحان: {exam.title} ({exam.duration} دقيقة)</span>
+                                  <div key={exam.id} className="flex items-center justify-between hover:bg-muted/30 p-1.5 rounded-md transition-colors">
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                      <FileText className="h-3.5 w-3.5 text-secondary" />
+                                      <span>امتحان: {exam.title} ({exam.duration} دقيقة)</span>
+                                    </div>
+                                    {(enrolled || unlockedLectures.has(lecture.id)) && (
+                                      <Link href={`/courses/${id}/lectures/${lecture.id}?type=exam&itemId=${exam.id}`}>
+                                        <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-primary">
+                                          بدء الامتحان
+                                          <ArrowRight className="h-2.5 w-2.5 mr-1" />
+                                        </Button>
+                                      </Link>
+                                    )}
                                   </div>
                                 ))}
                                 {lecture.assignments?.map((assign) => (
-                                  <div key={assign.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                                    <span>واجب: {assign.title}</span>
+                                  <div key={assign.id} className="flex items-center justify-between hover:bg-muted/30 p-1.5 rounded-md transition-colors">
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                                      <span>واجب: {assign.title}</span>
+                                    </div>
+                                    {(enrolled || unlockedLectures.has(lecture.id)) && (
+                                      <Link href={`/courses/${id}/lectures/${lecture.id}?type=assignment&itemId=${assign.id}`}>
+                                        <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-primary">
+                                          عرض الواجب
+                                          <ArrowRight className="h-2.5 w-2.5 mr-1" />
+                                        </Button>
+                                      </Link>
+                                    )}
                                   </div>
                                 ))}
                                 {lecture.files?.map((file) => (
-                                  <div key={file.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <div key={file.id} className="flex items-center gap-2 text-xs text-muted-foreground p-1.5">
                                     <Download className="h-3.5 w-3.5 text-blue-500" />
                                     <span>ملف مرفق</span>
                                   </div>

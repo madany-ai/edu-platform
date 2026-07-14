@@ -109,6 +109,8 @@ class LectureResource extends Resource
                         Repeater::make('exams')
                             ->relationship('exams')
                             ->label('الامتحانات')
+                            ->mutateRelationshipDataBeforeCreateUsing(fn (array $data): array => array_merge($data, ['is_assignment' => false]))
+                            ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): array => array_merge($data, ['is_assignment' => false]))
                             ->schema([
                                 TextInput::make('title')
                                     ->label('عنوان الامتحان')
@@ -278,13 +280,15 @@ class LectureResource extends Resource
                     ->label('القسم')
                     ->searchable(),
 
-                TextColumn::make('exams_count')
-                    ->label('عدد الامتحانات')
-                    ->counts('exams'),
+                TextColumn::make('exams.title')
+                    ->label('الامتحانات')
+                    ->listWithLineBreaks()
+                    ->bulleted(),
 
-                TextColumn::make('assignments_count')
-                    ->label('عدد الواجبات')
-                    ->counts('assignments'),
+                TextColumn::make('assignments.title')
+                    ->label('الواجبات')
+                    ->listWithLineBreaks()
+                    ->bulleted(),
 
                 TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
