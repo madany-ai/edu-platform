@@ -60,7 +60,8 @@ class CourseResource extends Resource
 
                 FileUpload::make('thumbnail')
                     ->label('صورة مصغرة للكورس (اختياري)')
-                    ->image()
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                    ->maxSize(5120) // 5 MB
                     ->directory('courses/thumbnails')
                     ->columnSpanFull(),
 

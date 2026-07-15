@@ -32,33 +32,15 @@ export default function VideoPlayer({ lectureId, streamUrl, streamType, initialT
     videoElement.setAttribute("x-webkit-airplay", "deny");
     videoRef.current.appendChild(videoElement);
 
-    // Setup token injection for HLS stream requests (if using HLS)
+    // Determine the source type
+    const sourceType = (streamType === "application/x-mpegURL" || streamType === "hls")
+      ? "application/x-mpegURL"
+      : (streamType === "video/mp4" || streamUrl.endsWith(".mp4"))
+      ? "video/mp4"
+      : streamType || "application/x-mpegURL";
+
+    const isHLS = sourceType === "application/x-mpegURL";
     const token = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEYS.TOKEN) : null;
-    
-    if (streamType === "application/x-mpegURL") {
-      const vhs = (videojs as any).Vhs;
-      if (vhs && vhs.xhr && typeof vhs.xhr.beforeRequest === "function") {
-        const originalBeforeRequest = vhs.xhr.beforeRequest;
-        vhs.xhr.beforeRequest = function (options: any) {
-          const opt = originalBeforeRequest ? originalBeforeRequest(options) : options;
-          opt.headers = opt.headers || {};
-          opt.headers.Accept = "application/json";
-          if (token) {
-            opt.headers.Authorization = `Bearer ${token}`;
-          }
-          return opt;
-        };
-      } else {
-        (videojs as any).hook("beforeRequest", (options: any) => {
-          options.headers = options.headers || {};
-          options.headers.Accept = "application/json";
-          if (token) {
-            options.headers.Authorization = `Bearer ${token}`;
-          }
-          return options;
-        });
-      }
-    }
 
     const player = videojs(videoElement, {
       autoplay: false,
@@ -67,21 +49,29 @@ export default function VideoPlayer({ lectureId, streamUrl, streamType, initialT
       fluid: true,
       html5: {
         vhs: {
+          overrideNative: true,
           withCredentials: true,
         },
+        nativeAudioTracks: false,
+        nativeVideoTracks: false,
       },
-      sources: [
-        {
-          src: streamUrl,
-          type: streamType,
-        },
-      ],
+      sources: [],
       controlBar: {
         pictureInPictureToggle: false,
       },
     });
 
     playerRef.current = player;
+
+    // Append access token to stream URL so video.js can fetch without custom headers
+    const streamUrlWithAuth = token
+      ? `${streamUrl}${streamUrl.includes("?") ? "&" : "?"}access_token=${token}`
+      : streamUrl;
+
+    // Load source on ready — auth is embedded in the URL
+    player.ready(() => {
+      player.src({ src: streamUrlWithAuth, type: sourceType });
+    });
 
     // Seek to last watched time once player is ready and metadata is loaded
     player.ready(() => {
@@ -150,8 +140,16 @@ export default function VideoPlayer({ lectureId, streamUrl, streamType, initialT
     return <YouTubeSecurePlayer videoId={videoId} />;
   }
 
+  // Determine the source type for video.js
+  const getSourceType = () => {
+    if (streamType === "application/x-mpegURL" || streamType === "hls") return "application/x-mpegURL";
+    if (streamType === "video/mp4" || streamUrl.endsWith(".mp4")) return "video/mp4";
+    if (streamType === "video/youtube") return "video/youtube";
+    return streamType || "application/x-mpegURL";
+  };
+
   return (
-    <div className="w-full h-full relative" ref={videoRef} />
+    <div className="w-full h-full relative" ref={videoRef} data-src-type={getSourceType()} />
   );
 }
 

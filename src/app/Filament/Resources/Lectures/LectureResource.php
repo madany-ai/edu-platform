@@ -100,7 +100,8 @@ class LectureResource extends Resource
                             ->label('ملف الـ PDF')
                             ->disk('minio')
                             ->directory('pdfs')
-                            ->acceptedFileTypes(['application/pdf']),
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->maxSize(20480), // 20 MB
                     ])->columns(2),
 
                 FormSection::make('الامتحانات')
@@ -151,7 +152,8 @@ class LectureResource extends Resource
                                             ->label('صورة للسؤال (اختياري)')
                                             ->disk('minio')
                                             ->directory('questions')
-                                            ->image()
+                                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                                            ->maxSize(2048) // 2 MB
                                             ->columnSpanFull(),
 
                                         Textarea::make('question')
@@ -220,7 +222,8 @@ class LectureResource extends Resource
                                             ->label('صورة للسؤال (اختياري)')
                                             ->disk('minio')
                                             ->directory('questions')
-                                            ->image()
+                                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                                            ->maxSize(2048) // 2 MB
                                             ->columnSpanFull(),
 
                                         Textarea::make('question')

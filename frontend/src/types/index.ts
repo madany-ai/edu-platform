@@ -9,3 +9,4 @@ export type {
   DashboardNotification,
 } from "./dashboard.types";
 export type { ApiResponse, PaginatedResponse, ApiError } from "./api.types";
+export type { Question, QuestionReply, StoreQuestionPayload, StoreReplyPayload } from "./qa.types";

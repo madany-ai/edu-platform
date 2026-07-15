@@ -71,6 +71,7 @@ class QAResource extends Resource
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
+            ->poll('15s')
             ->recordActions([
                 Action::make('reply')
                     ->label('رد')

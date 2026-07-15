@@ -9,6 +9,9 @@ class ProcessVideoHLS implements ShouldQueue
 {
     use Queueable;
 
+    public int $timeout = 900;
+    public int $tries = 3;
+
     protected $lecture;
 
     /**

@@ -57,8 +57,8 @@ export default function StudentDashboardPage() {
     },
     {
       icon: Award,
-      label: "الدورات المكتملة",
-      value: stats?.completed_courses ?? 0,
+      label: "الدورات النشطة",
+      value: stats?.active_enrollments ?? 0,
       color: "text-purple-400 bg-purple-500/10 border-purple-500/20",
     },
   ];

@@ -5,8 +5,10 @@ use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExamController;
-use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\QAController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -14,11 +16,23 @@ Route::middleware('throttle:login')->group(function () {
     Route::post('auth/register', [AuthController::class, 'register']);
     Route::post('auth/login', [AuthController::class, 'login']);
 });
+Route::post('auth/forgot-password', [PasswordResetController::class, 'forgotPassword'])
+    ->middleware('throttle:login');
+Route::post('auth/reset-password', [PasswordResetController::class, 'resetPassword']);
 Route::get('courses', [CourseController::class, 'index']);
 Route::get('courses/{course}', [CourseController::class, 'show']);
+// Public: key uses signed token (no auth needed)
 Route::get('lectures/{lecture}/key', [CourseController::class, 'streamKey'])
     ->middleware('throttle:video')
     ->name('lectures.key');
+
+// Stream/segment: accept Sanctum token from query param (for video.js which can't send headers)
+Route::get('lectures/{lecture}/stream', [CourseController::class, 'streamLecture'])
+    ->middleware([\App\Http\Middleware\InjectBearerFromQuery::class, 'auth:sanctum', 'throttle:video'])
+    ->name('lectures.stream');
+Route::get('lectures/{lecture}/segment/{segment}', [CourseController::class, 'streamSegment'])
+    ->middleware([\App\Http\Middleware\InjectBearerFromQuery::class, 'auth:sanctum', 'throttle:video'])
+    ->name('lectures.segment');
 Route::get('governorates', [\App\Http\Controllers\Api\MiscController::class, 'governorates']);
 Route::get('grade-levels', [\App\Http\Controllers\Api\MiscController::class, 'gradeLevels']);
 
@@ -31,30 +45,31 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     Route::get('dashboard/student', [DashboardController::class, 'student']);
 
     // Instructor Dashboard
-    Route::get('dashboard/instructor', [DashboardController::class, 'instructor']);
-    Route::get('dashboard/instructor/courses', [DashboardController::class, 'instructorCourses']);
-    Route::get('dashboard/instructor/recent-enrollments', [DashboardController::class, 'instructorRecentEnrollments']);
-    Route::get('dashboard/instructor/course-performance', [DashboardController::class, 'instructorCoursePerformance']);
-    Route::get('dashboard/instructor/notifications', [DashboardController::class, 'instructorNotifications']);
+    Route::middleware('role:instructor')->group(function () {
+        Route::get('dashboard/instructor', [DashboardController::class, 'instructor']);
+        Route::get('dashboard/instructor/courses', [DashboardController::class, 'instructorCourses']);
+        Route::get('dashboard/instructor/recent-enrollments', [DashboardController::class, 'instructorRecentEnrollments']);
+        Route::get('dashboard/instructor/course-performance', [DashboardController::class, 'instructorCoursePerformance']);
+        Route::get('dashboard/instructor/notifications', [DashboardController::class, 'instructorNotifications']);
+    });
 
     // Courses (instructor)
     Route::post('courses', [CourseController::class, 'store']);
     Route::put('courses/{course}', [CourseController::class, 'update']);
     Route::delete('courses/{course}', [CourseController::class, 'destroy']);
 
-    // Sections & Lectures
-    Route::post('courses/{course}/sections', [CourseController::class, 'storeSection']);
-    Route::put('courses/{course}/sections/{section}', [CourseController::class, 'updateSection']);
-    Route::delete('courses/{course}/sections/{section}', [CourseController::class, 'destroySection']);
-    Route::post('sections/{section}/lectures', [CourseController::class, 'storeLecture']);
-    Route::put('sections/{section}/lectures/{lecture}', [CourseController::class, 'updateLecture']);
-    Route::delete('sections/{section}/lectures/{lecture}', [CourseController::class, 'destroyLecture']);
+    // Sections & Lectures (instructor only)
+    Route::middleware('role:instructor')->group(function () {
+        Route::post('courses/{course}/sections', [CourseController::class, 'storeSection']);
+        Route::put('courses/{course}/sections/{section}', [CourseController::class, 'updateSection']);
+        Route::delete('courses/{course}/sections/{section}', [CourseController::class, 'destroySection']);
+        Route::post('sections/{section}/lectures', [CourseController::class, 'storeLecture']);
+        Route::put('sections/{section}/lectures/{lecture}', [CourseController::class, 'updateLecture']);
+        Route::delete('sections/{section}/lectures/{lecture}', [CourseController::class, 'destroyLecture']);
+    });
 
     Route::get('lectures/{lecture}', [CourseController::class, 'showLecture'])
         ->middleware(\App\Http\Middleware\CheckEnrollment::class);
-    Route::get('lectures/{lecture}/stream', [CourseController::class, 'streamLecture'])
-        ->middleware('throttle:video')
-        ->name('lectures.stream');
     Route::post('lectures/{lecture}/progress', [CourseController::class, 'updateProgress'])
         ->middleware(\App\Http\Middleware\CheckEnrollment::class);
     Route::get('lectures/{lecture}/assignment', [ExamController::class, 'showAssignment'])
@@ -97,4 +112,23 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
 
     // Orders & Purchases
     Route::post('orders', [OrderController::class, 'store']);
+
+    // Q&A — Student
+    Route::post('lectures/{lecture}/questions', [QAController::class, 'store'])
+        ->middleware(\App\Http\Middleware\CheckEnrollment::class);
+    Route::get('lectures/{lecture}/questions', [QAController::class, 'index'])
+        ->middleware(\App\Http\Middleware\CheckEnrollment::class);
+    Route::get('questions/{question}', [QAController::class, 'show']);
+    Route::post('questions/{question}/replies', [QAController::class, 'reply']);
+    Route::get('my-questions', [QAController::class, 'myQuestions']);
+    Route::delete('questions/{question}', [QAController::class, 'destroyQuestion']);
+    Route::delete('replies/{reply}', [QAController::class, 'destroyReply']);
+
+    // Q&A — Instructor
+    Route::get('instructor/questions', [QAController::class, 'instructorQuestions'])
+        ->middleware('role:instructor');
+
+    // Q&A — Assistant
+    Route::get('assistant/questions', [QAController::class, 'assistantQuestions'])
+        ->middleware('role:assistant');
 });

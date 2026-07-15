@@ -228,9 +228,11 @@ class CourseController extends Controller
         $keyUrl = route('lectures.key', ['lecture' => $lecture->id, 'token' => $token]);
         $modifiedPlaylist = str_replace('URI="key.key"', 'URI="' . $keyUrl . '"', $playlist);
 
-        // Replace relative segment paths with absolute MinIO URLs
-        $minioBaseUrl = rtrim(\Illuminate\Support\Facades\Storage::disk('minio')->url("hls/{$lecture->id}"), '/') . '/';
-        $modifiedPlaylist = str_replace('segment_', $minioBaseUrl . 'segment_', $modifiedPlaylist);
+        // Replace relative segment paths with backend-proxied URLs (avoids CORS issues with MinIO)
+        $segmentBaseUrl = url('/api/lectures/' . $lecture->id . '/segment/');
+        $modifiedPlaylist = str_replace('segment_', $segmentBaseUrl . 'segment_', $modifiedPlaylist);
+        // Append token query param to each segment URL (they appear at end of line in m3u8)
+        $modifiedPlaylist = preg_replace('/(segment_\S+\.ts)(\s|$)/', '$1?token=' . rawurlencode($token) . '$2', $modifiedPlaylist);
 
         return response($modifiedPlaylist)
             ->header('Content-Type', 'application/x-mpegURL')
@@ -259,6 +261,41 @@ class CourseController extends Controller
         return response($rawKey)
             ->header('Content-Type', 'application/octet-stream')
             ->header('Cache-Control', 'no-cache, private');
+    }
+
+    public function streamSegment(Request $request, \App\Models\Lecture $lecture, string $segment, \App\Services\VideoAccessService $accessService)
+    {
+        $token = $request->query('token');
+        if (!$token) {
+            return response()->json(['message' => 'Missing token'], 400);
+        }
+
+        if (!$accessService->validateToken($token, $lecture, $request->ip())) {
+            return response()->json(['message' => 'Invalid or expired token'], 403);
+        }
+
+        $video = $lecture->video;
+        if (!$video || !$video->video_path) {
+            return response()->json(['message' => 'Video not found'], 404);
+        }
+
+        // Sanitize segment filename to prevent path traversal
+        $segment = basename($segment);
+        if (!preg_match('/^segment_\d+\.ts$/', $segment)) {
+            return response()->json(['message' => 'Invalid segment filename'], 400);
+        }
+
+        $segmentPath = 'hls/' . $lecture->id . '/' . $segment;
+
+        if (!\Illuminate\Support\Facades\Storage::disk('minio')->exists($segmentPath)) {
+            return response()->json(['message' => 'Segment not found'], 404);
+        }
+
+        $content = \Illuminate\Support\Facades\Storage::disk('minio')->get($segmentPath);
+
+        return response($content)
+            ->header('Content-Type', 'video/mp2t')
+            ->header('Cache-Control', 'public, max-age=86400');
     }
 
     public function updateProgress(Request $request, \App\Models\Lecture $lecture): JsonResponse

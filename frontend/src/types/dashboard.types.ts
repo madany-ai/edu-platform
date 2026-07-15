@@ -4,7 +4,6 @@ export interface StudentDashboard {
   completed_lectures: number;
   total_watch_minutes: number;
   average_exam_score: number;
-  completed_courses: number;
 }
 
 export interface InstructorDashboardStats {

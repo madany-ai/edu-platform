@@ -13,12 +13,14 @@ import {
   LogOut,
   Bell,
   Atom,
+  MessageCircle,
 } from "lucide-react";
 
 const studentLinks = [
   { href: ROUTES.DASHBOARD, label: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/dashboard/courses", label: "دوراتي", icon: BookOpen },
   { href: "/dashboard/exams", label: "الامتحانات والواجبات", icon: BookOpen },
+  { href: "/dashboard/questions", label: "أسئلتي", icon: MessageCircle },
   { href: "/dashboard/notifications", label: "الإشعارات", icon: Bell },
   { href: "/dashboard/settings", label: "الإعدادات", icon: Settings },
 ];

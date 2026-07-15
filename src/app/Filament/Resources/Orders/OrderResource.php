@@ -6,11 +6,14 @@ use App\Filament\Resources\Orders\Pages\ManageOrders;
 use App\Models\Bundle;
 use App\Models\Order;
 use App\Models\Product;
+use App\Services\GrantEntitlementService;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -106,7 +109,33 @@ class OrderResource extends Resource
                     ->dateTime('Y-m-d H:i')
                     ->sortable(),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('created_at', 'desc')
+            ->recordActions([
+                Action::make('confirm')
+                    ->label('تأكيد الدفع')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('تأكيد استلام الدفع')
+                    ->modalDescription('هل تأكدت من استلام المبلغ من الطالب؟ سيتم تفعيل المحتوى فوراً.')
+                    ->modalSubmitActionLabel('نعم، تأكيد')
+                    ->visible(fn (Order $record): bool => $record->status === 'pending')
+                    ->action(function (Order $record): void {
+                        $record->update([
+                            'status' => 'completed',
+                            'paid_at' => now(),
+                            'payment_method' => 'manual',
+                        ]);
+
+                        app(GrantEntitlementService::class)->handle($record);
+
+                        Notification::make()
+                            ->title('تم تأكيد الدفع')
+                            ->body("تم تفعيل طلب بنجاح.")
+                            ->success()
+                            ->send();
+                    }),
+            ]);
     }
 
     public static function getPages(): array

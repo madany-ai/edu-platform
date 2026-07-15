@@ -37,6 +37,7 @@ export default function CourseDetailPage() {
   const { data: enrollmentsData } = useMyEnrollments();
   const { data: entitlements } = useMyEntitlements();
   const { data: lectureProducts } = useProducts("lecture");
+  const { data: courseProducts } = useProducts("course");
   
   const enrollMutation = useEnroll();
   const purchaseMutation = usePurchase();
@@ -48,6 +49,7 @@ export default function CourseDetailPage() {
   ) ?? false;
 
   const unlockedLectures = new Set(entitlements?.map((e: any) => e.lecture_id) || []);
+  const courseProduct = courseProducts?.find((p: any) => p.sellable_id === id);
 
   const handleEnroll = async () => {
     if (!course) return;
@@ -55,7 +57,25 @@ export default function CourseDetailPage() {
   };
 
   const handlePurchase = () => {
-    toast.info("خدمات الدفع الإلكتروني قيد الإعداد حالياً. يرجى التواصل مع الإدارة أو الدعم الفني لتفعيل هذه الدورة لحسابك.");
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول أولاً");
+      return;
+    }
+    if (!courseProduct) {
+      toast.error("لا يوجد منتج متاح لهذا الكورس حالياً. يرجى التواصل مع الإدارة.");
+      return;
+    }
+    createOrderMutation.mutate(
+      { purchasable_id: courseProduct.id, purchasable_type: "product" },
+      {
+        onSuccess: () => {
+          toast.success("تم إرسال طلب الشراء بنجاح. سيتم تفعيل المحتوى بعد التحقق من الدفع.");
+        },
+        onError: (err: any) => {
+          toast.error(err.response?.data?.message || "فشلت عملية الشراء. يرجى المحاولة مرة أخرى.");
+        },
+      }
+    );
   };
 
   const handleBuyLecture = (product: any) => {
@@ -301,9 +321,9 @@ export default function CourseDetailPage() {
                       className="w-full gap-2"
                       size="lg"
                       onClick={handlePurchase}
-                      disabled={purchaseMutation.isPending}
+                      disabled={createOrderMutation.isPending}
                     >
-                      {purchaseMutation.isPending ? "جاري الشراء..." : `شراء - ${course.price} ج.م`}
+                      {createOrderMutation.isPending ? "جاري المعالجة..." : `شراء - ${course.price} ج.م`}
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   )

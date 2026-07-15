@@ -3,6 +3,9 @@ export interface Exam {
   lecture_id: string;
   title: string;
   duration: number;
+  pass_percentage: number;
+  is_blocking: boolean;
+  total_score?: number;
   is_assignment: boolean;
   questions: ExamQuestion[];
 }

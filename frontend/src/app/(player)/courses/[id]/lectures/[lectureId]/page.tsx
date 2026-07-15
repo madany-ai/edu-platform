@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import api from "@/services/api.client";
 import { useQueryClient } from "@tanstack/react-query";
 import QuizTab from "@/components/player/quiz-tab";
+import QATab from "@/components/player/qa-tab";
 
 const VideoPlayer = dynamic(() => import("@/components/video-player"), {
   ssr: false,
@@ -397,27 +398,7 @@ export default function LectureViewPage() {
                 )}
 
                 {activeTab === "qa" && (
-                  <div className="animate-in fade-in duration-300">
-                    <div className="flex gap-4 mb-6">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
-                        {user?.name?.charAt(0) || "U"}
-                      </div>
-                      <div className="flex-grow">
-                        <textarea 
-                          className="w-full bg-muted/30 border rounded-xl p-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary min-h-[100px] transition-all resize-none" 
-                          placeholder="اسأل سؤالاً حول هذا الدرس..."
-                        />
-                        <div className="flex justify-end mt-2">
-                          <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
-                            إرسال السؤال
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-center py-10 text-muted-foreground border-t">
-                      <p className="text-sm">لا توجد أسئلة بعد. كن أول من يسأل!</p>
-                    </div>
-                  </div>
+                  <QATab lectureId={lecture.id} />
                 )}
               </div>
             </div>

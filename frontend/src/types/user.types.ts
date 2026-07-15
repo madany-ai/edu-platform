@@ -24,6 +24,8 @@ export interface Student {
   gender: "male" | "female" | null;
   birth_date: string | null;
   is_verified: boolean;
+  governorate_id: string | null;
+  grade_level_id: string | null;
 }
 
 export interface Instructor {

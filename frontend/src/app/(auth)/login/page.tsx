@@ -13,7 +13,7 @@ import { Turnstile } from "@marsidev/react-turnstile";
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [activeTab, setActiveTab] = useState<"code" | "phone">("code");
+  const [activeTab, setActiveTab] = useState<"code" | "phone" | "email">("code");
   const [inputValue, setInputValue] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,14 +23,18 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(false);
 
-    // Clean inputs: if phone, remove spaces and hyphens
+    // Clean inputs
     let identifier = inputValue.trim();
     if (activeTab === "phone") {
       identifier = identifier.replace(/[^\d+]/g, "");
       if (!identifier) {
         setError("يرجى إدخال رقم هاتف صحيح");
+        return;
+      }
+    } else if (activeTab === "email") {
+      if (!identifier || !identifier.includes("@")) {
+        setError("يرجى إدخال بريد إلكتروني صحيح");
         return;
       }
     } else {
@@ -72,7 +76,7 @@ export default function LoginPage() {
         </div>
 
         {/* Tab Selectors */}
-        <div className="grid grid-cols-2 p-1 rounded-lg bg-muted mb-6 border border-border/50">
+        <div className="grid grid-cols-3 p-1 rounded-lg bg-muted mb-6 border border-border/50">
           <button
             type="button"
             onClick={() => {
@@ -80,7 +84,7 @@ export default function LoginPage() {
               setInputValue("");
               setError("");
             }}
-            className={`flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${
+            className={`flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-md transition-all ${
               activeTab === "code"
                 ? "bg-background text-primary shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -96,14 +100,30 @@ export default function LoginPage() {
               setInputValue("");
               setError("");
             }}
-            className={`flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${
+            className={`flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-md transition-all ${
               activeTab === "phone"
                 ? "bg-background text-primary shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Phone className="h-4 w-4" />
-            <span>رقم الهاتف</span>
+            <span>الهاتف</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("email");
+              setInputValue("");
+              setError("");
+            }}
+            className={`flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-md transition-all ${
+              activeTab === "email"
+                ? "bg-background text-primary shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            <span>البريد</span>
           </button>
         </div>
 
@@ -122,14 +142,14 @@ export default function LoginPage() {
 
           <div className="space-y-2">
             <Label htmlFor="login-input" className="text-sm font-medium text-foreground">
-              {activeTab === "code" ? "كود الطالب الخاص بك" : "رقم هاتف الطالب"}
+              {activeTab === "code" ? "كود الطالب الخاص بك" : activeTab === "phone" ? "رقم هاتف الطالب" : "البريد الإلكتروني"}
             </Label>
             <div className="relative">
               <Input
                 id="login-input"
-                type="text"
+                type={activeTab === "email" ? "email" : "text"}
                 placeholder={
-                  activeTab === "code" ? "مثال: ST30012" : "مثال: 01000000000"
+                  activeTab === "code" ? "مثال: ST30012" : activeTab === "phone" ? "مثال: 01000000000" : "student@example.com"
                 }
                 value={inputValue}
                 onChange={(e) => {
@@ -143,7 +163,9 @@ export default function LoginPage() {
             <p className="text-[11px] text-muted-foreground font-medium">
               {activeTab === "code"
                 ? "أدخل الكود المستلم من الإدارة لبدء تصفح محاضراتك"
-                : "أدخل رقم الهاتف المسجل به حسابك لتسجيل الدخول"}
+                : activeTab === "phone"
+                ? "أدخل رقم الهاتف المسجل به حسابك لتسجيل الدخول"
+                : "أدخل البريد الإلكتروني المسجل به حسابك"}
             </p>
           </div>
 
@@ -152,6 +174,9 @@ export default function LoginPage() {
               <Label htmlFor="password" className="text-sm font-medium text-foreground">
                 كلمة المرور
               </Label>
+              <Link href="/forgot-password" className="text-xs text-primary hover:underline hover:text-primary-fixed transition-colors">
+                نسيت كلمة المرور؟
+              </Link>
             </div>
             <Input
               id="password"

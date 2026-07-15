@@ -36,6 +36,16 @@ class CheckEnrollment
             return $next($request);
         }
 
+        if ($user->hasRole('assistant')) {
+            $isAssigned = \App\Models\CourseAssistant::where('user_id', $user->id)
+                ->where('course_id', $courseId)
+                ->exists();
+
+            if ($isAssigned) {
+                return $next($request);
+            }
+        }
+
         $student = $user->student;
 
         if (! $student) {
@@ -49,6 +59,10 @@ class CheckEnrollment
 
         $hasEntitlement = Entitlement::where('student_id', $student->id)
             ->where('lecture_id', $lecture->id)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                  ->orWhere('expires_at', '>', now());
+            })
             ->exists();
 
         if (! $isEnrolled && ! $hasEntitlement) {

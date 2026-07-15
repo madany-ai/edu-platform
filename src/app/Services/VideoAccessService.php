@@ -44,6 +44,10 @@ class VideoAccessService
         // Check strict entitlement
         $hasEntitlement = Entitlement::where('student_id', $student->id)
             ->where('lecture_id', $lecture->id)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                  ->orWhere('expires_at', '>', now());
+            })
             ->exists();
         if ($hasEntitlement) {
             // Entitled students must still pass blocking exams
@@ -208,7 +212,7 @@ class VideoAccessService
 
             // Double check if user still exists and is active
             $user = User::find($payload['user_id'] ?? null);
-            if (!$user || $user->status !== \App\Enums\UserStatus::Active) {
+            if (!$user || $user->status !== \App\Enums\UserStatus::Active->value) {
                 return false;
             }
 

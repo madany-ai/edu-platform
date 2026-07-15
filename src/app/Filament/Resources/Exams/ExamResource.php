@@ -74,7 +74,8 @@ class ExamResource extends Resource
                             ->label('صورة للسؤال (اختياري)')
                             ->disk('minio')
                             ->directory('questions')
-                            ->image()
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                            ->maxSize(2048) // 2 MB
                             ->columnSpanFull(),
 
                         Textarea::make('question')

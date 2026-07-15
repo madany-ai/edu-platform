@@ -4,19 +4,15 @@ import { BookOpen, CheckCircle, ExternalLink, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants";
-import { useQuery } from "@tanstack/react-query";
-import api from "@/services/api.client";
+import { useMyAttempts } from "@/hooks/useExams";
 import { PageLoading } from "@/components/shared/loading-spinner";
 
 export default function ExamsPage() {
-  const { data: response, isLoading } = useQuery({
-    queryKey: ["my-attempts"],
-    queryFn: () => api.get("/my-attempts").then((res) => res.data),
-  });
+  const { data: attempts, isLoading } = useMyAttempts();
 
   if (isLoading) return <PageLoading />;
 
-  const attempts = response?.data || [];
+  const attemptsList = attempts || [];
 
   return (
     <div className="p-6 lg:p-10 space-y-8 max-w-7xl mx-auto">
@@ -29,7 +25,7 @@ export default function ExamsPage() {
         </p>
       </div>
 
-      {attempts.length === 0 ? (
+      {attemptsList.length === 0 ? (
         <div className="glass-card p-12 rounded-2xl text-center border border-white/5 max-w-2xl mx-auto space-y-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary mx-auto cosmic-border-glow">
             <BookOpen className="h-8 w-8" />
@@ -50,7 +46,7 @@ export default function ExamsPage() {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {attempts.map((attempt: any) => {
+          {attemptsList.map((attempt: any) => {
             const exam = attempt.exam;
             const lecture = exam?.lecture;
             const course = lecture?.section?.course;

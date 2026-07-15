@@ -18,7 +18,7 @@ use Filament\Panel;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable(['name', 'email', 'password', 'status', 'assistant_code', 'phone'])]
+#[Fillable(['name', 'email', 'password', 'status', 'assistant_code', 'phone', 'last_login_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -34,14 +34,14 @@ class User extends Authenticatable implements FilamentUser
             ->dontLogEmptyChanges();
     }
 
-    protected static function newFactory(): UserFactory
+    protected static function newFactory(): \Database\Factories\UserFactory
     {
-        return UserFactory::new();
+        return \Database\Factories\UserFactory::new();
     }
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->hasAnyRole(['instructor', 'assistant']);
+        return $this->hasAnyRole(['super_admin', 'instructor', 'assistant']);
     }
 
     /** @return HasOne<Student, $this> */

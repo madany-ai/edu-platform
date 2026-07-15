@@ -78,7 +78,7 @@ services:
     container_name: lms_queue
     restart: unless-stopped
     working_dir: /var/www/html
-    command: php artisan.php queue:work --sleep=3 --tries=3 --max-time=3600
+    command: php artisan.php queue:work --sleep=3 --tries=3 --max-time=3600 --timeout=900
     volumes:
       - ./src:/var/www/html
     depends_on:

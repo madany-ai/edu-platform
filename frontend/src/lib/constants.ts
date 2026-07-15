@@ -12,6 +12,7 @@ export const ROUTES = {
   LECTURE: (courseId: string, lectureId: string) => `/courses/${courseId}/lectures/${lectureId}`,
   EXAM: (courseId: string, lectureId: string) => `/courses/${courseId}/lectures/${lectureId}/exam`,
   DASHBOARD: "/dashboard",
+  MY_QUESTIONS: "/dashboard/questions",
 
   ABOUT: "/about",
 } as const;

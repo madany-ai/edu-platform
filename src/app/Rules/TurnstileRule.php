@@ -18,8 +18,8 @@ class TurnstileRule implements ValidationRule
         $secretKey = env('TURNSTILE_SECRET_KEY');
 
         if (empty($secretKey)) {
-            if (app()->environment('local')) {
-                return; // Skip validation in local development if no key is set
+            if (app()->environment('local', 'testing')) {
+                return; // Skip validation in local/testing if no key is set
             }
             $fail('إعدادات الحماية غير مكتملة بالخادم.');
             return;

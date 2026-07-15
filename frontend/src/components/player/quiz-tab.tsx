@@ -6,6 +6,7 @@ import { CheckCircle, AlertCircle, Timer, Award, Play, ChevronLeft, ChevronRight
 import { cn } from "@/lib/utils";
 import { useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface Choice {
   id: string;
@@ -130,7 +131,7 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
       setGradedAttempt(null);
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.message || "فشل بدء الاختبار.");
+      toast.error(err.response?.data?.message || "فشل بدء الاختبار.");
     } finally {
       setLoading(false);
     }
@@ -178,7 +179,7 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
       queryClient.invalidateQueries({ queryKey: ["lecture", lectureId] });
     } catch (err: any) {
       console.error(err);
-      alert("حدث خطأ أثناء تسليم الإجابات.");
+      toast.error("حدث خطأ أثناء تسليم الإجابات.");
     } finally {
       setIsSubmitting(false);
     }

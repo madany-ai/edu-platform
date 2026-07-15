@@ -36,6 +36,17 @@ export interface RegisterResponse {
   message: string;
 }
 
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+
 export const authService = {
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
     const { data } = await api.post<LoginResponse>("/auth/login", payload);
@@ -53,6 +64,16 @@ export const authService = {
 
   me: async (): Promise<User> => {
     const { data } = await api.get<User>("/auth/me");
+    return data;
+  },
+
+  forgotPassword: async (payload: ForgotPasswordPayload): Promise<{ message: string }> => {
+    const { data } = await api.post<{ message: string }>("/auth/forgot-password", payload);
+    return data;
+  },
+
+  resetPassword: async (payload: ResetPasswordPayload): Promise<{ message: string }> => {
+    const { data } = await api.post<{ message: string }>("/auth/reset-password", payload);
     return data;
   },
 };

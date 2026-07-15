@@ -51,7 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (payload: LoginPayload) => {
     const response = await authService.login(payload);
     localStorage.setItem(STORAGE_KEYS.TOKEN, response.token);
-    setUser(response.user);
+    // Login response doesn't include student data, so fetch full user from /auth/me
+    await fetchUser();
   };
 
   const register = async (payload: RegisterPayload) => {

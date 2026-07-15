@@ -58,7 +58,7 @@ class EnrollmentService
             ->get();
     }
 
-    public function getStudentEnrollments(string $userId): Collection
+    public function getStudentEnrollments(string $userId): \Illuminate\Support\Collection
     {
         $student = Student::where('user_id', $userId)->first();
 
