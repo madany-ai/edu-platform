@@ -6,7 +6,6 @@ use App\Models\Entitlement;
 use App\Models\Lecture;
 use App\Models\Student;
 use App\Models\User;
-use Illuminate\Support\Facades\Crypt;
 
 class VideoAccessService
 {
@@ -35,7 +34,7 @@ class VideoAccessService
                 ->exists();
         }
 
-        // 4. Students must have a valid Entitlement OR be enrolled in a Free course
+        // 4. Students must have a valid Entitlement OR be enrolled in the course
         $student = Student::where('user_id', $user->id)->first();
         if (!$student) {
             return false;
@@ -57,15 +56,15 @@ class VideoAccessService
             return true;
         }
 
-        // Check if course is free and student is enrolled
+        // Check if student is enrolled in the course (free or paid)
         $lecture->loadMissing('section.course');
         $course = $lecture->section->course;
-        if ($course && floatval($course->price) == 0) {
+        if ($course) {
             $isEnrolled = \App\Models\Enrollment::where('student_id', $student->id)
                 ->where('course_id', $course->id)
                 ->where('status', 'active')
                 ->exists();
-            
+
             if ($isEnrolled) {
                 if ($this->isBlockedByExam($user, $lecture, 'video')) {
                     return false;
@@ -166,61 +165,5 @@ class VideoAccessService
         }
 
         return false;
-    }
-
-    /**
-     * Generate a short-lived token bound to user, lecture, IP and expiration.
-     */
-    public function generateSignedToken(User $user, Lecture $lecture, string $ipAddress): string
-    {
-        $payload = [
-            'user_id' => $user->id,
-            'lecture_id' => $lecture->id,
-            'ip' => $ipAddress,
-            'expires_at' => now()->addMinutes(5)->timestamp,
-        ];
-
-        return Crypt::encrypt($payload);
-    }
-
-    /**
-     * Validate the signed token.
-     */
-    public function validateToken(string $token, Lecture $lecture, string $ipAddress): bool
-    {
-        try {
-            $payload = Crypt::decrypt($token);
-
-            if (!is_array($payload)) {
-                return false;
-            }
-
-            // Validate expiration
-            if (($payload['expires_at'] ?? 0) < now()->timestamp) {
-                return false;
-            }
-
-            // Validate lecture binding
-            if (($payload['lecture_id'] ?? '') !== $lecture->id) {
-                return false;
-            }
-
-            // Validate IP binding
-            if (($payload['ip'] ?? '') !== $ipAddress) {
-                return false;
-            }
-
-            // Double check if user still exists and is active
-            $user = User::find($payload['user_id'] ?? null);
-            if (!$user || $user->status !== \App\Enums\UserStatus::Active->value) {
-                return false;
-            }
-
-            // Check entitlement access
-            return $this->canAccess($user, $lecture);
-
-        } catch (\Exception $e) {
-            return false;
-        }
     }
 }

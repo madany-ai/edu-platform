@@ -96,12 +96,25 @@ class LectureResource extends Resource
                             ->acceptedFileTypes(['video/mp4', 'video/webm', 'video/ogg'])
                             ->maxSize(1024000), // 1 GB
 
-                        FileUpload::make('pdf_url')
-                            ->label('ملف الـ PDF')
-                            ->disk('minio')
-                            ->directory('pdfs')
-                            ->acceptedFileTypes(['application/pdf'])
-                            ->maxSize(20480), // 20 MB
+                        Repeater::make('files')
+                            ->relationship('files')
+                            ->label('الملفات المرفقة (PDF)')
+                            ->schema([
+                                TextInput::make('type')
+                                    ->label('نوع الملف')
+                                    ->default('PDF')
+                                    ->required(),
+                                FileUpload::make('file_path')
+                                    ->label('الملف')
+                                    ->disk('minio')
+                                    ->directory('lecture-files')
+                                    ->acceptedFileTypes(['application/pdf'])
+                                    ->maxSize(20480) // 20 MB
+                                    ->required(),
+                            ])
+                            ->columns(2)
+                            ->collapsible()
+                            ->columnSpanFull(),
                     ])->columns(2),
 
                 FormSection::make('الامتحانات')

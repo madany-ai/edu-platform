@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useCourse } from "@/hooks/useCourses";
+import { useMyEnrollments, useMyEntitlements } from "@/hooks/useEnrollment";
 import { PageLoading } from "@/components/shared/loading-spinner";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -13,6 +14,14 @@ export default function PlayCourseRedirect() {
   const courseId = params.id as string;
 
   const { data: courseResponse, isLoading, error } = useCourse(courseId, !!user);
+  const { data: enrollmentsData } = useMyEnrollments();
+  const { data: entitlements } = useMyEntitlements();
+
+  // Real enrollment = not a synthesized "entitlement-fake-" enrollment
+  const hasRealEnrollment = enrollmentsData?.data?.some(
+    (e) => (e.course_id === courseId || e.course?.id === courseId) && !String(e.id).startsWith("entitlement-fake-")
+  ) ?? false;
+  const unlockedLectures = new Set(entitlements?.map((e: any) => e.lecture_id) || []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -30,17 +39,18 @@ export default function PlayCourseRedirect() {
 
     const course = courseResponse.data;
     
-    // In a real implementation, you would check student_activities for the last watched lecture.
-    // For now, we redirect to the first lecture of the first section.
-    const firstLectureId = course.sections?.[0]?.lectures?.[0]?.id;
+    // Find the first lecture the student has access to
+    const allLectures = course.sections?.flatMap(s => s.lectures || []) || [];
+    const firstAccessible = allLectures.find(
+      (lecture: any) => hasRealEnrollment || unlockedLectures.has(lecture.id)
+    );
 
-    if (firstLectureId) {
-      router.replace(`/courses/${courseId}/lectures/${firstLectureId}`);
+    if (firstAccessible) {
+      router.replace(`/courses/${courseId}/lectures/${firstAccessible.id}`);
     } else {
-      // If there are no lectures, fallback to the course details page
       router.replace(`/courses/${courseId}`);
     }
-  }, [user, authLoading, isLoading, error, courseResponse, courseId, router]);
+  }, [user, authLoading, isLoading, error, courseResponse, courseId, router, hasRealEnrollment, unlockedLectures]);
 
   return <PageLoading />;
 }

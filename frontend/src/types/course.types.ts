@@ -39,6 +39,7 @@ export interface Lecture {
   };
   is_locked?: boolean;
   video_locked?: boolean;
+  has_access?: boolean;
   exams?: CourseExam[];
   assignments?: CourseExam[];
 }

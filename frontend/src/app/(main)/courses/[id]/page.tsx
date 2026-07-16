@@ -45,6 +45,10 @@ export default function CourseDetailPage() {
 
   const course = courseData?.data;
   const enrolled = enrollmentsData?.data?.some(
+    (e) => (e.course_id === id || e.course?.id === id) && !String(e.id).startsWith("entitlement-fake-")
+  ) ?? false;
+  // Also consider synthesized enrollments for display purposes (showing the course in the list)
+  const hasAnyEnrollment = enrollmentsData?.data?.some(
     (e) => e.course_id === id || e.course?.id === id
   ) ?? false;
 
@@ -109,9 +113,11 @@ export default function CourseDetailPage() {
     );
   }
 
-  const firstLectureId = course.sections?.[0]?.lectures?.[0]?.id;
-  const continueLearningUrl = firstLectureId
-    ? `/courses/${id}/lectures/${firstLectureId}`
+  const firstAccessibleLectureId = course.sections?.flatMap(s => s.lectures || [])?.find(
+    (lecture: any) => enrolled || unlockedLectures.has(lecture.id)
+  )?.id;
+  const continueLearningUrl = firstAccessibleLectureId
+    ? `/courses/${id}/lectures/${firstAccessibleLectureId}`
     : `/courses/${id}`;
 
   return (
@@ -299,7 +305,7 @@ export default function CourseDetailPage() {
                 )}
 
                 {user ? (
-                  enrolled ? (
+                  enrolled || firstAccessibleLectureId ? (
                     <Link href={continueLearningUrl}>
                       <Button className="w-full gap-2" size="lg">
                         <CheckCircle2 className="h-4 w-4" />

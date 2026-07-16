@@ -39,8 +39,10 @@ class Settings extends Page implements HasForms
     {
         $this->form->fill([
             'instance_name' => config('app.name'),
-            'bunny_stream_api_key' => config('services.bunny_stream_api_key'),
-            'bunny_stream_library_id' => config('services.bunny_stream_library_id'),
+            'bunny_stream_api_key' => config('services.bunny_stream.api_key'),
+            'bunny_stream_library_id' => config('services.bunny_stream.library_id'),
+            'bunny_stream_cdn_hostname' => config('services.bunny_stream.cdn_hostname'),
+            'bunny_stream_signing_key' => config('services.bunny_stream.signing_key'),
             'paymob_api_key' => config('services.paymob_api_key'),
             'paymob_hmac' => config('services.paymob_hmac'),
         ]);
@@ -67,11 +69,24 @@ class Settings extends Page implements HasForms
                     ->schema([
                         TextInput::make('bunny_stream_api_key')
                             ->label('Bunny Stream API Key')
+                            ->helperText('من Bunny Dashboard > Stream > Library > API Key')
                             ->password()
                             ->revealable(),
 
                         TextInput::make('bunny_stream_library_id')
-                            ->label('Bunny Stream Library ID'),
+                            ->label('Bunny Stream Library ID')
+                            ->helperText('من Bunny Dashboard > Stream > Library > Library ID'),
+
+                        TextInput::make('bunny_stream_cdn_hostname')
+                            ->label('Bunny CDN Hostname')
+                            ->placeholder('your-library.b-cdn.net')
+                            ->helperText('مثل: mylib.b-cdn.net (من Bunny Dashboard > Stream > CDN Hostname)'),
+
+                        TextInput::make('bunny_stream_signing_key')
+                            ->label('Embed View Token Authentication Key')
+                            ->helperText('مفتاح حماية المشاهدة - من Bunny Dashboard > Stream > Security > Token Authentication > Token Key')
+                            ->password()
+                            ->revealable(),
 
                         TextInput::make('paymob_api_key')
                             ->label('Paymob API Key')
@@ -113,6 +128,8 @@ class Settings extends Page implements HasForms
             'INSTANCE_NAME' => $appName,
             'BUNNY_STREAM_API_KEY' => $data['bunny_stream_api_key'] ?? '',
             'BUNNY_STREAM_LIBRARY_ID' => $data['bunny_stream_library_id'] ?? '',
+            'BUNNY_STREAM_CDN_HOSTNAME' => $data['bunny_stream_cdn_hostname'] ?? '',
+            'BUNNY_STREAM_SIGNING_KEY' => $data['bunny_stream_signing_key'] ?? '',
             'PAYMOB_API_KEY' => $data['paymob_api_key'] ?? '',
             'PAYMOB_HMAC' => $data['paymob_hmac'] ?? '',
         ];

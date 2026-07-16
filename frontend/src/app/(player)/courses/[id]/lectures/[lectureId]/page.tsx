@@ -7,6 +7,7 @@ import { PageLoading } from "@/components/shared/loading-spinner";
 import { useCourse, useLecture } from "@/hooks/useCourses";
 import { ArrowRight, Play, FileText, CheckCircle, Lock, PlayCircle, ArrowLeft, Download, Timer, SignalHigh, Award } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import api from "@/services/api.client";
@@ -50,9 +51,9 @@ export default function LectureViewPage() {
 
   useEffect(() => {
     if (lectureError) {
-      router.push(`/courses/${courseId}`);
+      // Don't redirect - show error state below
     }
-  }, [lectureError, router, courseId]);
+  }, [lectureError]);
 
   // Open the section containing the current lecture by default
   useEffect(() => {
@@ -84,7 +85,36 @@ export default function LectureViewPage() {
     }
   }, [lecture, courseId, router]);
 
+  // If lecture has a mandatory blocking exam/assignment that hasn't been passed, redirect to it first
+  useEffect(() => {
+    if (!lecture || searchParams.get("type")) return; // only on initial load (no type param)
+    const blockingExam = lecture.exams?.find((e: any) => e.is_blocking && !e.passed);
+    const blockingAssignment = lecture.assignments?.find((a: any) => a.is_blocking && !a.passed);
+    const blocking = blockingExam || blockingAssignment;
+    if (blocking) {
+      const type = blockingExam ? "exam" : "assignment";
+      router.replace(`/courses/${courseId}/lectures/${lectureId}?type=${type}&itemId=${blocking.id}`);
+    }
+  }, [lecture, courseId, lectureId, router, searchParams]);
+
   if (authLoading || lectureLoading || courseLoading) return <PageLoading />;
+  if (!lecture && lectureError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
+        <Lock className="h-16 w-16 text-muted-foreground mb-4" />
+        <h2 className="text-xl font-bold mb-2">لا يمكن الوصول لهذه المحاضرة</h2>
+        <p className="text-muted-foreground mb-6 max-w-md">
+          ليس لديك صلاحية لمشاهدة هذه المحاضرة. يرجى شراء المحاضرة أو الاشتراك في الدورة للوصول للمحتوى.
+        </p>
+        <Link href={`/courses/${courseId}`}>
+          <Button className="gap-2">
+            العودة للدورة
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </Link>
+      </div>
+    );
+  }
   if (!lecture || !courseResponse?.data) return null;
 
   const course = courseResponse.data;
@@ -115,7 +145,7 @@ export default function LectureViewPage() {
             sort_order: 1 + (idx * 0.1), // Force exams to appear first
             is_blocking: exam.is_blocking,
             passed: exam.passed,
-            is_locked: lec.is_locked,
+            is_locked: lec.is_locked || !lec.has_access,
           });
         });
         
@@ -126,7 +156,7 @@ export default function LectureViewPage() {
             id: lec.id,
             title: lec.title,
             sort_order: 2, // Force video to appear second
-            is_locked: lec.is_locked || lec.video_locked,
+            is_locked: lec.is_locked || lec.video_locked || !lec.has_access,
           });
         }
         
@@ -139,7 +169,7 @@ export default function LectureViewPage() {
             sort_order: 3 + (idx * 0.1), // Force assignments to appear last
             is_blocking: assign.is_blocking,
             passed: assign.passed,
-            is_locked: lec.is_locked,
+            is_locked: lec.is_locked || !lec.has_access,
           });
         });
         
@@ -157,19 +187,18 @@ export default function LectureViewPage() {
       };
     }) || [];
 
-    // 2. Enforce sequential lock blocking
-    let isBlockedByPrevious = false;
+    // 2. Enforce sequential lock blocking (only from exams/assignments, NOT from access denial)
+    let isBlockedByPreviousExam = false;
     sectionsMapped.forEach(section => {
       section.lectures.forEach(lec => {
         lec.sidebarItems.forEach(item => {
-          if (isBlockedByPrevious) {
+          // Only block from previous exams/assignments, not from access denial
+          if (isBlockedByPreviousExam) {
             item.is_locked = true;
           }
-          if (item.is_locked) {
-            isBlockedByPrevious = true;
-          }
+          // Only exam/assignment blocking propagates to subsequent items
           if ((item.type === "exam" || item.type === "assignment") && item.is_blocking && !item.passed) {
-            isBlockedByPrevious = true;
+            isBlockedByPreviousExam = true;
           }
         });
       });
@@ -369,12 +398,25 @@ export default function LectureViewPage() {
                   <div className="space-y-3 animate-in fade-in duration-300">
                     {lecture.files && lecture.files.length > 0 ? (
                       lecture.files.map(file => (
-                        <a 
-                          key={file.id} 
-                          href={file.file_path} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-between p-4 bg-muted/30 rounded-xl hover:bg-muted cursor-pointer transition-colors border hover:border-primary/20 group"
+                        <button
+                          key={file.id}
+                          onClick={async () => {
+                            try {
+                              const res = await api.get(`/lectures/${lectureId}/files/${file.id}`, { responseType: "blob" });
+                              const blob = new Blob([res.data], { type: (res.headers["content-type"] as string) || "application/octet-stream" });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement("a");
+                              a.href = url;
+                              a.download = `lecture-file-${file.id}`;
+                              document.body.appendChild(a);
+                              a.click();
+                              a.remove();
+                              URL.revokeObjectURL(url);
+                            } catch {
+                              // silent
+                            }
+                          }}
+                          className="flex items-center justify-between w-full p-4 bg-muted/30 rounded-xl hover:bg-muted cursor-pointer transition-colors border hover:border-primary/20 group"
                         >
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
@@ -386,7 +428,7 @@ export default function LectureViewPage() {
                             </div>
                           </div>
                           <Download className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                        </a>
+                        </button>
                       ))
                     ) : (
                       <div className="text-center py-10 text-muted-foreground">
@@ -573,7 +615,7 @@ export default function LectureViewPage() {
 
                             if (item.is_locked) {
                               return (
-                                <div key={`${lec.id}-${item.type}-${item.id}`} className="select-none" title="هذا العنصر مغلق حتى تجتاز الامتحانات المطلوبة أولاً.">
+                                <div key={`${lec.id}-${item.type}-${item.id}`} className="select-none" title={!lec.has_access ? "لشراء هذه المحاضرة، يرجى العودة للدورة واختيار المحاضرة المطلوبة." : "هذا العنصر مغلق حتى تجتاز الامتحانات المطلوبة أولاً."}>
                                   {renderContent}
                                 </div>
                               );

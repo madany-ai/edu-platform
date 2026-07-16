@@ -21,18 +21,6 @@ Route::post('auth/forgot-password', [PasswordResetController::class, 'forgotPass
 Route::post('auth/reset-password', [PasswordResetController::class, 'resetPassword']);
 Route::get('courses', [CourseController::class, 'index']);
 Route::get('courses/{course}', [CourseController::class, 'show']);
-// Public: key uses signed token (no auth needed)
-Route::get('lectures/{lecture}/key', [CourseController::class, 'streamKey'])
-    ->middleware('throttle:video')
-    ->name('lectures.key');
-
-// Stream/segment: accept Sanctum token from query param (for video.js which can't send headers)
-Route::get('lectures/{lecture}/stream', [CourseController::class, 'streamLecture'])
-    ->middleware([\App\Http\Middleware\InjectBearerFromQuery::class, 'auth:sanctum', 'throttle:video'])
-    ->name('lectures.stream');
-Route::get('lectures/{lecture}/segment/{segment}', [CourseController::class, 'streamSegment'])
-    ->middleware([\App\Http\Middleware\InjectBearerFromQuery::class, 'auth:sanctum', 'throttle:video'])
-    ->name('lectures.segment');
 Route::get('governorates', [\App\Http\Controllers\Api\MiscController::class, 'governorates']);
 Route::get('grade-levels', [\App\Http\Controllers\Api\MiscController::class, 'gradeLevels']);
 
@@ -70,6 +58,9 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
 
     Route::get('lectures/{lecture}', [CourseController::class, 'showLecture'])
         ->middleware(\App\Http\Middleware\CheckEnrollment::class);
+    Route::get('lectures/{lecture}/files/{file}', [CourseController::class, 'downloadFile'])
+        ->middleware(\App\Http\Middleware\CheckEnrollment::class)
+        ->name('lectures.downloadFile');
     Route::post('lectures/{lecture}/progress', [CourseController::class, 'updateProgress'])
         ->middleware(\App\Http\Middleware\CheckEnrollment::class);
     Route::get('lectures/{lecture}/assignment', [ExamController::class, 'showAssignment'])

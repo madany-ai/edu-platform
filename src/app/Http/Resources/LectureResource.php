@@ -35,18 +35,22 @@ class LectureResource extends JsonResource
                 'duration' => $this->video->duration,
             ];
             
-            if ($status === 'completed' && $videoPath) {
-                if (str_contains($videoPath, 'youtube.com') || str_contains($videoPath, 'youtu.be')) {
+            if ($status === 'completed') {
+                if ($videoPath && (str_contains($videoPath, 'youtube.com') || str_contains($videoPath, 'youtu.be'))) {
+                    // YouTube videos
                     $videoData['stream_url'] = $videoPath;
                     $videoData['stream_type'] = 'video/youtube';
-                } else if (str_ends_with(strtolower($videoPath), '.mp4')) {
+                } else if ($this->video->bunny_video_id) {
+                    // Bunny Stream — signed embed URL (video_path may be null for Bunny-only uploads)
+                    $bunnyService = app(\App\Services\BunnyStreamService::class);
+                    $videoData['stream_url'] = $bunnyService->getSignedPlaybackUrl($this->video->bunny_video_id);
+                    $videoData['stream_type'] = 'application/x-mpegURL';
+                } else if ($videoPath && str_ends_with(strtolower($videoPath), '.mp4')) {
+                    // Legacy MP4 files — direct MinIO temporary URL
                     $url = \Illuminate\Support\Facades\Storage::disk('minio')
                         ->temporaryUrl($videoPath, now()->addHours(2));
                     $videoData['stream_url'] = str_replace('http://minio:9000', 'http://localhost:9000', $url);
                     $videoData['stream_type'] = 'video/mp4';
-                } else {
-                    $videoData['stream_url'] = route('lectures.stream', ['lecture' => $this->id]);
-                    $videoData['stream_type'] = 'application/x-mpegURL';
                 }
             }
         }
@@ -124,6 +128,7 @@ class LectureResource extends JsonResource
             'assignments' => $assignmentsFormatted,
             'is_locked' => $user ? $accessService->isBlockedByExam($user, $this->resource, 'lecture_access') : false,
             'video_locked' => $user ? $accessService->isBlockedByExam($user, $this->resource, 'video') : false,
+            'has_access' => $user ? $accessService->canAccess($user, $this->resource) : false,
         ];
     }
 }
