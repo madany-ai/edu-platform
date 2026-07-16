@@ -41,7 +41,7 @@ class LectureResource extends JsonResource
                     $videoData['stream_url'] = $videoPath;
                     $videoData['stream_type'] = 'video/youtube';
                 } else if ($this->video->bunny_video_id) {
-                    // Bunny Stream — signed embed URL (video_path may be null for Bunny-only uploads)
+                    // Bunny Stream — signed embed URL
                     $bunnyService = app(\App\Services\BunnyStreamService::class);
                     $videoData['stream_url'] = $bunnyService->getSignedPlaybackUrl($this->video->bunny_video_id);
                     $videoData['stream_type'] = 'application/x-mpegURL';
@@ -53,6 +53,7 @@ class LectureResource extends JsonResource
                     $videoData['stream_type'] = 'video/mp4';
                 }
             }
+
         }
 
         $user = auth('sanctum')->user();

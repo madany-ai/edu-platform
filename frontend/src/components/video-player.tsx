@@ -6,6 +6,7 @@ import { Play, Pause, Maximize, Minimize, Volume2, VolumeX } from "lucide-react"
 import Hls from "hls.js";
 import { STORAGE_KEYS } from "@/lib/constants";
 import api from "@/services/api.client";
+import { useAuth } from "@/providers/auth-provider";
 
 interface VideoPlayerProps {
   lectureId: string;
@@ -21,8 +22,11 @@ export default function VideoPlayer({ lectureId, streamUrl, streamType, initialT
     return <YouTubeSecurePlayer videoId={videoIdMatch ? videoIdMatch[1] : null} />;
   }
 
-  // ── Bunny Stream embed player ──
-  if (streamType === "application/x-mpegURL" && streamUrl.includes("mediadelivery.net")) {
+  // ── Bunny Stream — proxied embed with watermark overlay ──
+  if (
+    streamType === "video/bunny-hls" ||
+    (streamType === "application/x-mpegURL" && streamUrl.includes("mediadelivery.net"))
+  ) {
     return <BunnyEmbedPlayer embedUrl={streamUrl} />;
   }
 
@@ -30,11 +34,23 @@ export default function VideoPlayer({ lectureId, streamUrl, streamType, initialT
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   Bunny Stream Embed Player
+   Bunny Stream Embed Player — with watermark overlay
    ════════════════════════════════════════════════════════════════════════════ */
 
+const WATERMARK_POSITIONS = [
+  { top: '8%',  left: '5%'  },
+  { top: '8%',  right: '5%' },
+  { top: '50%', left: '5%'  },
+  { top: '50%', right: '5%' },
+  { top: '80%', left: '5%'  },
+  { top: '80%', right: '5%' },
+  { top: '30%', left: '30%' },
+];
+
 function BunnyEmbedPlayer({ embedUrl }: { embedUrl: string }) {
+  const { user } = useAuth();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [watermarkPos, setWatermarkPos] = useState<{top?:string;left?:string;right?:string}>(WATERMARK_POSITIONS[0]);
 
   useEffect(() => {
     const blockContextMenu = (e: Event) => e.preventDefault();
@@ -45,8 +61,24 @@ function BunnyEmbedPlayer({ embedUrl }: { embedUrl: string }) {
     }
   }, []);
 
+  // Move watermark to random position every 30s
+  useEffect(() => {
+    const rotate = () => {
+      const next = WATERMARK_POSITIONS[Math.floor(Math.random() * WATERMARK_POSITIONS.length)];
+      setWatermarkPos(next);
+    };
+    const t = setInterval(rotate, 30_000);
+    return () => clearInterval(t);
+  }, []);
+
+  const watermarkText = user ? `${user.name} • ${user.email}` : 'محمي';
+
   return (
-    <div className="relative w-full h-full bg-black rounded-lg overflow-hidden">
+    <div
+      className="relative w-full h-full bg-black rounded-lg overflow-hidden"
+      onContextMenu={(e) => e.preventDefault()}
+      style={{ isolation: 'isolate' }}
+    >
       <iframe
         ref={iframeRef}
         src={embedUrl}
@@ -55,21 +87,55 @@ function BunnyEmbedPlayer({ embedUrl }: { embedUrl: string }) {
         allowFullScreen
         title="Video Player"
         onContextMenu={(e) => e.preventDefault()}
+        style={{ zIndex: 1 }}
       />
+
+      {/* Watermark — last in DOM, highest z-index, always paints on top */}
+      <div
+        className="absolute pointer-events-none transition-all duration-1000"
+        style={{ ...watermarkPos, zIndex: 9999 }}
+      >
+        <span
+          style={{
+            display: 'inline-block',
+            fontSize: 'clamp(10px, 1.2vw, 13px)',
+            color: 'rgba(255,255,255,0.9)',
+            background: 'rgba(0,0,0,0.4)',
+            padding: '2px 8px',
+            borderRadius: '4px',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            whiteSpace: 'nowrap',
+            direction: 'ltr',
+            fontFamily: 'monospace',
+            letterSpacing: '0.04em',
+            pointerEvents: 'none',
+          }}
+        >
+          {watermarkText}
+        </span>
+      </div>
     </div>
   );
 }
+
+
+
 
 /* ════════════════════════════════════════════════════════════════════════════
    HLS Player — Netflix-style with security hardening
    ════════════════════════════════════════════════════════════════════════════ */
 
+
+
 function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoPlayerProps) {
+  const { user } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hideControlsTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const watermarkTimerRef = useRef<NodeJS.Timeout | null>(null);
   const playPromiseRef = useRef<Promise<void> | null>(null);
   const isTogglingRef = useRef(false);
 
@@ -84,6 +150,7 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
   const [isLoaded, setIsLoaded] = useState(false);
   const [qualityLevels, setQualityLevels] = useState<number[]>([]);
   const [selectedQuality, setSelectedQuality] = useState<number>(-1); // -1 = auto
+  const [watermarkPos, setWatermarkPos] = useState<{top?:string;left?:string;right?:string}>(WATERMARK_POSITIONS[0]);
 
   // ── Progress reporter ──
   const reportProgress = useCallback(async (time: number, completed: boolean) => {
@@ -101,20 +168,32 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
     if (!video) return;
 
     // Determine source
-    const isHLS = streamType === "application/x-mpegURL" || streamType === "hls";
+    const isHLS = streamType === "application/x-mpegURL" || streamType === "hls" || streamType === "video/bunny-hls";
     const isMP4 = streamType === "video/mp4" || streamUrl.endsWith(".mp4");
 
     if (isHLS && Hls.isSupported()) {
+      // Inject Bearer token so proxy can validate user in addition to HMAC
+      const authToken = typeof window !== "undefined"
+        ? localStorage.getItem(STORAGE_KEYS.TOKEN) || ""
+        : "";
+
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: false,
         backBufferLength: 90,
         maxBufferLength: 30,
         startLevel: -1, // auto quality
+        xhrSetup: (xhr: XMLHttpRequest, _url: string) => {
+          if (authToken) {
+            xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
+          }
+        },
+
       });
 
       hls.loadSource(streamUrl);
       hls.attachMedia(video);
+
 
       hls.on(Hls.Events.MANIFEST_PARSED, (_e, data) => {
         const levels = data.levels.map((_, i) => i);
@@ -180,6 +259,11 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
     const blockDrag = (e: Event) => e.preventDefault();
     video.addEventListener("dragstart", blockDrag);
 
+    // ── Security: disable Picture-in-Picture ──
+    video.disablePictureInPicture = true;
+    const blockPiP = (e: Event) => e.preventDefault();
+    video.addEventListener("enterpictureinpicture", blockPiP);
+
     return () => {
       video.removeEventListener("play", onPlay);
       video.removeEventListener("pause", onPause);
@@ -188,6 +272,7 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
       video.removeEventListener("ended", onEnded);
       video.removeEventListener("contextmenu", blockContextMenu);
       video.removeEventListener("dragstart", blockDrag);
+      video.removeEventListener("enterpictureinpicture", blockPiP);
       if (progressTimerRef.current) clearInterval(progressTimerRef.current);
       if (hlsRef.current) {
         hlsRef.current.destroy();
@@ -195,6 +280,35 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
       }
     };
   }, [streamUrl, streamType, initialTime, reportProgress]);
+
+  // ── Watermark: move to a new random position every 30s ──
+  useEffect(() => {
+    const rotate = () => {
+      const next = WATERMARK_POSITIONS[Math.floor(Math.random() * WATERMARK_POSITIONS.length)];
+      setWatermarkPos(next);
+    };
+    watermarkTimerRef.current = setInterval(rotate, 30_000);
+    return () => { if (watermarkTimerRef.current) clearInterval(watermarkTimerRef.current); };
+  }, []);
+
+  // ── Security: DevTools detection — pause video when DevTools open ──
+  useEffect(() => {
+    let devToolsOpen = false;
+    const threshold = 160;
+    const detect = () => {
+      const widthDiff  = window.outerWidth  - window.innerWidth  > threshold;
+      const heightDiff = window.outerHeight - window.innerHeight > threshold;
+      const isOpen = widthDiff || heightDiff;
+      if (isOpen && !devToolsOpen) {
+        devToolsOpen = true;
+        videoRef.current?.pause();
+      } else if (!isOpen && devToolsOpen) {
+        devToolsOpen = false;
+      }
+    };
+    const timer = setInterval(detect, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // ── Security: keyboard shortcuts lockdown ──
   useEffect(() => {
@@ -304,6 +418,11 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
     return `${m}:${sec < 10 ? "0" : ""}${sec}`;
   };
 
+  // Watermark text
+  const watermarkText = user
+    ? `${user.name} • ${user.email}`
+    : 'محمي';
+
   return (
     <div
       ref={containerRef}
@@ -317,10 +436,37 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
         className="w-full h-full object-contain"
         playsInline
         preload="metadata"
+        disablePictureInPicture
         onClick={togglePlay}
         onDoubleClick={toggleFullscreen}
         style={{ pointerEvents: "auto" }}
       />
+
+      {/* ── Watermark Overlay ── */}
+      {isLoaded && (
+        <div
+          className="absolute z-25 pointer-events-none transition-all duration-1000"
+          style={{
+            ...watermarkPos,
+            maxWidth: '55%',
+          }}
+        >
+          <p
+            className="text-white font-medium leading-tight"
+            style={{
+              fontSize: 'clamp(10px, 1.3vw, 14px)',
+              opacity: 0.13,
+              textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              whiteSpace: 'nowrap',
+              direction: 'ltr',
+            }}
+          >
+            {watermarkText}
+          </p>
+        </div>
+      )}
 
       {/* ── Loading spinner ── */}
       {!isLoaded && (

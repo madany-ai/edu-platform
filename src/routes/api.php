@@ -24,6 +24,16 @@ Route::get('courses/{course}', [CourseController::class, 'show']);
 Route::get('governorates', [\App\Http\Controllers\Api\MiscController::class, 'governorates']);
 Route::get('grade-levels', [\App\Http\Controllers\Api\MiscController::class, 'gradeLevels']);
 
+// ─── Video Stream Proxy (token-based auth — no Sanctum session needed) ───
+Route::get('video/{videoId}/playlist', [\App\Http\Controllers\Api\VideoStreamController::class, 'playlist'])
+    ->name('video.playlist')
+    ->middleware('throttle:120,1');
+Route::get('video/{videoId}/segment', [\App\Http\Controllers\Api\VideoStreamController::class, 'segment'])
+    ->name('video.segment')
+    ->middleware('throttle:600,1');
+
+
+
 // Authenticated routes
 Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout']);
