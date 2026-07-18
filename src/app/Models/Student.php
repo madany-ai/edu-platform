@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\AcademicTrack;
-use App\Models\AssignmentSubmission;
 use App\Models\City;
 use App\Models\Enrollment;
 use App\Models\ExamAttempt;
@@ -109,11 +108,6 @@ class Student extends Model
     public function examAttempts(): HasMany
     {
         return $this->hasMany(ExamAttempt::class, 'student_id');
-    }
-
-    public function assignmentSubmissions(): HasMany
-    {
-        return $this->hasMany(AssignmentSubmission::class, 'student_id');
     }
 
     public function questionsPosts(): HasMany

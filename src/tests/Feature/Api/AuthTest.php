@@ -50,7 +50,7 @@ it('creates user with pending status and student role', function () {
     $this->postJson('/api/auth/register', validRegistrationData());
 
     $user = User::where('email', 'test@example.com')->first();
-    expect($user->status)->toBe('pending');
+    expect($user->status)->toBe(\App\Enums\UserStatus::Pending);
     expect($user->hasRole('student'))->toBeTrue();
 });
 

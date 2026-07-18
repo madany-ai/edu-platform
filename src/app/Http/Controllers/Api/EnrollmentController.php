@@ -55,6 +55,8 @@ class EnrollmentController extends Controller
 
     public function courseEnrollments(Course $course): AnonymousResourceCollection
     {
+        $this->authorize('manageEnrollments', $course);
+
         $enrollments = $this->enrollmentService->getCourseEnrollments($course);
 
         return EnrollmentResource::collection($enrollments);
@@ -62,6 +64,8 @@ class EnrollmentController extends Controller
 
     public function revoke(Course $course, Student $student): JsonResponse
     {
+        $this->authorize('manageEnrollments', $course);
+
         $this->enrollmentService->revokeEnrollment($course, $student);
 
         return response()->json(['message' => 'تم إلغاء التسجيل بنجاح.']);

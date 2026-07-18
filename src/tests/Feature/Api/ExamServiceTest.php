@@ -117,7 +117,7 @@ it('gradeAttempt handles mixed MCQ and essay questions correctly', function () {
 
     $score = $this->service->gradeAttempt($attempt);
 
-    expect((int) $score)->toBe(100);
+    expect((int) $score)->toBe(50);
 });
 
 it('gradeAttempt gives 50% for mixed correct and wrong MCQ', function () {

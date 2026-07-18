@@ -61,6 +61,17 @@ class DashboardController extends Controller
         return response()->json($notifications);
     }
 
+    public function myNotifications(): JsonResponse
+    {
+        $userId = request()->user()->id;
+
+        $notifications = \App\Models\Notification::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($notifications);
+    }
+
     public function instructorStudents(): JsonResponse
     {
         $userId = request()->user()->id;

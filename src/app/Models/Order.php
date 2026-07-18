@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Enums\OrderStatus;
+
 class Order extends Model
 {
     use HasUuids;
@@ -21,9 +23,13 @@ class Order extends Model
         'paid_at'
     ];
 
-    protected $casts = [
-        'paid_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'paid_at' => 'datetime',
+            'amount_cents' => 'integer',
+        ];
+    }
 
     public function student(): BelongsTo
     {

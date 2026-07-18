@@ -26,6 +26,7 @@ export function useEnroll() {
     mutationFn: (courseId: string) => enrollmentService.enroll(courseId),
     onSuccess: (data, courseId) => {
       queryClient.invalidateQueries({ queryKey: ["enrollments", "me"] });
+      queryClient.invalidateQueries({ queryKey: ["entitlements", "me"] });
       queryClient.invalidateQueries({ queryKey: ["course", courseId] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", "student"] });
     },
@@ -39,6 +40,7 @@ export function usePurchase() {
     mutationFn: (courseId: string) => enrollmentService.purchase(courseId),
     onSuccess: (data, courseId) => {
       queryClient.invalidateQueries({ queryKey: ["enrollments", "me"] });
+      queryClient.invalidateQueries({ queryKey: ["entitlements", "me"] });
       queryClient.invalidateQueries({ queryKey: ["course", courseId] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", "student"] });
     },

@@ -19,6 +19,7 @@ class ExamController extends Controller
 
     public function show(Lecture $lecture): JsonResponse
     {
+        $isAssignment = request()->is('*assignment*');
         $examId = request()->query('exam_id');
         if ($examId) {
             $exam = Exam::with('questions.choices')
@@ -26,43 +27,12 @@ class ExamController extends Controller
                 ->where('id', $examId)
                 ->first();
         } else {
-            $exam = $this->examService->getExamByLecture($lecture->id, false);
+            $exam = $this->examService->getExamByLecture($lecture->id, $isAssignment);
         }
 
         if (! $exam) {
-            return response()->json(['message' => 'لا يوجد امتحان لهذه المحاضرة.'], 404);
-        }
-
-        $user = request()->user();
-        $student = $user ? \App\Models\Student::where('user_id', $user->id)->first() : null;
-        $latestAttempt = null;
-        if ($student) {
-            $latestAttempt = \App\Models\ExamAttempt::where('exam_id', $exam->id)
-                ->where('student_id', $student->id)
-                ->latest()
-                ->first();
-        }
-
-        return response()->json([
-            'exam' => $exam,
-            'latest_attempt' => $latestAttempt,
-        ]);
-    }
-
-    public function showAssignment(Lecture $lecture): JsonResponse
-    {
-        $examId = request()->query('exam_id');
-        if ($examId) {
-            $exam = Exam::with('questions.choices')
-                ->where('lecture_id', $lecture->id)
-                ->where('id', $examId)
-                ->first();
-        } else {
-            $exam = $this->examService->getExamByLecture($lecture->id, true);
-        }
-
-        if (! $exam) {
-            return response()->json(['message' => 'لا يوجد واجب لهذه المحاضرة.'], 404);
+            $msg = $isAssignment ? 'لا يوجد واجب لهذه المحاضرة.' : 'لا يوجد امتحان لهذه المحاضرة.';
+            return response()->json(['message' => $msg], 404);
         }
 
         $user = request()->user();
@@ -83,6 +53,8 @@ class ExamController extends Controller
 
     public function store(Request $request, Lecture $lecture): JsonResponse
     {
+        $this->authorize('create', [Exam::class, $lecture]);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'duration' => 'nullable|integer|min:1',
@@ -102,6 +74,8 @@ class ExamController extends Controller
 
     public function update(Request $request, Exam $exam): JsonResponse
     {
+        $this->authorize('update', $exam);
+
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'duration' => 'nullable|integer|min:1',
@@ -121,6 +95,8 @@ class ExamController extends Controller
 
     public function destroy(Exam $exam): JsonResponse
     {
+        $this->authorize('delete', $exam);
+
         $this->examService->deleteExam($exam);
 
         return response()->json(['message' => 'تم حذف الامتحان بنجاح.']);
@@ -131,6 +107,34 @@ class ExamController extends Controller
         $user = request()->user();
         $student = Student::where('user_id', $user->id)->firstOrFail();
 
+        // Check if student is enrolled or has entitlement to the lecture/course
+        $lecture = $exam->lecture;
+        if (!$lecture) {
+            abort(404, 'الامتحان غير مرتبط بمحاضرة.');
+        }
+
+        $courseId = $lecture->section->course_id ?? null;
+        if (!$courseId) {
+            abort(404, 'الامتحان غير مرتبط بكورس.');
+        }
+
+        $isEnrolled = \App\Models\Enrollment::where('student_id', $student->id)
+            ->where('course_id', $courseId)
+            ->where('status', 'active')
+            ->exists();
+
+        $hasEntitlement = \App\Models\Entitlement::where('student_id', $student->id)
+            ->where('lecture_id', $lecture->id)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                  ->orWhere('expires_at', '>', now());
+            })
+            ->exists();
+
+        if (!$isEnrolled && !$hasEntitlement) {
+            return response()->json(['message' => 'غير مسجل في هذه الدورة أو المحاضرة.'], 403);
+        }
+
         $attempt = $this->examService->startAttempt($exam, $student);
 
         return response()->json($attempt);
@@ -138,6 +142,8 @@ class ExamController extends Controller
 
     public function submitAttempt(ExamAttempt $attempt): JsonResponse
     {
+        $this->authorize('submit', $attempt);
+
         $validated = request()->validate([
             'answers' => 'required|array',
             'answers.*.question_id' => 'required|exists:questions,id',
@@ -151,6 +157,8 @@ class ExamController extends Controller
 
     public function result(ExamAttempt $attempt): JsonResponse
     {
+        $this->authorize('viewResult', $attempt);
+
         return response()->json($attempt->load('answers.question.choices'));
     }
 

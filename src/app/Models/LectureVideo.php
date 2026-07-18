@@ -16,7 +16,6 @@ class LectureVideo extends Model
         'duration', 
         'original_filename', 
         'video_path', 
-        'encryption_key', 
         'status'
     ];
 

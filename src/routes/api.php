@@ -18,7 +18,8 @@ Route::middleware('throttle:login')->group(function () {
 });
 Route::post('auth/forgot-password', [PasswordResetController::class, 'forgotPassword'])
     ->middleware('throttle:login');
-Route::post('auth/reset-password', [PasswordResetController::class, 'resetPassword']);
+Route::post('auth/reset-password', [PasswordResetController::class, 'resetPassword'])
+    ->middleware('throttle:login');
 Route::get('courses', [CourseController::class, 'index']);
 Route::get('courses/{course}', [CourseController::class, 'show']);
 Route::get('governorates', [\App\Http\Controllers\Api\MiscController::class, 'governorates']);
@@ -41,6 +42,7 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
 
     // Dashboard
     Route::get('dashboard/student', [DashboardController::class, 'student']);
+    Route::get('notifications', [DashboardController::class, 'myNotifications']);
 
     // Instructor Dashboard
     Route::middleware('role:instructor')->group(function () {
@@ -73,7 +75,7 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
         ->name('lectures.downloadFile');
     Route::post('lectures/{lecture}/progress', [CourseController::class, 'updateProgress'])
         ->middleware(\App\Http\Middleware\CheckEnrollment::class);
-    Route::get('lectures/{lecture}/assignment', [ExamController::class, 'showAssignment'])
+    Route::get('lectures/{lecture}/assignment', [ExamController::class, 'show'])
         ->middleware(\App\Http\Middleware\CheckEnrollment::class);
 
     // Enrollments
@@ -126,10 +128,12 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     Route::delete('replies/{reply}', [QAController::class, 'destroyReply']);
 
     // Q&A — Instructor
-    Route::get('instructor/questions', [QAController::class, 'instructorQuestions'])
+    Route::get('instructor/questions', [QAController::class, 'staffQuestions'])
         ->middleware('role:instructor');
 
     // Q&A — Assistant
-    Route::get('assistant/questions', [QAController::class, 'assistantQuestions'])
+    Route::get('assistant/questions', [QAController::class, 'staffQuestions'])
         ->middleware('role:assistant');
 });
+
+Route::get('lectures/{lecture}/key', [\App\Http\Controllers\Api\CourseController::class, 'streamKey']);

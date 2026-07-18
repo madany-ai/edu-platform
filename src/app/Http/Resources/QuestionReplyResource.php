@@ -13,8 +13,8 @@ class QuestionReplyResource extends JsonResource
             'id' => $this->id,
             'body' => $this->body,
             'user' => [
-                'id' => $this->user->id,
-                'name' => $this->user->name,
+                'id' => $this->user?->id,
+                'name' => $this->user?->name ?? 'محذوف',
             ],
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),

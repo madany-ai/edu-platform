@@ -43,6 +43,29 @@ class Course extends Model
                 $course->course_code = app(CodeGeneratorService::class)->generateCourseCode();
             }
         });
+
+        static::created(function (Course $course) {
+            if ($course->status === \App\Enums\CourseStatus::Published || $course->status === 'published') {
+                static::clearPublishedCache();
+            }
+        });
+
+        static::updated(function (Course $course) {
+            if ($course->wasChanged('status')) {
+                static::clearPublishedCache();
+            }
+        });
+
+        static::deleted(function () {
+            static::clearPublishedCache();
+        });
+    }
+
+    public static function clearPublishedCache(): void
+    {
+        for ($i = 1; $i <= 10; $i++) {
+            \Illuminate\Support\Facades\Cache::forget('published_courses_page_' . $i);
+        }
     }
 
     public function instructor(): BelongsTo
@@ -77,5 +100,13 @@ class Course extends Model
             'id',
             'id'
         );
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'status' => \App\Enums\CourseStatus::class,
+            'price' => 'decimal:2',
+        ];
     }
 }

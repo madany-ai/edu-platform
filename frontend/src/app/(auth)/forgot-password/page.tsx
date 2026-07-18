@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
     try {
-      await authService.forgotPassword({ email });
+      await authService.forgotPassword({ email, "cf-turnstile-response": turnstileToken });
       setSent(true);
     } catch (err: unknown) {
       if (err && typeof err === "object" && "response" in err) {

@@ -18,6 +18,8 @@ class Enrollment extends Model
         return [
             'started_at' => 'datetime',
             'expires_at' => 'datetime',
+            'status' => \App\Enums\EnrollmentStatus::class,
+            'source' => \App\Enums\EnrollmentSource::class,
         ];
     }
 
@@ -29,5 +31,16 @@ class Enrollment extends Model
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
+    }
+
+    /**
+     * Override save to prevent persisting synthetic entitlement enrollments.
+     */
+    public function save(array $options = []): bool
+    {
+        if ($this->id && str_starts_with((string) $this->id, 'entitlement-fake-')) {
+            throw new \RuntimeException("Cannot save a synthetic entitlement enrollment.");
+        }
+        return parent::save($options);
     }
 }

@@ -43,7 +43,7 @@ export default function CourseDetailPage() {
   const purchaseMutation = usePurchase();
   const createOrderMutation = useCreateOrder();
 
-  const course = courseData?.data;
+  const course = courseData;
   const enrolled = enrollmentsData?.data?.some(
     (e) => (e.course_id === id || e.course?.id === id) && !String(e.id).startsWith("entitlement-fake-")
   ) ?? false;

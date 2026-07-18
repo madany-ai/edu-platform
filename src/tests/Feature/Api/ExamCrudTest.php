@@ -269,7 +269,7 @@ it('student submits attempt with wrong answer gets zero', function () {
     $response->assertOk()->assertJsonPath('score', 0);
 });
 
-it('essay questions get full score when answered', function () {
+it('essay questions get zero score when answered by default (requires manual grading)', function () {
     $exam = Exam::create([
         'lecture_id' => $this->lecture->id,
         'title' => 'Essay Exam',
@@ -292,7 +292,7 @@ it('essay questions get full score when answered', function () {
         ],
     ]);
 
-    $response->assertOk()->assertJsonPath('score', 100);
+    $response->assertOk()->assertJsonPath('score', 0);
 });
 
 it('essay questions reject empty answer via validation', function () {

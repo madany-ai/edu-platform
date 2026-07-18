@@ -12,9 +12,9 @@ export const courseService = {
     return data;
   },
 
-  getById: async (id: string): Promise<ApiResponse<Course>> => {
-    const { data } = await api.get<ApiResponse<Course>>(`/courses/${id}`);
-    return data;
+  getById: async (id: string): Promise<Course> => {
+    const { data } = await api.get<{ data: Course }>(`/courses/${id}`);
+    return data.data;
   },
 
   getLecture: async (lectureId: string): Promise<Lecture> => {

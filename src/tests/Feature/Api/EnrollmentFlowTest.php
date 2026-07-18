@@ -133,7 +133,7 @@ it('instructor can revoke enrollment', function () {
     $enrollment = Enrollment::where('student_id', $this->student->id)
         ->where('course_id', $this->freeCourse->id)
         ->first();
-    expect($enrollment->status)->toBe('suspended');
+    expect($enrollment->status)->toBe(\App\Enums\EnrollmentStatus::Suspended);
 });
 
 it('student cannot revoke enrollment', function () {

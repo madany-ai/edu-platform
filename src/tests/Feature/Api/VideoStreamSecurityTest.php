@@ -42,17 +42,21 @@ beforeEach(function () {
     $this->lecture1 = $this->section->lectures()->create(['title' => 'Lecture 1', 'sort_order' => 1]);
     $this->lecture2 = $this->section->lectures()->create(['title' => 'Lecture 2', 'sort_order' => 2]);
 
-    $this->lecture1->video()->create([
+    $video1 = new LectureVideo([
         'video_path' => 'hls/test/playlist.m3u8',
         'status' => 'completed',
-        'encryption_key' => bin2hex(openssl_random_pseudo_bytes(16)),
     ]);
+    $video1->lecture_id = $this->lecture1->id;
+    $video1->encryption_key = bin2hex(openssl_random_pseudo_bytes(16));
+    $video1->save();
 
-    $this->lecture2->video()->create([
+    $video2 = new LectureVideo([
         'video_path' => 'hls/test2/playlist.m3u8',
         'status' => 'completed',
-        'encryption_key' => bin2hex(openssl_random_pseudo_bytes(16)),
     ]);
+    $video2->lecture_id = $this->lecture2->id;
+    $video2->encryption_key = bin2hex(openssl_random_pseudo_bytes(16));
+    $video2->save();
 
     $this->order = \App\Models\Order::create([
         'student_id' => $this->student->id,

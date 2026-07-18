@@ -42,4 +42,8 @@ return [
         'signing_key' => env('BUNNY_STREAM_SIGNING_KEY'),
     ],
 
+    'turnstile' => [
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
 ];

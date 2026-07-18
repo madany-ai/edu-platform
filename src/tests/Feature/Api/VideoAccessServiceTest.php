@@ -272,7 +272,7 @@ it('validateToken returns false for wrong IP', function () {
 });
 
 it('validateToken returns false for inactive user', function () {
-    $inactive = User::factory()->create(['status' => 'inactive']);
+    $inactive = User::factory()->create(['status' => 'rejected']);
 
     $payload = [
         'user_id' => $inactive->id,

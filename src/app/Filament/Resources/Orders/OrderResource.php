@@ -12,7 +12,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -86,20 +85,8 @@ class OrderResource extends Resource
                 TextColumn::make('status')
                     ->label('الحالة')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'completed' => 'success',
-                        'pending' => 'warning',
-                        'failed' => 'danger',
-                        'refunded' => 'gray',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'completed' => 'مكتمل',
-                        'pending' => 'قيد الانتظار',
-                        'failed' => 'فشل',
-                        'refunded' => 'مسترجع',
-                        default => $state,
-                    }),
+                    ->color(fn ($state): ?string => $state ? (\App\Enums\OrderStatus::tryFrom($state)?->color() ?? 'gray') : 'gray')
+                    ->formatStateUsing(fn ($state): string => $state ? (\App\Enums\OrderStatus::tryFrom($state)?->label() ?? (string) $state) : ''),
 
                 TextColumn::make('payment_method')
                     ->label('طريقة الدفع'),
@@ -119,7 +106,7 @@ class OrderResource extends Resource
                     ->modalHeading('تأكيد استلام الدفع')
                     ->modalDescription('هل تأكدت من استلام المبلغ من الطالب؟ سيتم تفعيل المحتوى فوراً.')
                     ->modalSubmitActionLabel('نعم، تأكيد')
-                    ->visible(fn (Order $record): bool => $record->status === 'pending')
+                    ->visible(fn (Order $record): bool => ($record->status instanceof \App\Enums\OrderStatus ? $record->status->value : $record->status) === 'pending')
                     ->action(function (Order $record): void {
                         $record->update([
                             'status' => 'completed',

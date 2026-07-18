@@ -13,8 +13,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
+use App\Http\Requests\SaveSectionRequest;
+use App\Http\Requests\SaveLectureRequest;
+use App\Http\Requests\UpdateProgressRequest;
+
 class CourseController extends Controller
 {
+    use \App\Traits\ResolvesStudent;
     public function __construct(
         private readonly CourseService $courseService,
         private readonly \App\Services\ProgressService $progressService
@@ -47,6 +52,17 @@ class CourseController extends Controller
                     ->toArray();
 
                 $course->setAttribute('progress_map', $progressMap);
+
+                $examIds = $course->sections->flatMap(fn($s) => $s->lectures->flatMap(fn($l) => $l->exams->pluck('id')->concat($l->assignments->pluck('id'))))->toArray();
+                $attemptsMap = \App\Models\ExamAttempt::where('student_id', $student->id)
+                    ->whereIn('exam_id', $examIds)
+                    ->whereNotNull('submitted_at')
+                    ->get()
+                    ->groupBy('exam_id')
+                    ->map(fn($group) => $group->sortByDesc('submitted_at')->first())
+                    ->all();
+
+                $course->setAttribute('attempts_map', $attemptsMap);
             }
         }
 
@@ -102,7 +118,11 @@ class CourseController extends Controller
             }
         }
 
-        return new \App\Http\Resources\LectureResource($lecture);
+        $resource = new \App\Http\Resources\LectureResource($lecture);
+        if ($student) {
+            $resource->setStudent($student);
+        }
+        return $resource;
     }
 
     public function instructorCourses(): AnonymousResourceCollection
@@ -112,24 +132,26 @@ class CourseController extends Controller
         return CourseResource::collection($courses);
     }
 
-    public function storeSection(Request $request, Course $course): JsonResponse
+    public function storeSection(SaveSectionRequest $request, Course $course): JsonResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'sort_order' => 'nullable|integer',
-        ]);
+        $this->authorize('create', [CourseSection::class, $course]);
+
+        $validated = $request->validated();
 
         $section = $course->sections()->create($validated);
 
         return response()->json($section, 201);
     }
 
-    public function updateSection(Request $request, Course $course, \App\Models\CourseSection $section): JsonResponse
+    public function updateSection(SaveSectionRequest $request, Course $course, \App\Models\CourseSection $section): JsonResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'sort_order' => 'nullable|integer',
-        ]);
+        if ($section->course_id !== $course->id) {
+            abort(404, 'القسم غير موجود في هذا الكورس.');
+        }
+
+        $this->authorize('update', $section);
+
+        $validated = $request->validated();
 
         $section->update($validated);
 
@@ -138,20 +160,22 @@ class CourseController extends Controller
 
     public function destroySection(Course $course, \App\Models\CourseSection $section): JsonResponse
     {
+        if ($section->course_id !== $course->id) {
+            abort(404, 'القسم غير موجود في هذا الكورس.');
+        }
+
+        $this->authorize('delete', $section);
+
         $section->delete();
 
         return response()->json(['message' => 'تم حذف القسم بنجاح.']);
     }
 
-    public function storeLecture(Request $request, \App\Models\CourseSection $section): JsonResponse
+    public function storeLecture(SaveLectureRequest $request, \App\Models\CourseSection $section): JsonResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'duration' => 'nullable|integer|min:0',
-            'sort_order' => 'nullable|integer',
-            'youtube_url' => 'nullable|url',
-        ]);
+        $this->authorize('create', [Lecture::class, $section]);
+
+        $validated = $request->validated();
 
         $lecture = $section->lectures()->create(\Illuminate\Support\Arr::except($validated, ['youtube_url']));
 
@@ -167,15 +191,15 @@ class CourseController extends Controller
         return response()->json($lecture->load('video'), 201);
     }
 
-    public function updateLecture(Request $request, \App\Models\CourseSection $section, \App\Models\Lecture $lecture): JsonResponse
+    public function updateLecture(SaveLectureRequest $request, \App\Models\CourseSection $section, \App\Models\Lecture $lecture): JsonResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'duration' => 'nullable|integer|min:0',
-            'sort_order' => 'nullable|integer',
-            'youtube_url' => 'nullable|url',
-        ]);
+        if ($lecture->section_id !== $section->id) {
+            abort(404, 'المحاضرة غير موجودة في هذا القسم.');
+        }
+
+        $this->authorize('update', $lecture);
+
+        $validated = $request->validated();
 
         $lecture->update(\Illuminate\Support\Arr::except($validated, ['youtube_url']));
 
@@ -196,6 +220,12 @@ class CourseController extends Controller
 
     public function destroyLecture(\App\Models\CourseSection $section, \App\Models\Lecture $lecture): JsonResponse
     {
+        if ($lecture->section_id !== $section->id) {
+            abort(404, 'المحاضرة غير موجودة في هذا القسم.');
+        }
+
+        $this->authorize('delete', $lecture);
+
         $lecture->delete();
 
         return response()->json(['message' => 'تم حذف المحاضرة بنجاح.']);
@@ -227,15 +257,12 @@ class CourseController extends Controller
         ]);
     }
 
-    public function updateProgress(Request $request, \App\Models\Lecture $lecture): JsonResponse
+    public function updateProgress(UpdateProgressRequest $request, \App\Models\Lecture $lecture): JsonResponse
     {
-        $validated = $request->validate([
-            'current_time' => 'required|numeric|min:0',
-            'is_completed' => 'required|boolean',
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
-        $student = \App\Models\Student::where('user_id', $user->id)->first();
+        $student = $this->resolveStudent($user);
 
         if (!$student) {
             return response()->json(['message' => 'Student record not found.'], 404);
@@ -247,5 +274,31 @@ class CourseController extends Controller
             'message' => 'Progress updated successfully.',
             'progress' => $result['progress'],
         ]);
+    }
+
+    public function streamKey(Request $request, \App\Models\Lecture $lecture)
+    {
+        $token = $request->query('token');
+
+        if (!$token) {
+            return response()->json(['message' => 'Missing token'], 400);
+        }
+
+        $accessService = app(\App\Services\VideoAccessService::class);
+        
+        if (!$accessService->validateToken($token, $lecture, $request->ip())) {
+            return response()->json(['message' => 'Invalid or expired token'], 403);
+        }
+
+        $video = $lecture->video;
+        if (!$video || !$video->encryption_key) {
+            abort(404, 'Video key not found.');
+        }
+
+        $binaryKey = hex2bin($video->encryption_key);
+
+        return response($binaryKey, 200)
+            ->header('Content-Type', 'application/octet-stream')
+            ->header('Cache-Control', 'no-cache, private');
     }
 }

@@ -98,25 +98,25 @@ class EnrollmentResource extends Resource
                 TextColumn::make('status')
                     ->label('الحالة')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn ($state): string => match ($state instanceof \App\Enums\EnrollmentStatus ? $state->value : $state) {
                         'active' => 'success',
                         'expired' => 'danger',
                         'suspended' => 'warning',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn ($state): string => match ($state instanceof \App\Enums\EnrollmentStatus ? $state->value : $state) {
                         'active' => 'نشط',
                         'expired' => 'منتهي',
                         'suspended' => 'معلق',
-                        default => $state,
+                        default => (string) $state,
                     }),
 
                 TextColumn::make('source')
                     ->label('المصدر')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn ($state): string => match ($state instanceof \App\Enums\EnrollmentSource ? $state->value : $state) {
                         'manual' => 'يدوي',
                         'purchase' => 'شراء',
-                        default => $state,
+                        default => (string) $state,
                     }),
 
                 TextColumn::make('started_at')

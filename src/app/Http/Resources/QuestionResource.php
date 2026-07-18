@@ -12,20 +12,20 @@ class QuestionResource extends JsonResource
         return [
             'id' => $this->id,
             'body' => $this->body,
-            'student' => [
+            'student' => $this->student ? [
                 'id' => $this->student->id,
-                'name' => $this->student->user->name,
+                'name' => $this->student->user?->name ?? 'محذوف',
                 'student_code' => $this->student->student_code,
-            ],
-            'lecture' => [
+            ] : null,
+            'lecture' => $this->lecture ? [
                 'id' => $this->lecture->id,
                 'title' => $this->lecture->title,
-                'course' => $this->lecture->section->course
+                'course' => $this->lecture->section?->course
                     ? [
                         'id' => $this->lecture->section->course->id,
                         'title' => $this->lecture->section->course->title,
                     ] : null,
-            ],
+            ] : null,
             'replies_count' => $this->whenCounted('replies'),
             'replies' => QuestionReplyResource::collection($this->whenLoaded('replies')),
             'created_at' => $this->created_at?->toISOString(),

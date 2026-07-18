@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Assignment;
 use App\Models\CourseSection;
 use App\Models\Exam;
 use App\Models\LectureFile;
@@ -28,21 +27,7 @@ class Lecture extends Model
             ->dontLogEmptyChanges();
     }
 
-    public function getProgressAttribute()
-    {
-        $user = auth('sanctum')->user();
-        if (!$user) return null;
-        $student = \App\Models\Student::where('user_id', $user->id)->first();
-        if (!$student) return null;
 
-        $activity = \App\Models\StudentActivity::where('student_id', $student->id)
-            ->where('type', 'video_progress')
-            ->where('entity_type', self::class)
-            ->where('entity_id', $this->id)
-            ->first();
-
-        return $activity ? $activity->metadata : null;
-    }
 
     protected static function booted()
     {

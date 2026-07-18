@@ -23,10 +23,21 @@ export default function StudentDashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
 
-  const { data: stats, isLoading: statsLoading } = useStudentDashboard();
-  const { data: enrollmentsData, isLoading: enrollmentsLoading } = useMyEnrollments();
+  const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useStudentDashboard();
+  const { data: enrollmentsData, isLoading: enrollmentsLoading, error: enrollmentsError, refetch: refetchEnrollments } = useMyEnrollments();
 
   if (statsLoading || enrollmentsLoading) return <PageLoading />;
+
+  if (statsError || enrollmentsError) {
+    return (
+      <div className="p-6 lg:p-10 flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+        <p className="text-muted-foreground">فشل تحميل البيانات</p>
+        <Button variant="outline" onClick={() => { refetchStats(); refetchEnrollments(); }}>
+          إعادة المحاولة
+        </Button>
+      </div>
+    );
+  }
 
   const enrollments = enrollmentsData?.data ?? [];
 

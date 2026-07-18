@@ -39,6 +39,7 @@ export function usePostQuestion(lectureId: string) {
     mutationFn: (payload: StoreQuestionPayload) => qaService.postQuestion(lectureId, payload),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["lecture-questions", lectureId] });
+      queryClient.invalidateQueries({ queryKey: ["my-questions"] });
       toast.success(data.message);
     },
     onError: (error: any) => {
@@ -48,14 +49,19 @@ export function usePostQuestion(lectureId: string) {
   });
 }
 
-export function useReplyToQuestion(questionId: string) {
+export function useReplyToQuestion(questionId: string, lectureId?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (payload: StoreReplyPayload) => qaService.replyToQuestion(questionId, payload),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["question", questionId] });
-      queryClient.invalidateQueries({ queryKey: ["lecture-questions"] });
+      if (lectureId) {
+        queryClient.invalidateQueries({ queryKey: ["lecture-questions", lectureId] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["lecture-questions"] });
+      }
+      queryClient.invalidateQueries({ queryKey: ["my-questions"] });
       toast.success(data.message);
     },
     onError: (error: any) => {
@@ -84,13 +90,17 @@ export function useQAReplyTracker(questions: { id: string; replies_count: number
   }, [questions]);
 }
 
-export function useDeleteQuestion() {
+export function useDeleteQuestion(lectureId?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (questionId: string) => qaService.deleteQuestion(questionId),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["lecture-questions"] });
+      if (lectureId) {
+        queryClient.invalidateQueries({ queryKey: ["lecture-questions", lectureId] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["lecture-questions"] });
+      }
       queryClient.invalidateQueries({ queryKey: ["my-questions"] });
       toast.success(data.message);
     },
@@ -101,14 +111,19 @@ export function useDeleteQuestion() {
   });
 }
 
-export function useDeleteReply(questionId: string) {
+export function useDeleteReply(questionId: string, lectureId?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (replyId: string) => qaService.deleteReply(replyId),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["question", questionId] });
-      queryClient.invalidateQueries({ queryKey: ["lecture-questions"] });
+      if (lectureId) {
+        queryClient.invalidateQueries({ queryKey: ["lecture-questions", lectureId] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["lecture-questions"] });
+      }
+      queryClient.invalidateQueries({ queryKey: ["my-questions"] });
       toast.success(data.message);
     },
     onError: (error: any) => {

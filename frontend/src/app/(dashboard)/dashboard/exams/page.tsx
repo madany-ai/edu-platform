@@ -8,9 +8,18 @@ import { useMyAttempts } from "@/hooks/useExams";
 import { PageLoading } from "@/components/shared/loading-spinner";
 
 export default function ExamsPage() {
-  const { data: attempts, isLoading } = useMyAttempts();
+  const { data: attempts, isLoading, error, refetch } = useMyAttempts();
 
   if (isLoading) return <PageLoading />;
+
+  if (error) {
+    return (
+      <div className="p-6 lg:p-10 flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+        <p className="text-muted-foreground">فشل تحميل الامتحانات</p>
+        <Button variant="outline" onClick={() => refetch()}>إعادة المحاولة</Button>
+      </div>
+    );
+  }
 
   const attemptsList = attempts || [];
 

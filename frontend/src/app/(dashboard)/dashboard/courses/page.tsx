@@ -10,9 +10,18 @@ import Link from "next/link";
 import { PlayCircle, Clock, BookOpen, GraduationCap, ChevronLeft } from "lucide-react";
 
 export default function StudentCoursesPage() {
-  const { data: enrollmentsData, isLoading } = useMyEnrollments();
+  const { data: enrollmentsData, isLoading, error, refetch } = useMyEnrollments();
 
   if (isLoading) return <PageLoading />;
+
+  if (error) {
+    return (
+      <div className="p-6 lg:p-10 flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+        <p className="text-muted-foreground">فشل تحميل الدورات</p>
+        <Button variant="outline" onClick={() => refetch()}>إعادة المحاولة</Button>
+      </div>
+    );
+  }
 
   const enrollments = enrollmentsData?.data ?? [];
 

@@ -27,6 +27,7 @@ class InstructorStatsOverview extends StatsOverviewWidget
         $recentEnrollments = Enrollment::whereIn('course_id', $courseIds)
             ->where('created_at', '>=', now()->subDays(7))->count();
         $totalRevenue = 0;
+        $completedOrdersCount = 0;
         
         $examsCount = 0;
         $assignmentsCount = 0;
@@ -35,6 +36,7 @@ class InstructorStatsOverview extends StatsOverviewWidget
 
         if ($user->hasRole('super_admin')) {
             $totalRevenue = Order::where('status', 'completed')->sum('amount_cents') / 100;
+            $completedOrdersCount = Order::where('status', 'completed')->count();
             $examsCount = \App\Models\Exam::where('is_assignment', false)->count();
             $assignmentsCount = \App\Models\Exam::where('is_assignment', true)->count();
             $attemptsCount = \App\Models\ExamAttempt::count();
@@ -44,6 +46,7 @@ class InstructorStatsOverview extends StatsOverviewWidget
             foreach ($orders as $order) {
                 if ($order->purchasable && $order->purchasable->instructor_id === $user->id) {
                     $totalRevenue += ($order->amount_cents / 100);
+                    $completedOrdersCount++;
                 }
             }
             
@@ -58,6 +61,8 @@ class InstructorStatsOverview extends StatsOverviewWidget
             })->count();
             $questionsCount = \App\Models\QuestionsPost::whereIn('lecture_id', $lectureIds)->count();
         }
+
+        $averageOrderValue = $completedOrdersCount > 0 ? $totalRevenue / $completedOrdersCount : 0;
 
         return [
             Stat::make('إجمالي الدورات', $coursesCount)
@@ -74,6 +79,16 @@ class InstructorStatsOverview extends StatsOverviewWidget
                 ->description('إجمالي مبيعات الدورات')
                 ->descriptionIcon('heroicon-o-banknotes')
                 ->color('warning'),
+
+            Stat::make('المبيعات المكتملة', $completedOrdersCount)
+                ->description('عدد طلبات الشراء المدفوعة')
+                ->descriptionIcon('heroicon-o-shopping-bag')
+                ->color('success'),
+
+            Stat::make('متوسط قيمة الطلب', number_format((float) $averageOrderValue, 2) . ' ج.م')
+                ->description('متوسط سلة الشراء للطالب')
+                ->descriptionIcon('heroicon-o-calculator')
+                ->color('primary'),
 
             Stat::make('المحاضرات', $this->getTotalLectures($courseIds))
                 ->description('إجمالي المحاضرات في جميع الدورات')

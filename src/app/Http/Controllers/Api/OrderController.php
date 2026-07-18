@@ -56,7 +56,7 @@ class OrderController extends Controller
             'amount_cents' => intval($purchasable->price * 100),
             'currency' => 'EGP',
             'payment_method' => 'manual',
-            'transaction_id' => 'PENDING-' . strtoupper(uniqid()),
+            'transaction_id' => 'PENDING-' . strtoupper((string) \Illuminate\Support\Str::uuid()),
             'status' => 'pending',
         ]);
 

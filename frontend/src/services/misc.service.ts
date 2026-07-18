@@ -1,4 +1,5 @@
 import api from "./api.client";
+import type { ApiResponse } from "@/types";
 
 export interface GovernorateInfo {
   id: string;
@@ -9,11 +10,6 @@ export interface GradeLevelInfo {
   id: string;
   name: string;
   sort_order: number;
-}
-
-interface ApiResponse<T> {
-  status: string;
-  data: T;
 }
 
 export const miscService = {

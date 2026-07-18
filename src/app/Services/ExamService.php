@@ -62,26 +62,64 @@ class ExamService
                 'is_assignment' => $data['is_assignment'] ?? $exam->is_assignment,
             ]);
 
-            if (! empty($data['questions'])) {
-                $exam->questions()->delete();
+            if (isset($data['questions'])) {
+                $incomingQuestionIds = [];
 
                 foreach ($data['questions'] as $questionData) {
-                    $question = $exam->questions()->create([
-                        'type' => $questionData['type'] ?? 'multiple_choice',
-                        'question' => $questionData['question'],
-                        'degree' => $questionData['degree'] ?? 1,
-                        'image_path' => $questionData['image_path'] ?? null,
-                    ]);
+                    $questionId = $questionData['id'] ?? null;
 
-                    if (! empty($questionData['choices'])) {
+                    $question = null;
+                    if ($questionId) {
+                        $question = $exam->questions()->find($questionId);
+                    }
+
+                    if ($question) {
+                        $question->update([
+                            'type' => $questionData['type'] ?? $question->type,
+                            'question' => $questionData['question'],
+                            'degree' => $questionData['degree'] ?? $question->degree,
+                            'image_path' => $questionData['image_path'] ?? $question->image_path,
+                        ]);
+                    } else {
+                        $question = $exam->questions()->create([
+                            'type' => $questionData['type'] ?? 'multiple_choice',
+                            'question' => $questionData['question'],
+                            'degree' => $questionData['degree'] ?? 1,
+                            'image_path' => $questionData['image_path'] ?? null,
+                        ]);
+                    }
+
+                    $incomingQuestionIds[] = $question->id;
+
+                    if (isset($questionData['choices'])) {
+                        $incomingChoiceIds = [];
                         foreach ($questionData['choices'] as $choiceData) {
-                            $question->choices()->create([
-                                'answer' => $choiceData['answer'],
-                                'is_correct' => $choiceData['is_correct'] ?? false,
-                            ]);
+                            $choiceId = $choiceData['id'] ?? null;
+
+                            $choice = null;
+                            if ($choiceId) {
+                                $choice = $question->choices()->find($choiceId);
+                            }
+
+                            if ($choice) {
+                                $choice->update([
+                                    'answer' => $choiceData['answer'],
+                                    'is_correct' => $choiceData['is_correct'] ?? false,
+                                ]);
+                            } else {
+                                $choice = $question->choices()->create([
+                                    'answer' => $choiceData['answer'],
+                                    'is_correct' => $choiceData['is_correct'] ?? false,
+                                ]);
+                            }
+                            $incomingChoiceIds[] = $choice->id;
                         }
+
+                        $question->choices()->whereNotIn('id', $incomingChoiceIds)->delete();
                     }
                 }
+
+                $exam->questions()->whereNotIn('id', $incomingQuestionIds)->delete();
             }
 
             return $exam->load('questions.choices');
@@ -145,16 +183,13 @@ class ExamService
             $totalPoints += $question->degree;
 
             if ($question->type === 'essay') {
-                // Automatically give full degree for essay questions if answered
-                if (trim($answer->answer) !== '') {
-                    $earnedPoints += $question->degree;
-                }
+                // Essay questions require manual grading; by default they award 0 points until graded.
             } else {
                 $correctChoice = Choice::where('question_id', $question->id)
                     ->where('is_correct', true)
                     ->first();
 
-                if ($correctChoice && $correctChoice->id == $answer->answer) {
+                if ($correctChoice && $correctChoice->id === $answer->answer) {
                     $earnedPoints += $question->degree;
                 }
             }

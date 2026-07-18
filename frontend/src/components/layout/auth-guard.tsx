@@ -11,27 +11,28 @@ interface AuthGuardProps {
   requireGuest?: boolean;
 }
 
-export function AuthGuard({ children, requireAuth = true, requireGuest = false }: AuthGuardProps) {
+export function AuthGuard({ children, requireAuth, requireGuest = false }: AuthGuardProps) {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
+  const actualRequireAuth = requireAuth ?? !requireGuest;
+
   useEffect(() => {
     if (loading) return;
 
-    if (requireAuth && !isAuthenticated) {
+    if (actualRequireAuth && !isAuthenticated) {
       router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
     }
 
     if (requireGuest && isAuthenticated) {
       router.push("/");
     }
-  }, [loading, isAuthenticated, requireAuth, requireGuest, router, pathname]);
+  }, [loading, isAuthenticated, actualRequireAuth, requireGuest, router, pathname]);
 
-  if (loading) return <PageLoading />;
-
-  if (requireAuth && !isAuthenticated) return null;
-  if (requireGuest && isAuthenticated) return null;
+  if (loading || (actualRequireAuth && !isAuthenticated) || (requireGuest && isAuthenticated)) {
+    return <PageLoading />;
+  }
 
   return <>{children}</>;
 }

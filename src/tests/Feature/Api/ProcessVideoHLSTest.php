@@ -154,7 +154,7 @@ it('LectureVideo has correct fillable fields', function () {
     expect($video->getFillable())->toContain('lecture_id')
         ->and($video->getFillable())->toContain('status')
         ->and($video->getFillable())->toContain('video_path')
-        ->and($video->getFillable())->toContain('encryption_key')
+        ->and($video->getFillable())->not->toContain('encryption_key')
         ->and($video->getFillable())->toContain('original_filename');
 });
 
@@ -189,11 +189,12 @@ it('LectureVideo stores encryption key as hex string', function () {
     $key = openssl_random_pseudo_bytes(16);
     $hexKey = bin2hex($key);
 
-    $video = LectureVideo::create([
+    $video = new LectureVideo([
         'lecture_id' => $this->lecture->id,
-        'encryption_key' => $hexKey,
         'status' => 'completed',
     ]);
+    $video->encryption_key = $hexKey;
+    $video->save();
 
     expect($video->encryption_key)->toBe($hexKey)
         ->and(strlen($video->encryption_key))->toBe(32);

@@ -22,9 +22,9 @@ export default function QATab({ lectureId }: QATabProps) {
 
   const { data: questionsResponse, isLoading } = useLectureQuestions(lectureId, { page, per_page: 10 });
   const postQuestionMutation = usePostQuestion(lectureId);
-  const replyMutation = useReplyToQuestion(replyingTo || "");
-  const deleteQuestionMutation = useDeleteQuestion();
-  const deleteReplyMutation = useDeleteReply(replyingTo || "");
+  const replyMutation = useReplyToQuestion(replyingTo || "", lectureId);
+  const deleteQuestionMutation = useDeleteQuestion(lectureId);
+  const deleteReplyMutation = useDeleteReply(replyingTo || "", lectureId);
 
   const questions = questionsResponse?.data || [];
   const meta = questionsResponse?.meta;

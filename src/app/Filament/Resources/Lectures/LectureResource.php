@@ -217,6 +217,22 @@ class LectureResource extends Resource
                                     ->required()
                                     ->maxLength(255),
 
+                                TextInput::make('duration')
+                                    ->label('المدة (دقائق)')
+                                    ->numeric()
+                                    ->default(30),
+
+                                TextInput::make('pass_percentage')
+                                    ->label('نسبة النجاح (%)')
+                                    ->numeric()
+                                    ->default(50)
+                                    ->minValue(1)
+                                    ->maxValue(100),
+
+                                Toggle::make('is_blocking')
+                                    ->label('حجب باقي المحتوى حتى النجاح')
+                                    ->default(false),
+
                                 Repeater::make('questions')
                                     ->relationship('questions')
                                     ->label('الأسئلة')

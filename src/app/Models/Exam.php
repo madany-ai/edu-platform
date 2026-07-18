@@ -15,6 +15,15 @@ class Exam extends Model
     use HasUuids;
     protected $fillable = ['lecture_id', 'title', 'duration', 'sort_order', 'pass_percentage', 'is_blocking', 'is_assignment'];
 
+    protected function casts(): array
+    {
+        return [
+            'is_blocking' => 'boolean',
+            'is_assignment' => 'boolean',
+            'pass_percentage' => 'integer',
+        ];
+    }
+
     public function lecture(): BelongsTo
     {
         return $this->belongsTo(Lecture::class);

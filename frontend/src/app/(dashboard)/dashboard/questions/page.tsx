@@ -6,6 +6,7 @@ import { useMyQuestions, useDeleteQuestion, useReplyToQuestion, useDeleteReply, 
 import { useAuth } from "@/providers/auth-provider";
 import { PageLoading } from "@/components/shared/loading-spinner";
 import { MessageCircle, ChevronDown, ChevronUp, Trash2, Send, ExternalLink, BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Question, QuestionReply } from "@/types/qa.types";
 
@@ -16,7 +17,7 @@ export default function MyQuestionsPage() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyBody, setReplyBody] = useState("");
 
-  const { data: questionsResponse, isLoading } = useMyQuestions({ page, per_page: 10 });
+  const { data: questionsResponse, isLoading, error, refetch } = useMyQuestions({ page, per_page: 10 });
   const deleteQuestionMutation = useDeleteQuestion();
   const replyMutation = useReplyToQuestion(replyingTo || "");
   const deleteReplyMutation = useDeleteReply(replyingTo || "");
@@ -46,6 +47,15 @@ export default function MyQuestionsPage() {
   };
 
   if (isLoading) return <PageLoading />;
+
+  if (error) {
+    return (
+      <div className="p-6 lg:p-10 flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+        <p className="text-muted-foreground">فشل تحميل الأسئلة</p>
+        <Button variant="outline" onClick={() => refetch()}>إعادة المحاولة</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-10 space-y-8 max-w-7xl mx-auto">

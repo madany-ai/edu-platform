@@ -15,7 +15,7 @@ class TurnstileRule implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $secretKey = env('TURNSTILE_SECRET_KEY');
+        $secretKey = config('services.turnstile.secret_key');
 
         if (empty($secretKey)) {
             if (app()->environment('local', 'testing')) {

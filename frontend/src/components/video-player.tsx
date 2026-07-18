@@ -167,6 +167,11 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
     const video = videoRef.current;
     if (!video) return;
 
+    const handleLoadedMetadata = () => {
+      setIsLoaded(true);
+      if (initialTime > 0) video.currentTime = initialTime;
+    };
+
     // Determine source
     const isHLS = streamType === "application/x-mpegURL" || streamType === "hls" || streamType === "video/bunny-hls";
     const isMP4 = streamType === "video/mp4" || streamUrl.endsWith(".mp4");
@@ -198,8 +203,7 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
       hls.on(Hls.Events.MANIFEST_PARSED, (_e, data) => {
         const levels = data.levels.map((_, i) => i);
         setQualityLevels(levels);
-        setIsLoaded(true);
-        if (initialTime > 0) video.currentTime = initialTime;
+        handleLoadedMetadata();
       });
 
       hls.on(Hls.Events.LEVEL_SWITCHED, (_e, data) => {
@@ -209,17 +213,11 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
       hlsRef.current = hls;
     } else if (isMP4) {
       video.src = streamUrl;
-      video.addEventListener("loadedmetadata", () => {
-        setIsLoaded(true);
-        if (initialTime > 0) video.currentTime = initialTime;
-      });
+      video.addEventListener("loadedmetadata", handleLoadedMetadata);
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       // Native HLS (Safari)
       video.src = streamUrl;
-      video.addEventListener("loadedmetadata", () => {
-        setIsLoaded(true);
-        if (initialTime > 0) video.currentTime = initialTime;
-      });
+      video.addEventListener("loadedmetadata", handleLoadedMetadata);
     }
 
     // ── Event listeners ──
@@ -273,6 +271,7 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
       video.removeEventListener("contextmenu", blockContextMenu);
       video.removeEventListener("dragstart", blockDrag);
       video.removeEventListener("enterpictureinpicture", blockPiP);
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
       if (progressTimerRef.current) clearInterval(progressTimerRef.current);
       if (hlsRef.current) {
         hlsRef.current.destroy();

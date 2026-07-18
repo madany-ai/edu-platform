@@ -20,6 +20,14 @@ class Product extends Model
         'is_active',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'price'     => 'float',
+        ];
+    }
+
     public function sellable(): MorphTo
     {
         return $this->morphTo();

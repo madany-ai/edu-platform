@@ -15,50 +15,48 @@ class DashboardService
     {
         $courseIds = Course::where('instructor_id', $instructorId)->pluck('id');
 
-        $coursesCount = Course::where('instructor_id', $instructorId)->count();
-        $publishedCoursesCount = Course::where('instructor_id', $instructorId)
-            ->where('status', 'published')->count();
-        $draftCoursesCount = Course::where('instructor_id', $instructorId)
-            ->where('status', 'draft')->count();
+        $stats = Course::where('instructor_id', $instructorId)
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'published' THEN 1 ELSE 0 END) as published,
+                SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) as draft,
+                SUM(price) as total_revenue
+            ")
+            ->first();
 
-        $totalStudents = Enrollment::whereIn('course_id', $courseIds)->count();
-        $activeStudents = Enrollment::whereIn('course_id', $courseIds)
-            ->where('status', 'active')->count();
+        $enrollmentStats = Enrollment::whereIn('course_id', $courseIds)
+            ->selectRaw("
+                COUNT(*) as total_students,
+                SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_students,
+                SUM(CASE WHEN source = 'manual' AND status = 'active' THEN 1 ELSE 0 END) as pending_enrollments,
+                SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as recent_enrollments
+            ", [now()->subDays(7)])
+            ->first();
 
-        $totalRevenue = Course::where('instructor_id', $instructorId)->sum('price');
-
-        $totalLectures = Course::where('instructor_id', $instructorId)
-            ->withCount('lectures')
-            ->get()
-            ->sum('lectures_count');
-
-        $pendingEnrollments = Enrollment::whereIn('course_id', $courseIds)
-            ->where('source', 'manual')
-            ->where('status', 'active')
-            ->count();
-
-        $recentEnrollmentsCount = Enrollment::whereIn('course_id', $courseIds)
-            ->where('created_at', '>=', now()->subDays(7))
+        $totalLectures = DB::table('lectures')
+            ->join('course_sections', 'lectures.section_id', '=', 'course_sections.id')
+            ->join('courses', 'course_sections.course_id', '=', 'courses.id')
+            ->where('courses.instructor_id', $instructorId)
             ->count();
 
         return [
             'courses' => [
-                'total' => $coursesCount,
-                'published' => $publishedCoursesCount,
-                'draft' => $draftCoursesCount,
+                'total' => (int) ($stats->total ?? 0),
+                'published' => (int) ($stats->published ?? 0),
+                'draft' => (int) ($stats->draft ?? 0),
             ],
             'students' => [
-                'total' => $totalStudents,
-                'active' => $activeStudents,
-                'recent_enrollments' => $recentEnrollmentsCount,
+                'total' => (int) ($enrollmentStats->total_students ?? 0),
+                'active' => (int) ($enrollmentStats->active_students ?? 0),
+                'recent_enrollments' => (int) ($enrollmentStats->recent_enrollments ?? 0),
             ],
             'revenue' => [
-                'total' => (float) $totalRevenue,
+                'total' => (float) ($stats->total_revenue ?? 0),
             ],
             'content' => [
                 'total_lectures' => $totalLectures,
             ],
-            'pending_enrollments' => $pendingEnrollments,
+            'pending_enrollments' => (int) ($enrollmentStats->pending_enrollments ?? 0),
         ];
     }
 
@@ -114,30 +112,38 @@ class DashboardService
         $activeEnrollments = Enrollment::where('student_id', $studentId)
             ->where('status', 'active')->count();
 
-        // Calculate completed courses dynamically
+        // Calculate completed courses dynamically using fast joins
+        $courseLecturesCount = DB::table('lectures')
+            ->join('course_sections', 'lectures.section_id', '=', 'course_sections.id')
+            ->join('enrollments', 'course_sections.course_id', '=', 'enrollments.course_id')
+            ->where('enrollments.student_id', $studentId)
+            ->select('enrollments.course_id', DB::raw('count(lectures.id) as total_lectures'))
+            ->groupBy('enrollments.course_id')
+            ->pluck('total_lectures', 'course_id')
+            ->toArray();
+
+        $completedLecturesCount = DB::table('student_activities')
+            ->join('lectures', function ($join) {
+                if (DB::getDriverName() === 'pgsql') {
+                    $join->on(DB::raw('CAST(student_activities.entity_id AS uuid)'), '=', 'lectures.id');
+                } else {
+                    $join->on('student_activities.entity_id', '=', 'lectures.id');
+                }
+            })
+            ->join('course_sections', 'lectures.section_id', '=', 'course_sections.id')
+            ->where('student_activities.student_id', $studentId)
+            ->where('student_activities.type', 'video_completed')
+            ->where('student_activities.entity_type', \App\Models\Lecture::class)
+            ->select('course_sections.course_id', DB::raw('count(distinct lectures.id) as completed_lectures'))
+            ->groupBy('course_sections.course_id')
+            ->pluck('completed_lectures', 'course_id')
+            ->toArray();
+
         $completedCoursesCount = 0;
-        $enrollments = Enrollment::where('student_id', $studentId)->with('course.sections.lectures')->get();
-        foreach ($enrollments as $enrollment) {
-            $course = $enrollment->course;
-            if ($course) {
-                $lectureIds = [];
-                foreach ($course->sections as $section) {
-                    foreach ($section->lectures as $lecture) {
-                        $lectureIds[] = $lecture->id;
-                    }
-                }
-                
-                if (count($lectureIds) > 0) {
-                    $completedCount = \App\Models\StudentActivity::where('student_id', $studentId)
-                        ->where('type', 'video_completed')
-                        ->where('entity_type', \App\Models\Lecture::class)
-                        ->whereIn('entity_id', $lectureIds)
-                        ->count();
-                    
-                    if ($completedCount === count($lectureIds)) {
-                        $completedCoursesCount++;
-                    }
-                }
+        foreach ($courseLecturesCount as $courseId => $total) {
+            $completed = $completedLecturesCount[$courseId] ?? 0;
+            if ($total > 0 && $completed === $total) {
+                $completedCoursesCount++;
             }
         }
 

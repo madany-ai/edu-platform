@@ -47,12 +47,12 @@ class AssistantsRelationManager extends RelationManager
                     ->searchable(),
             ])
             ->headerActions([
-                \Filament\Tables\Actions\AttachAction::make()
+                \Filament\Actions\AttachAction::make()
                     ->preloadRecordSelect()
                     ->recordSelectOptionsQuery(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->role('assistant')),
             ])
             ->recordActions([
-                \Filament\Tables\Actions\DetachAction::make(),
+                \Filament\Actions\DetachAction::make(),
             ]);
     }
 }

@@ -5,6 +5,7 @@ export function useStudentDashboard() {
   return useQuery({
     queryKey: ["dashboard", "student"],
     queryFn: () => dashboardService.getStudentDashboard(),
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -12,6 +13,7 @@ export function useInstructorDashboard() {
   return useQuery({
     queryKey: ["dashboard", "instructor"],
     queryFn: () => dashboardService.getInstructorDashboard(),
+    refetchOnWindowFocus: true,
   });
 }
 

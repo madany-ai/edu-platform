@@ -8,6 +8,8 @@ use App\Http\Resources\LectureResource;
 
 class CourseResource extends JsonResource
 {
+    use \App\Traits\ResolvesMinioUrls;
+
     public function toArray(Request $request): array
     {
         return [
@@ -15,7 +17,7 @@ class CourseResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'price' => (float) $this->price,
-            'thumbnail' => $this->thumbnail ? asset('storage/' . $this->thumbnail) : null,
+            'thumbnail' => $this->resolveMinioUrl($this->thumbnail),
             'status' => $this->status,
             'instructor' => $this->whenLoaded('instructor', fn () => [
                 'id' => $this->instructor->id,
@@ -26,13 +28,21 @@ class CourseResource extends JsonResource
             'students_count' => $this->whenCounted('enrollments'),
             'sections' => $this->whenLoaded('sections', function() {
                 $progressMap = $this->resource->getAttribute('progress_map') ?? [];
-                return $this->sections->map(function ($section) use ($progressMap) {
+                $attemptsMap = $this->resource->getAttribute('attempts_map') ?? [];
+
+                $user = auth('sanctum')->user();
+                $student = $user ? \App\Models\Student::where('user_id', $user->id)->first() : null;
+
+                return $this->sections->map(function ($section) use ($progressMap, $attemptsMap, $student) {
                     return [
                         'id' => $section->id,
                         'title' => $section->title,
                         'sort_order' => $section->sort_order,
-                        'lectures' => $section->lectures->map(function ($lecture) use ($progressMap) {
-                            return (new LectureResource($lecture))->setProgressMap($progressMap);
+                        'lectures' => $section->lectures->map(function ($lecture) use ($progressMap, $attemptsMap, $student) {
+                            return (new LectureResource($lecture))
+                                ->setProgressMap($progressMap)
+                                ->setAttemptsMap($attemptsMap)
+                                ->setStudent($student);
                         }),
                     ];
                 });

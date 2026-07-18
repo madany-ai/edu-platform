@@ -14,4 +14,12 @@ enum EnrollmentSource: string
             self::Purchase => 'شراء',
         };
     }
+
+    public function color(): string
+    {
+        return match ($this) {
+            self::Manual => 'info',
+            self::Purchase => 'success',
+        };
+    }
 }

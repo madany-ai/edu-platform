@@ -56,13 +56,18 @@ class BunnyStreamService
 
         Log::info("Bunny Stream: Uploading {$fileSize} bytes to {$url}");
 
+        $fileHandle = fopen($filePath, 'r');
+        if (!$fileHandle) {
+            throw new \Exception("Failed to open local file for reading: {$filePath}");
+        }
+
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL            => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST  => 'PUT',
             CURLOPT_UPLOAD         => true,
-            CURLOPT_INFILE         => fopen($filePath, 'r'),
+            CURLOPT_INFILE         => $fileHandle,
             CURLOPT_INFILESIZE     => $fileSize,
             CURLOPT_HTTPHEADER     => [
                 "AccessKey: {$this->apiKey}",
@@ -77,6 +82,7 @@ class BunnyStreamService
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error    = curl_error($ch);
         curl_close($ch);
+        fclose($fileHandle);
 
         if ($error) {
             Log::error("Bunny Stream: cURL upload error", ['video_id' => $videoId, 'error' => $error]);
@@ -156,7 +162,8 @@ class BunnyStreamService
         $expiration = now()->addMinutes($expirationMinutes)->timestamp;
 
         if (!empty($this->signingKey)) {
-            // Bunny Embed View Token Auth: SHA256_HEX(key + videoId + expiration)
+            // Bunny Embed View Token Auth: sha256(key + videoId + expiration).
+            // Note: Bunny Stream API explicitly requires simple SHA-256 concatenation, not HMAC.
             $token = hash('sha256', $this->signingKey . $videoId . $expiration);
             return "https://iframe.mediadelivery.net/embed/{$this->libraryId}/{$videoId}?token={$token}&expires={$expiration}";
         }

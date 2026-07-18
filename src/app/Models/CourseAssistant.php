@@ -10,4 +10,9 @@ class CourseAssistant extends Pivot
     use HasUuids;
 
     protected $table = 'course_assistants';
+
+    protected $fillable = [
+        'user_id',
+        'course_id',
+    ];
 }

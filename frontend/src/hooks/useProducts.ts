@@ -54,9 +54,12 @@ export function useCreateOrder() {
     onSuccess: () => {
       // Invalidate entitlements and dashboard queries so newly purchased items are unlocked
       queryClient.invalidateQueries({ queryKey: ["enrollments", "me"] });
+      queryClient.invalidateQueries({ queryKey: ["entitlements", "me"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", "student"] });
       queryClient.invalidateQueries({ queryKey: ["course"] });
       queryClient.invalidateQueries({ queryKey: ["lecture"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["bundles"] });
     },
   });
 }

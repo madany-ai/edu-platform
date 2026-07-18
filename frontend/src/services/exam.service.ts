@@ -34,12 +34,11 @@ export interface MyAttempt {
     };
   };
 }
-
 export const examService = {
   getLectureExam: async (lectureId: string): Promise<Exam | null> => {
     try {
-      const { data } = await api.get<Exam>(`/lectures/${lectureId}/exam`);
-      return data;
+      const { data } = await api.get<{ exam: Exam; latest_attempt: ExamAttempt | null }>(`/lectures/${lectureId}/exam`);
+      return data.exam;
     } catch (error: unknown) {
       if (
         error &&

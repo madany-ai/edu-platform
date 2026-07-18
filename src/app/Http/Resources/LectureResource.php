@@ -8,10 +8,26 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class LectureResource extends JsonResource
 {
     private ?array $progressMap = null;
+    private ?array $attemptsMap = null;
+    private $student = null;
+    private bool $hasStudentBeenSet = false;
 
     public function setProgressMap(?array $map): self
     {
         $this->progressMap = $map;
+        return $this;
+    }
+
+    public function setAttemptsMap(?array $map): self
+    {
+        $this->attemptsMap = $map;
+        return $this;
+    }
+
+    public function setStudent($student): self
+    {
+        $this->student = $student;
+        $this->hasStudentBeenSet = true;
         return $this;
     }
 
@@ -49,7 +65,11 @@ class LectureResource extends JsonResource
                     // Legacy MP4 files — direct MinIO temporary URL
                     $url = \Illuminate\Support\Facades\Storage::disk('minio')
                         ->temporaryUrl($videoPath, now()->addHours(2));
-                    $videoData['stream_url'] = str_replace('http://minio:9000', 'http://localhost:9000', $url);
+                    $minioEndpoint = rtrim(config('filesystems.disks.minio.endpoint', 'http://minio:9000'), '/');
+                    $publicUrl = config('filesystems.disks.minio.url', 'http://localhost:9000/lms-videos');
+                    $parsed = parse_url($publicUrl);
+                    $publicHost = ($parsed['scheme'] ?? 'http') . '://' . ($parsed['host'] ?? 'localhost') . (isset($parsed['port']) ? ':' . $parsed['port'] : '');
+                    $videoData['stream_url'] = str_replace($minioEndpoint, $publicHost, $url);
                     $videoData['stream_type'] = 'video/mp4';
                 }
             }
@@ -57,17 +77,29 @@ class LectureResource extends JsonResource
         }
 
         $user = auth('sanctum')->user();
-        $student = $user ? \App\Models\Student::where('user_id', $user->id)->first() : null;
+        
+        if ($this->hasStudentBeenSet) {
+            $student = $this->student;
+        } else {
+            $student = $user ? \App\Models\Student::where('user_id', $user->id)->first() : null;
+        }
+        
         $accessService = app(\App\Services\VideoAccessService::class);
 
         $examsFormatted = [];
         if ($this->relationLoaded('exams')) {
             $examsFormatted = $this->exams->map(function ($exam) use ($student) {
-                $latestAttempt = $student ? \App\Models\ExamAttempt::where('exam_id', $exam->id)
-                    ->where('student_id', $student->id)
-                    ->whereNotNull('submitted_at')
-                    ->latest('submitted_at')
-                    ->first() : null;
+                if ($this->attemptsMap && array_key_exists($exam->id, $this->attemptsMap)) {
+                    $latestAttempt = $this->attemptsMap[$exam->id];
+                } else {
+                    $latestAttempt = $student ? \App\Models\ExamAttempt::where('exam_id', $exam->id)
+                        ->where('student_id', $student->id)
+                        ->whereNotNull('submitted_at')
+                        ->latest('submitted_at')
+                        ->first() : null;
+                }
+
+                $score = $latestAttempt ? (is_array($latestAttempt) ? ($latestAttempt['score'] ?? 0) : $latestAttempt->score) : 0;
 
                 return [
                     'id' => $exam->id,
@@ -77,11 +109,11 @@ class LectureResource extends JsonResource
                     'pass_percentage' => $exam->pass_percentage,
                     'duration' => $exam->duration,
                     'latest_attempt' => $latestAttempt ? [
-                        'id' => $latestAttempt->id,
-                        'score' => $latestAttempt->score,
-                        'submitted_at' => $latestAttempt->submitted_at,
+                        'id' => is_array($latestAttempt) ? ($latestAttempt['id'] ?? null) : $latestAttempt->id,
+                        'score' => $score,
+                        'submitted_at' => is_array($latestAttempt) ? ($latestAttempt['submitted_at'] ?? null) : $latestAttempt->submitted_at,
                     ] : null,
-                    'passed' => $latestAttempt ? ($latestAttempt->score >= $exam->pass_percentage) : false,
+                    'passed' => $latestAttempt ? ($score >= $exam->pass_percentage) : false,
                 ];
             });
         }
@@ -89,11 +121,17 @@ class LectureResource extends JsonResource
         $assignmentsFormatted = [];
         if ($this->relationLoaded('assignments')) {
             $assignmentsFormatted = $this->assignments->map(function ($assignment) use ($student) {
-                $latestAttempt = $student ? \App\Models\ExamAttempt::where('exam_id', $assignment->id)
-                    ->where('student_id', $student->id)
-                    ->whereNotNull('submitted_at')
-                    ->latest('submitted_at')
-                    ->first() : null;
+                if ($this->attemptsMap && array_key_exists($assignment->id, $this->attemptsMap)) {
+                    $latestAttempt = $this->attemptsMap[$assignment->id];
+                } else {
+                    $latestAttempt = $student ? \App\Models\ExamAttempt::where('exam_id', $assignment->id)
+                        ->where('student_id', $student->id)
+                        ->whereNotNull('submitted_at')
+                        ->latest('submitted_at')
+                        ->first() : null;
+                }
+
+                $score = $latestAttempt ? (is_array($latestAttempt) ? ($latestAttempt['score'] ?? 0) : $latestAttempt->score) : 0;
 
                 return [
                     'id' => $assignment->id,
@@ -103,11 +141,11 @@ class LectureResource extends JsonResource
                     'pass_percentage' => $assignment->pass_percentage,
                     'duration' => $assignment->duration,
                     'latest_attempt' => $latestAttempt ? [
-                        'id' => $latestAttempt->id,
-                        'score' => $latestAttempt->score,
-                        'submitted_at' => $latestAttempt->submitted_at,
+                        'id' => is_array($latestAttempt) ? ($latestAttempt['id'] ?? null) : $latestAttempt->id,
+                        'score' => $score,
+                        'submitted_at' => is_array($latestAttempt) ? ($latestAttempt['submitted_at'] ?? null) : $latestAttempt->submitted_at,
                     ] : null,
-                    'passed' => $latestAttempt ? ($latestAttempt->score >= $assignment->pass_percentage) : false,
+                    'passed' => $latestAttempt ? ($score >= $assignment->pass_percentage) : false,
                 ];
             });
         }

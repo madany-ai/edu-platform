@@ -7,13 +7,13 @@ export const enrollmentService = {
     return data;
   },
 
-  enroll: async (courseId: string): Promise<ApiResponse<Enrollment>> => {
-    const { data } = await api.post<ApiResponse<Enrollment>>(`/courses/${courseId}/enroll`);
+  enroll: async (courseId: string): Promise<Enrollment> => {
+    const { data } = await api.post<Enrollment>(`/courses/${courseId}/enroll`);
     return data;
   },
 
-  purchase: async (courseId: string): Promise<ApiResponse<Enrollment>> => {
-    const { data } = await api.post<ApiResponse<Enrollment>>(`/courses/${courseId}/purchase`);
+  purchase: async (courseId: string): Promise<Enrollment> => {
+    const { data } = await api.post<Enrollment>(`/courses/${courseId}/purchase`);
     return data;
   },
 };

@@ -84,7 +84,7 @@ jobs:
         run: vendor/bin/phpstan analyse --no-progress
 
       - name: Run PHPUnit (tests)
-        run: vendor/bin/phpunit
+        run: vendor/bin/pest
         env:
           DB_CONNECTION: pgsql
           DB_HOST: localhost

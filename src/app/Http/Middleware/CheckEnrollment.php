@@ -20,15 +20,16 @@ class CheckEnrollment
             return $next($request);
         }
 
-        $courseId = $lecture->section->course_id ?? null;
+        $lecture->loadMissing('section.course');
+        $course = $lecture->section->course ?? null;
 
-        if (! $courseId) {
+        if (! $course) {
             return response()->json(['message' => 'المحاضرة غير موجودة.'], 404);
         }
 
-        $course = Course::find($courseId);
+        $courseId = $course->id;
 
-        if ($course && $course->instructor_id === $user->id) {
+        if ($course->instructor_id === $user->id) {
             return $next($request);
         }
 

@@ -100,7 +100,7 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
     fetchExamData();
   }, [lectureId, examId]);
 
-  // Timer effect
+  // Timer effect: decrements timeLeft every second without recreating the interval
   useEffect(() => {
     if (!activeAttempt || timeLeft <= 0) return;
 
@@ -108,7 +108,6 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          handleSubmit(true); // Auto submit
           return 0;
         }
         return prev - 1;
@@ -116,7 +115,14 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [activeAttempt, timeLeft]);
+  }, [activeAttempt?.id]);
+
+  // Auto-submit when time runs out
+  useEffect(() => {
+    if (activeAttempt && timeLeft <= 0 && !isSubmitting && !examFinished) {
+      handleSubmit(true);
+    }
+  }, [timeLeft, activeAttempt, isSubmitting, examFinished]);
 
   const handleStart = async () => {
     if (!exam) return;
@@ -145,6 +151,7 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
   };
 
   const handleSubmit = async (isAuto = false) => {
+    if (isSubmitting) return;
     const attemptToSubmit = activeAttempt || latestAttempt;
     if (!exam || !attemptToSubmit) return;
 
@@ -177,6 +184,7 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
       // Invalidate course and lecture queries to refresh locking status and sidebar tree immediately
       queryClient.invalidateQueries({ queryKey: ["course", courseId] });
       queryClient.invalidateQueries({ queryKey: ["lecture", lectureId] });
+      queryClient.invalidateQueries({ queryKey: ["my-attempts"] });
     } catch (err: any) {
       console.error(err);
       toast.error("حدث خطأ أثناء تسليم الإجابات.");

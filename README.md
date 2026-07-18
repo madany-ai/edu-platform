@@ -162,3 +162,51 @@ frontend/src/
 │       ├── dashboard.ts                   # Dashboard API calls
 │       └── exams.ts                       # Exam API calls
 └── middleware.ts                           # Route protection (cookie-based, known bug)
+
+---
+
+## Getting Started
+
+### Local Development Setup
+
+#### Backend (Laravel)
+1. Navigate to `/src`:
+   ```bash
+   cd src
+   ```
+2. Install Composer dependencies:
+   ```bash
+   composer install
+   ```
+3. Set up environment variables (`.env`):
+   ```bash
+   cp .env.example .env
+   ```
+4. Run migrations & seeders:
+   ```bash
+   php artisan migrate --seed
+   ```
+5. Serve the API application:
+   ```bash
+   php artisan serve
+   ```
+
+#### Frontend (Next.js)
+1. Navigate to `/frontend`:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run the Next.js local server:
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## Production Deployment
+
+A complete production guide with server setup, SSL configuration, queue supervisors, Cron jobs, and cloud storage providers can be found in the [Production Deployment Guide](file:///home/madany/Projects/edu-platform/PRODUCTION_DEPLOYMENT.md).

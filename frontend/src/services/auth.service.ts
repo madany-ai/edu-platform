@@ -38,6 +38,7 @@ export interface RegisterResponse {
 
 export interface ForgotPasswordPayload {
   email: string;
+  "cf-turnstile-response"?: string;
 }
 
 export interface ResetPasswordPayload {

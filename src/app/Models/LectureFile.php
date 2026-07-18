@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LectureFile extends Model
 {
-    use HasUuids;
+    use HasUuids, \App\Traits\ResolvesMinioUrls;
+
     protected $fillable = ['lecture_id', 'type', 'file_path'];
 
     public function lecture(): BelongsTo
@@ -19,21 +20,6 @@ class LectureFile extends Model
 
     public function getFilePathAttribute($value)
     {
-        if (!$value) {
-            return null;
-        }
-
-        if (filter_var($value, FILTER_VALIDATE_URL)) {
-            return $value;
-        }
-
-        try {
-            $url = \Illuminate\Support\Facades\Storage::disk('minio')
-                ->temporaryUrl($value, now()->addHours(2));
-            return str_replace('http://minio:9000', 'http://localhost:9000', $url);
-        } catch (\Exception $e) {
-            $url = \Illuminate\Support\Facades\Storage::disk('minio')->url($value);
-            return str_replace('http://minio:9000', 'http://localhost:9000', $url);
-        }
+        return $this->resolveMinioUrl($value);
     }
 }

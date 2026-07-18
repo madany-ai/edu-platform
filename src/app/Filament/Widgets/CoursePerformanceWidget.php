@@ -39,17 +39,17 @@ class CoursePerformanceWidget extends TableWidget
                 Tables\Columns\TextColumn::make('status')
                     ->label('الحالة')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn ($state): string => match ($state instanceof \App\Enums\CourseStatus ? $state->value : $state) {
                         'draft' => 'gray',
                         'published' => 'success',
                         'archived' => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn ($state): string => match ($state instanceof \App\Enums\CourseStatus ? $state->value : $state) {
                         'draft' => 'مسودة',
                         'published' => 'منشور',
                         'archived' => 'مؤرشف',
-                        default => $state,
+                        default => (string) $state,
                     }),
 
                 Tables\Columns\TextColumn::make('enrollments_count')

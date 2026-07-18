@@ -87,11 +87,11 @@ class AuthService
             return null;
         }
 
-        if ($user->status === 'pending') {
+        if ($user->status === \App\Enums\UserStatus::Pending) {
             return 'pending';
         }
 
-        if ($user->status === 'rejected') {
+        if ($user->status === \App\Enums\UserStatus::Rejected) {
             return 'rejected';
         }
 

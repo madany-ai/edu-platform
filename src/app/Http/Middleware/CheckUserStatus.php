@@ -12,7 +12,7 @@ class CheckUserStatus
     {
         $user = $request->user();
 
-        if ($user && $user->status !== 'active') {
+        if ($user && $user->status !== \App\Enums\UserStatus::Active) {
             return response()->json([
                 'message' => 'حسابك غير نشط. يرجى التواصل مع الإدارة.',
             ], 403);

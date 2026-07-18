@@ -43,10 +43,10 @@ class RecentEnrollmentsWidget extends TableWidget
 
                 Tables\Columns\TextColumn::make('source')
                     ->label('المصدر')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn ($state): string => match ($state instanceof \App\Enums\EnrollmentSource ? $state->value : $state) {
                         'manual' => 'يدوي',
                         'purchase' => 'شراء',
-                        default => $state,
+                        default => (string) $state,
                     }),
 
                 Tables\Columns\TextColumn::make('created_at')

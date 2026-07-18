@@ -16,9 +16,12 @@ class Entitlement extends Model
         'expires_at',
     ];
 
-    protected $casts = [
-        'expires_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'expires_at' => 'datetime',
+        ];
+    }
 
     public function student(): BelongsTo
     {

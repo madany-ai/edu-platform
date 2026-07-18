@@ -63,8 +63,8 @@ it('getStudentEnrollments returns synthetic enrollment for entitlement-only stud
     $fakeEnrollment = $enrollments->first(fn($e) => str_starts_with($e->id ?? '', 'entitlement-fake-'));
     expect($fakeEnrollment)->not->toBeNull()
         ->and($fakeEnrollment->course_id)->toBe($this->course->id)
-        ->and($fakeEnrollment->status)->toBe('active')
-        ->and($fakeEnrollment->source)->toBe('purchase');
+        ->and($fakeEnrollment->status)->toBe(\App\Enums\EnrollmentStatus::Active)
+        ->and($fakeEnrollment->source)->toBe(\App\Enums\EnrollmentSource::Purchase);
 });
 
 it('getStudentEnrollments does not duplicate synthetic when real enrollment exists', function () {

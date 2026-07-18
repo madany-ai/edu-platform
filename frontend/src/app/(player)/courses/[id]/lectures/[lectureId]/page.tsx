@@ -57,8 +57,8 @@ export default function LectureViewPage() {
 
   // Open the section containing the current lecture by default
   useEffect(() => {
-    if (courseResponse?.data?.sections && lectureId) {
-      const section = courseResponse.data.sections.find(s => 
+    if (courseResponse?.sections && lectureId) {
+      const section = courseResponse.sections.find(s => 
         s.lectures?.some(l => l.id === lectureId)
       );
       if (section) {
@@ -115,9 +115,9 @@ export default function LectureViewPage() {
       </div>
     );
   }
-  if (!lecture || !courseResponse?.data) return null;
+  if (!lecture || !courseResponse) return null;
 
-  const course = courseResponse.data;
+  const course = courseResponse;
 
   // Generate sidebar items with lock states sequentially
   const processedSections = (() => {

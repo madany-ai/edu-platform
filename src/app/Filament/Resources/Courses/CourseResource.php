@@ -62,6 +62,7 @@ class CourseResource extends Resource
                     ->label('صورة مصغرة للكورس (اختياري)')
                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
                     ->maxSize(5120) // 5 MB
+                    ->disk('minio')
                     ->directory('courses/thumbnails')
                     ->columnSpanFull(),
 
@@ -121,18 +122,8 @@ class CourseResource extends Resource
                 TextColumn::make('status')
                     ->label('الحالة')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'draft' => 'gray',
-                        'published' => 'success',
-                        'archived' => 'danger',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'draft' => 'مسودة',
-                        'published' => 'منشور',
-                        'archived' => 'مؤرشف',
-                        default => $state,
-                    }),
+                    ->color(fn ($state): string => $state instanceof \App\Enums\CourseStatus ? $state->color() : 'gray')
+                    ->formatStateUsing(fn ($state): string => $state instanceof \App\Enums\CourseStatus ? $state->label() : (string) $state),
 
                 TextColumn::make('sections_count')
                     ->label('الأقسام')

@@ -184,7 +184,7 @@ class StudentResource extends Resource
                     ->password()
                     ->revealable()
                     ->minLength(8)
-                    ->dehydrated(false)
+                    ->dehydrated(fn ($state) => filled($state))
                     ->helperText(fn (?Student $record) => $record !== null ? 'اتركه فارغاً إذا كنت لا تريد تغيير كلمة المرور.' : 'إذا تركته فارغاً، ستكون كلمة المرور هي كود الطالب.')
                     ->extraInputAttributes(['autocomplete' => 'new-password']),
 
@@ -216,17 +216,17 @@ class StudentResource extends Resource
                 TextColumn::make('user.status')
                     ->label('الحالة')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn ($state): string => match ($state instanceof \App\Enums\UserStatus ? $state->value : $state) {
                         'pending' => 'warning',
                         'active' => 'success',
                         'rejected' => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn ($state): string => match ($state instanceof \App\Enums\UserStatus ? $state->value : $state) {
                         'pending' => 'قيد المراجعة',
                         'active' => 'نشط',
                         'rejected' => 'مرفوض',
-                        default => $state,
+                        default => (string) $state,
                     }),
                 TextColumn::make('created_at')
                     ->label('تاريخ التسجيل')
@@ -294,7 +294,7 @@ class StudentResource extends Resource
                             ->success()
                             ->send();
                     })
-                    ->visible(fn (Student $record): bool => $record->user->status === 'pending'),
+                    ->visible(fn (Student $record): bool => $record->user->status?->value === 'pending'),
                 Action::make('reject')
                     ->label('رفض')
                     ->icon('heroicon-o-x-circle')
@@ -318,8 +318,62 @@ class StudentResource extends Resource
                             ->danger()
                             ->send();
                     })
-                    ->visible(fn (Student $record): bool => $record->user->status === 'pending'),
+                    ->visible(fn (Student $record): bool => $record->user->status?->value === 'pending'),
 
+                Action::make('grantAccess')
+                    ->label('منح صلاحية')
+                    ->icon('heroicon-o-key')
+                    ->color('success')
+                    ->form([
+                        Select::make('course_id')
+                            ->label('الدورة التدريبية')
+                            ->options(function () {
+                                $user = auth()->user();
+                                $query = \App\Models\Course::query();
+                                if ($user->hasRole('instructor')) {
+                                    $query->where('instructor_id', $user->id);
+                                } elseif ($user->hasRole('assistant')) {
+                                    $query->whereHas('assistants', fn ($q) => $q->where('user_id', $user->id));
+                                }
+                                return $query->pluck('title', 'id')->toArray();
+                            })
+                            ->live()
+                            ->required(),
+
+                        Select::make('lecture_id')
+                            ->label('المحاضرة')
+                            ->options(function (callable $get) {
+                                $courseId = $get('course_id');
+                                if (!$courseId) {
+                                    return [];
+                                }
+                                return \App\Models\Lecture::whereHas('section', fn ($q) => $q->where('course_id', $courseId))
+                                    ->pluck('title', 'id')
+                                    ->toArray();
+                            })
+                            ->required()
+                            ->searchable(),
+
+                        DatePicker::make('expires_at')
+                            ->label('تاريخ الانتهاء (اختياري)')
+                            ->helperText('اتركه فارغاً للحصول على صلاحية دائمة.'),
+                    ])
+                    ->action(function (Student $record, array $data): void {
+                        \App\Models\Entitlement::updateOrCreate(
+                            [
+                                'student_id' => $record->id,
+                                'lecture_id' => $data['lecture_id'],
+                            ],
+                            [
+                                'expires_at' => $data['expires_at'] ?? null,
+                            ]
+                        );
+
+                        Notification::make()
+                            ->title('تم منح الصلاحية المحددة بنجاح')
+                            ->success()
+                            ->send();
+                    }),
 
                 Action::make('revokeAccess')
                     ->label('إلغاء الصلاحيات')
