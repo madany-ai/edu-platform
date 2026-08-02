@@ -49,15 +49,40 @@ class OrderController extends Controller
             ], 404);
         }
 
+        if ($purchasable instanceof Product && !$purchasable->is_active) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'هذا المنتج غير متاح حالياً.'
+            ], 400);
+        }
+
+        // Idempotency / Duplicate pending order check
+        $idempotencyKey = $request->header('X-Idempotency-Key') ?? 'IDEMP-' . md5($student->id . '-' . $purchasableClass . '-' . $id);
+        
+        $existingOrder = Order::where('student_id', $student->id)
+            ->where('purchasable_type', $purchasableClass)
+            ->where('purchasable_id', $id)
+            ->where('status', \App\Enums\OrderStatus::Pending->value)
+            ->first();
+
+        if ($existingOrder) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'يوجد طلب شراء معلق بالفعل لهذا المحتوى.',
+                'data' => $existingOrder,
+            ], 200);
+        }
+
         $order = Order::create([
             'student_id' => $student->id,
             'purchasable_id' => $purchasable->id,
             'purchasable_type' => $purchasableClass,
-            'amount_cents' => intval($purchasable->price * 100),
+            'amount_cents' => (int) round((float) $purchasable->price * 100),
             'currency' => 'EGP',
             'payment_method' => 'manual',
             'transaction_id' => 'PENDING-' . strtoupper((string) \Illuminate\Support\Str::uuid()),
-            'status' => 'pending',
+            'status' => \App\Enums\OrderStatus::Pending->value,
+            'idempotency_key' => $idempotencyKey,
         ]);
 
         return response()->json([

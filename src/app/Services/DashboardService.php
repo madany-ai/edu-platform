@@ -19,8 +19,7 @@ class DashboardService
             ->selectRaw("
                 COUNT(*) as total,
                 SUM(CASE WHEN status = 'published' THEN 1 ELSE 0 END) as published,
-                SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) as draft,
-                SUM(price) as total_revenue
+                SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) as draft
             ")
             ->first();
 
@@ -32,6 +31,19 @@ class DashboardService
                 SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as recent_enrollments
             ", [now()->subDays(7)])
             ->first();
+
+        $ordersRevenueCents = DB::table('orders')
+            ->where('status', \App\Enums\OrderStatus::Completed->value)
+            ->where(function ($query) use ($instructorId) {
+                $query->where(function ($q1) use ($instructorId) {
+                    $q1->where('purchasable_type', \App\Models\Product::class)
+                       ->whereIn('purchasable_id', \App\Models\Product::where('instructor_id', $instructorId)->pluck('id'));
+                })->orWhere(function ($q2) use ($instructorId) {
+                    $q2->where('purchasable_type', \App\Models\Bundle::class)
+                       ->whereIn('purchasable_id', \App\Models\Bundle::where('instructor_id', $instructorId)->pluck('id'));
+                });
+            })
+            ->sum('amount_cents');
 
         $totalLectures = DB::table('lectures')
             ->join('course_sections', 'lectures.section_id', '=', 'course_sections.id')
@@ -51,7 +63,7 @@ class DashboardService
                 'recent_enrollments' => (int) ($enrollmentStats->recent_enrollments ?? 0),
             ],
             'revenue' => [
-                'total' => (float) ($stats->total_revenue ?? 0),
+                'total' => round((float) ($ordersRevenueCents / 100), 2),
             ],
             'content' => [
                 'total_lectures' => $totalLectures,

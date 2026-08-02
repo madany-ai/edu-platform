@@ -76,6 +76,10 @@ class VideoAccessService
             $this->enrollmentsCache[$cacheKey] = \App\Models\Enrollment::where('student_id', $student->id)
                 ->where('course_id', $courseId)
                 ->where('status', 'active')
+                ->where(function ($q) {
+                    $q->whereNull('expires_at')
+                      ->orWhere('expires_at', '>', now());
+                })
                 ->exists();
         }
         return $this->enrollmentsCache[$cacheKey];

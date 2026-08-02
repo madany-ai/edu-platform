@@ -198,7 +198,7 @@ it('product purchase creates correct order fields', function () {
     $order = Order::where('student_id', $this->student->id)->first();
     expect($order->amount_cents)->toBe(2550);
     expect($order->currency)->toBe('EGP');
-    expect($order->status)->toBe('pending');
+    expect($order->status->value)->toBe('pending');
     expect($order->paid_at)->toBeNull();
     expect($order->transaction_id)->toStartWith('PENDING-');
     expect($order->payment_method)->toBe('manual');
@@ -206,7 +206,7 @@ it('product purchase creates correct order fields', function () {
 
 it('instructor cannot enroll in own course via student endpoints', function () {
     $this->actingAs($this->instructor)->postJson("/api/courses/{$this->course->id}/enroll")
-        ->assertStatus(404); // firstOrFail fails since instructor has no student record
+        ->assertStatus(403);
 });
 
 it('course price zero check for free course enrollment path', function () {

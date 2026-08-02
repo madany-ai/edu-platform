@@ -34,6 +34,15 @@ class CourseController extends Controller
 
     public function show(Course $course): CourseResource
     {
+        $user = auth('sanctum')->user();
+        $isPublished = $course->status === \App\Enums\CourseStatus::Published || $course->status === 'published';
+
+        if (! $isPublished) {
+            if (! $user || (! $user->hasRole('super_admin') && $user->id !== $course->instructor_id)) {
+                abort(404, 'الدورة غير موجودة أو غير منشورة.');
+            }
+        }
+
         $course->load(['instructor', 'sections.lectures.video', 'sections.lectures.exams', 'sections.lectures.assignments'])
             ->loadCount(['sections', 'enrollments']);
 

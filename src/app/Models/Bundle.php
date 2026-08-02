@@ -16,6 +16,13 @@ class Bundle extends Model
         'price',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'price' => 'decimal:2',
+        ];
+    }
+
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'bundle_products');

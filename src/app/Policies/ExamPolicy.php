@@ -37,7 +37,7 @@ class ExamPolicy
     public function update(User $user, Exam $exam): bool
     {
         if ($exam->lecture === null) {
-            return $user->hasRole('instructor');
+            return false;
         }
         return $user->hasRole('instructor') && $user->id === $exam->lecture->section?->course?->instructor_id;
     }
@@ -45,7 +45,7 @@ class ExamPolicy
     public function delete(User $user, Exam $exam): bool
     {
         if ($exam->lecture === null) {
-            return $user->hasRole('instructor');
+            return false;
         }
         return $user->hasRole('instructor') && $user->id === $exam->lecture->section?->course?->instructor_id;
     }

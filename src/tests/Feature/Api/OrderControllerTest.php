@@ -114,7 +114,7 @@ it('order store does not set paid_at on creation', function () {
     $order = Order::where('student_id', $this->student->id)->first();
 
     expect($order->paid_at)->toBeNull()
-        ->and($order->status)->toBe('pending');
+        ->and($order->status->value)->toBe('pending');
 });
 
 it('order store does not grant entitlements for bundle', function () {
@@ -216,7 +216,7 @@ it('confirming pending order grants entitlements', function () {
     ])->assertStatus(201);
 
     $order = Order::where('student_id', $this->student->id)->first();
-    expect($order->status)->toBe('pending');
+    expect($order->status->value)->toBe('pending');
 
     $order->update([
         'status' => 'completed',
@@ -232,6 +232,6 @@ it('confirming pending order grants entitlements', function () {
     ]);
 
     $order->refresh();
-    expect($order->status)->toBe('completed')
+    expect($order->status->value)->toBe('completed')
         ->and($order->paid_at)->not->toBeNull();
 });

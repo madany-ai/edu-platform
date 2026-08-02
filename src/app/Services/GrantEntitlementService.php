@@ -38,6 +38,11 @@ class GrantEntitlementService
     protected function grantForProduct(Product $product, Order $order): void
     {
         $lectureIds = $product->resolveLectureIds();
+        if (empty($lectureIds)) {
+            Log::warning("GrantEntitlementService: Product {$product->id} has no lectures resolved for Order {$order->id}");
+            throw new \RuntimeException("فشل تفعيل المحتوى: لا يوجد دروس مرتبطة بهذا المنتج حالياً.");
+        }
+
         $expiresAt = $product->access_duration_days
             ? now()->addDays($product->access_duration_days)
             : null;

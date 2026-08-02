@@ -130,7 +130,7 @@ it('creates pending order via API, entitlements require confirmation', function 
         ->assertJson(['status' => 'success']);
 
     $order = Order::where('student_id', $this->student->id)->first();
-    expect($order->status)->toBe('pending');
+    expect($order->status->value)->toBe('pending');
 
     $this->assertDatabaseMissing('entitlements', [
         'student_id' => $this->student->id,
@@ -183,7 +183,7 @@ it('creates pending order for bundle, entitlements require confirmation', functi
     ])->assertStatus(201);
 
     $order = Order::where('student_id', $this->student->id)->first();
-    expect($order->status)->toBe('pending');
+    expect($order->status->value)->toBe('pending');
 
     $this->assertDatabaseMissing('entitlements', [
         'student_id' => $this->student->id,

@@ -23,9 +23,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Database\Factories\StudentFactory;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class Student extends Model
 {
-    use HasUuids;
+    use HasUuids, SoftDeletes;
     /** @use HasFactory<\Database\Factories\StudentFactory> */
     use HasFactory;
 
@@ -118,5 +120,10 @@ class Student extends Model
     public function entitlements(): HasMany
     {
         return $this->hasMany(Entitlement::class, 'student_id');
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'student_id');
     }
 }

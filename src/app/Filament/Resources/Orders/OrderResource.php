@@ -108,17 +108,38 @@ class OrderResource extends Resource
                     ->modalSubmitActionLabel('نعم، تأكيد')
                     ->visible(fn (Order $record): bool => ($record->status instanceof \App\Enums\OrderStatus ? $record->status->value : $record->status) === 'pending')
                     ->action(function (Order $record): void {
-                        $record->update([
-                            'status' => 'completed',
-                            'paid_at' => now(),
-                            'payment_method' => 'manual',
-                        ]);
+                        \Illuminate\Support\Facades\DB::transaction(function () use ($record) {
+                            app(GrantEntitlementService::class)->handle($record);
 
-                        app(GrantEntitlementService::class)->handle($record);
+                            $record->update([
+                                'status' => 'completed',
+                                'paid_at' => now(),
+                                'payment_method' => 'manual',
+                            ]);
+                        });
 
                         Notification::make()
                             ->title('تم تأكيد الدفع')
                             ->body("تم تفعيل طلب بنجاح.")
+                            ->success()
+                            ->send();
+                    }),
+
+                Action::make('refund')
+                    ->label('استرداد')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('تأكيد استرداد الطلب')
+                    ->modalDescription('هل أنت متأكد من استرداد هذا الطلب؟ سيتم إلغاء صلاحية الوصول فوراً.')
+                    ->modalSubmitActionLabel('نعم، استرداد')
+                    ->visible(fn (Order $record): bool => ($record->status instanceof \App\Enums\OrderStatus ? $record->status->value : $record->status) === 'completed')
+                    ->action(function (Order $record): void {
+                        app(\App\Services\RefundService::class)->refundOrder($record);
+
+                        Notification::make()
+                            ->title('تم استرداد الطلب')
+                            ->body('تم إلغاء صلاحيات الوصول للطلب بنجاح.')
                             ->success()
                             ->send();
                     }),

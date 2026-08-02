@@ -1,6 +1,9 @@
 src/storage
 src/vendor
-frontend/node_modules
+src/.env
+src/.env.*
+frontend/.env.local
+*.env*
 .git
 .idea
 .vscode

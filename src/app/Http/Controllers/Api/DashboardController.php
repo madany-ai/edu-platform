@@ -72,16 +72,16 @@ class DashboardController extends Controller
         return response()->json($notifications);
     }
 
-    public function instructorStudents(): JsonResponse
+    public function instructorStudents(): AnonymousResourceCollection
     {
         $userId = request()->user()->id;
         $courseIds = \App\Models\Course::where('instructor_id', $userId)->pluck('id');
 
         $students = Student::whereHas('enrollments', function ($q) use ($courseIds) {
             $q->whereIn('course_id', $courseIds);
-        })->with('user')->get();
+        })->with('user')->paginate(20);
 
-        return response()->json($students);
+        return \App\Http\Resources\InstructorStudentResource::collection($students);
     }
 
     public function student(): JsonResponse

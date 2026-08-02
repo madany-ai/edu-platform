@@ -188,8 +188,10 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
         backBufferLength: 90,
         maxBufferLength: 30,
         startLevel: -1, // auto quality
-        xhrSetup: (xhr: XMLHttpRequest, _url: string) => {
-          if (authToken) {
+        xhrSetup: (xhr: XMLHttpRequest, url: string) => {
+          const apiHost = process.env.NEXT_PUBLIC_API_URL || "";
+          const isLocalApi = url.startsWith("/") || (apiHost && url.startsWith(apiHost));
+          if (authToken && isLocalApi) {
             xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
           }
         },

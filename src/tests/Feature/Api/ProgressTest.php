@@ -42,7 +42,7 @@ beforeEach(function () {
     $this->lecture = $this->section->lectures()->create([
         'title' => 'L1',
         'description' => 'Content',
-        'duration' => 30,
+        'duration' => 300,
         'sort_order' => 1,
     ]);
 
@@ -73,7 +73,7 @@ it('progress is idempotent via updateOrCreate', function () {
     ]);
 
     $this->actingAs($this->studentUser)->postJson("/api/lectures/{$this->lecture->id}/progress", [
-        'current_time' => 120,
+        'current_time' => 300,
         'is_completed' => true,
     ]);
 
@@ -87,7 +87,7 @@ it('progress is idempotent via updateOrCreate', function () {
         ->where('type', 'video_progress')
         ->where('entity_id', $this->lecture->id)
         ->first();
-    expect($activity->metadata['current_time'])->toBe(120);
+    expect($activity->metadata['current_time'])->toBe(300);
     expect($activity->metadata['is_completed'])->toBeTrue();
 });
 
@@ -114,7 +114,7 @@ it('completion updates student_statistics', function () {
     $stats = StudentStatistic::where('student_id', $this->student->id)->first();
     expect($stats)->not->toBeNull();
     expect($stats->completed_lectures)->toBe(1);
-    expect((int) $stats->total_watch_minutes)->toBe(30);
+    expect((int) $stats->total_watch_minutes)->toBe(300);
 });
 
 it('idempotent completion does not double count', function () {

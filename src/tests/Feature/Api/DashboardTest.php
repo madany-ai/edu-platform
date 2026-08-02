@@ -184,7 +184,7 @@ it('returns instructor students', function () {
     $response = $this->actingAs($this->instructor)->getJson('/api/instructor/students');
 
     $response->assertOk()
-        ->assertJsonCount(1);
+        ->assertJsonStructure(['data', 'links', 'meta']);
 });
 
 it('prevents student from accessing instructor students endpoint', function () {

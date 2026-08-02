@@ -52,7 +52,7 @@ beforeEach(function () {
     ]);
 });
 
-it('double click purchase creates two pending orders', function () {
+it('double click purchase deduplicates into one pending order', function () {
     $response1 = $this->actingAs($this->studentUser)->postJson('/api/orders', [
         'purchasable_id' => $this->product->id,
         'purchasable_type' => 'product',
@@ -67,9 +67,9 @@ it('double click purchase creates two pending orders', function () {
         ->where('purchasable_id', $this->product->id)
         ->count();
 
-    expect($orderCount)->toBe(2)
+    expect($orderCount)->toBe(1)
         ->and($response1->status())->toBe(201)
-        ->and($response2->status())->toBe(201);
+        ->and($response2->status())->toBe(200);
 
     $this->assertDatabaseMissing('entitlements', [
         'student_id' => $this->student->id,
@@ -160,10 +160,10 @@ it('different products create separate pending orders', function () {
     $orders = Order::where('student_id', $this->student->id)->get();
 
     expect($orders)->toHaveCount(2)
-        ->and($orders->every(fn ($o) => $o->status === 'pending'))->toBeTrue();
+        ->and($orders->every(fn ($o) => ($o->status instanceof \App\Enums\OrderStatus ? $o->status->value : $o->status) === 'pending'))->toBeTrue();
 });
 
-it('bundle double purchase creates double pending orders', function () {
+it('bundle double purchase returns existing pending order without duplicates', function () {
     $bundle = Bundle::create([
         'instructor_id' => $this->instructor->id,
         'name' => 'Test Bundle',
@@ -186,7 +186,7 @@ it('bundle double purchase creates double pending orders', function () {
         ->where('purchasable_id', $bundle->id)
         ->count();
 
-    expect($orderCount)->toBe(2);
+    expect($orderCount)->toBe(1);
 
     $this->assertDatabaseMissing('entitlements', [
         'student_id' => $this->student->id,
@@ -194,26 +194,22 @@ it('bundle double purchase creates double pending orders', function () {
     ]);
 });
 
-it('each order gets unique transaction_id', function () {
-    $this->actingAs($this->studentUser)->postJson('/api/orders', [
+it('order status enum casting works as expected', function () {
+    $order = Order::create([
+        'student_id' => $this->student->id,
         'purchasable_id' => $this->product->id,
-        'purchasable_type' => 'product',
+        'purchasable_type' => Product::class,
+        'amount_cents' => 1000,
+        'currency' => 'EGP',
+        'payment_method' => 'manual',
+        'transaction_id' => 'TX-TEST-ENUM',
+        'status' => 'pending',
     ]);
 
-    $this->actingAs($this->studentUser)->postJson('/api/orders', [
-        'purchasable_id' => $this->product->id,
-        'purchasable_type' => 'product',
-    ]);
-
-    $transactions = Order::where('student_id', $this->student->id)
-        ->pluck('transaction_id')
-        ->toArray();
-
-    expect(count($transactions))->toBe(2)
-        ->and($transactions[0])->not->toBe($transactions[1]);
+    expect($order->fresh()->status)->toBe(\App\Enums\OrderStatus::Pending);
 });
 
-it('concurrent-like rapid purchases still create separate pending orders', function () {
+it('concurrent-like rapid purchases deduplicate into single pending order', function () {
     $responses = [];
     for ($i = 0; $i < 3; $i++) {
         $responses[] = $this->actingAs($this->studentUser)->postJson('/api/orders', [
@@ -224,9 +220,8 @@ it('concurrent-like rapid purchases still create separate pending orders', funct
 
     $orderCount = Order::where('student_id', $this->student->id)->count();
 
-    expect($orderCount)->toBe(3);
-
-    foreach ($responses as $response) {
-        $response->assertStatus(201);
-    }
+    expect($orderCount)->toBe(1);
+    expect($responses[0]->status())->toBe(201);
+    expect($responses[1]->status())->toBe(200);
+    expect($responses[2]->status())->toBe(200);
 });

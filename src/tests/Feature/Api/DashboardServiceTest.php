@@ -131,6 +131,27 @@ it('getInstructorStats returns correct draft count', function () {
 });
 
 it('getInstructorStats returns correct revenue', function () {
+    $product = \App\Models\Product::create([
+        'instructor_id' => $this->instructor->id,
+        'name' => 'Course Product',
+        'sellable_id' => $this->course->id,
+        'sellable_type' => Course::class,
+        'price' => 200.00,
+        'is_active' => true,
+    ]);
+
+    \App\Models\Order::create([
+        'student_id' => $this->student->id,
+        'purchasable_id' => $product->id,
+        'purchasable_type' => \App\Models\Product::class,
+        'amount_cents' => 20000,
+        'currency' => 'EGP',
+        'payment_method' => 'manual',
+        'transaction_id' => 'TX-REV-TEST',
+        'status' => 'completed',
+        'paid_at' => now(),
+    ]);
+
     $stats = $this->service->getInstructorStats($this->instructor->id);
 
     expect($stats['revenue']['total'])->toBe(200.0);

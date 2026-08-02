@@ -133,13 +133,33 @@ class ExamService
 
     public function startAttempt(Exam $exam, Student $student): ExamAttempt
     {
+        // Enforce maximum 3 attempts per exam for a student
+        $completedAttemptsCount = ExamAttempt::where('exam_id', $exam->id)
+            ->where('student_id', $student->id)
+            ->whereNotNull('submitted_at')
+            ->count();
+
+        $maxAttempts = $exam->max_attempts ?? 3;
+        if ($completedAttemptsCount >= $maxAttempts) {
+            abort(403, "لقد استنفدت الحد الأقصى للمحاولات المتاحة لهذا الاختبار ({$maxAttempts} محاولات).");
+        }
+
         $existingAttempt = ExamAttempt::where('exam_id', $exam->id)
             ->where('student_id', $student->id)
             ->whereNull('submitted_at')
             ->first();
 
         if ($existingAttempt) {
-            return $existingAttempt;
+            // Check if duration expired on the unsubmitted attempt
+            if ($exam->duration && $existingAttempt->started_at->addMinutes($exam->duration + 5)->isPast()) {
+                // Auto-submit empty attempt as timed out
+                $existingAttempt->update([
+                    'score' => 0,
+                    'submitted_at' => $existingAttempt->started_at->addMinutes($exam->duration),
+                ]);
+            } else {
+                return $existingAttempt;
+            }
         }
 
         return ExamAttempt::create([
@@ -152,6 +172,13 @@ class ExamService
     public function submitAttempt(ExamAttempt $attempt, array $answers): ExamAttempt
     {
         return DB::transaction(function () use ($attempt, $answers) {
+            $exam = $attempt->exam;
+
+            // Enforce time limit if set
+            if ($exam->duration && $attempt->started_at->addMinutes($exam->duration + 5)->isPast()) {
+                abort(422, 'تم تجاوز الوقت المحدد للاختبار.');
+            }
+
             foreach ($answers as $answerData) {
                 Answer::create([
                     'attempt_id' => $attempt->id,
@@ -173,17 +200,23 @@ class ExamService
 
     public function gradeAttempt(ExamAttempt $attempt): float
     {
-        $attempt->load('answers.question');
+        $attempt->load(['exam.questions', 'answers']);
 
-        $totalPoints = 0;
+        $totalPoints = $attempt->exam->questions->sum('degree');
+        if ($totalPoints == 0) {
+            return 0;
+        }
+
         $earnedPoints = 0;
 
         foreach ($attempt->answers as $answer) {
-            $question = $answer->question;
-            $totalPoints += $question->degree;
+            $question = $attempt->exam->questions->firstWhere('id', $answer->question_id);
+            if (! $question) {
+                continue;
+            }
 
             if ($question->type === 'essay') {
-                // Essay questions require manual grading; by default they award 0 points until graded.
+                // Essay questions require manual grading
             } else {
                 $correctChoice = Choice::where('question_id', $question->id)
                     ->where('is_correct', true)
@@ -193,10 +226,6 @@ class ExamService
                     $earnedPoints += $question->degree;
                 }
             }
-        }
-
-        if ($totalPoints == 0) {
-            return 0;
         }
 
         return round(($earnedPoints / $totalPoints) * 100, 2);

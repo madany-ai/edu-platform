@@ -3,7 +3,7 @@
 **Date:** July 2026
 **Owner:** Solo Developer (Product Vendor, building with AI coding agent assistance)
 **Platform Type:** White-Label, Single-Tenant, Instructor-Hosted Educational Platform (sold per instructor)
-**Current Status:** Full-Stack MVP — 407 automated tests passing (893 assertions), full API + Filament admin + Next.js 16 frontend
+**Current Status:** Full-Stack MVP — 437 automated tests passing (407 backend + 30 frontend), full API + Filament admin + Next.js 16 frontend with Vitest + React Testing Library
 
 ---
 
@@ -280,6 +280,19 @@ A complete Arabic RTL student-facing web application:
 - **Theme provider** — Light/dark mode support
 - **Responsive design** — Mobile-first layout with sidebar navigation
 
+**Frontend Testing (Vitest + React Testing Library):**
+| Test File | Tests | Coverage |
+|---|---|---|
+| `enrollment.service.test.ts` | 3 | Service API calls, response shapes |
+| `course.service.test.ts` | 4 | API calls, data unwrapping, params |
+| `dashboard.service.test.ts` | 4 | API calls, typed responses |
+| `auth-guard.test.tsx` | 5 | Loading, auth, guest guards |
+| `useQA.test.tsx` | 3 | Query fetching, mutations, invalidation |
+| `useEnrollment.test.tsx` | 3 | Query fetching, mutations |
+| `useDashboard.test.tsx` | 2 | Query fetching, typed responses |
+| `quiz-tab.test.tsx` | 4 | Loading, error, exam display, start |
+| **Total** | **30 tests** | Services, hooks, components |
+
 #### 3.2.13 Real-time Features (Polling-Based)
 - **Q&A polling:** 15-second `refetchInterval` on lecture questions, dashboard questions.
 - **Toast notifications:** `useQAReplyTracker` hook tracks reply count changes via `useRef`, displays Sonner toasts when new replies arrive.
@@ -300,6 +313,8 @@ A complete Arabic RTL student-facing web application:
 
 ### 3.3 Test Suite Summary
 
+#### Backend Tests (407 tests — Pest PHP)
+
 | Category | Test Files | Tests | Assertions |
 |---|---|---|---|
 | Authentication | 2 | 28 | ~70 |
@@ -314,15 +329,46 @@ A complete Arabic RTL student-facing web application:
 | Notifications | 1 | 9 | ~20 |
 | Edge Cases & Misc | 2 | 13 | ~30 |
 | Background Jobs | 1 | 5 | ~10 |
-| **Total** | **38 files** | **407 tests** | **893 assertions** |
+| **Total (Backend)** | **38 files** | **407 tests** | **893 assertions** |
+
+#### Frontend Tests (30 tests — Vitest + React Testing Library)
+
+| Category | Test Files | Tests | Coverage |
+|---|---|---|---|
+| **Services** | 3 | 11 | enrollment, course, dashboard API calls |
+| **Hooks** | 3 | 8 | useQA, useEnrollment, useDashboard |
+| **Components** | 2 | 11 | AuthGuard, QuizTab |
+| **Total (Frontend)** | **8 files** | **30 tests** | — |
+
+#### Combined Total
+
+| Suite | Tests | Framework |
+|---|---|---|
+| Backend | 407 | Pest PHP v4 |
+| Frontend | 30 | Vitest + @testing-library/react |
+| **Grand Total** | **437 tests** | — |
 
 **Testing approach:**
-- Framework: **Pest PHP v4** (expressive, closure-based syntax)
-- Database: **SQLite in-memory** (fast, isolated per test)
-- Queue: **Sync** (jobs execute immediately in tests)
-- Cache: **Array driver**
-- Mail: **Array driver**
-- Key patterns: `RefreshDatabase` trait, `beforeEach` setup, role seeding via `Role::findOrCreate()`, `actingAs()` for auth, `Queue::fake()` for job assertions.
+- **Backend Framework:** Pest PHP v4 (expressive, closure-based syntax)
+- **Frontend Framework:** Vitest + @testing-library/react + @testing-library/jest-dom + user-event
+- **Backend Database:** SQLite in-memory (fast, isolated per test)
+- **Frontend Environment:** jsdom (browser API simulation)
+- **Queue:** Sync (jobs execute immediately in tests)
+- **Cache:** Array driver
+- **Mail:** Array driver
+- **Key patterns:** RefreshDatabase trait, beforeEach setup, role seeding via Role::findOrCreate(), actingAs() for auth, Queue::fake() for job assertions, vi.mock() for module mocking, QueryClientProvider wrapper for React Query hooks.
+
+**Running tests:**
+```bash
+# Backend (from src/)
+php artisan test
+# or
+vendor/bin/pest
+
+# Frontend (from frontend/)
+npm run test          # Single run
+npm run test:watch    # Watch mode
+```
 
 ---
 
@@ -441,6 +487,7 @@ edu-platform/
 └── frontend/                           ← Next.js 16 student-facing SPA
     ├── package.json                    ← Dependencies (Next.js 16, React 19, shadcn/ui)
     ├── tsconfig.json                   ← TypeScript configuration
+    ├── vitest.config.ts                ← Vitest test configuration
     ├── next.config.ts                  ← Next.js config (API proxy, env vars)
     └── src/
         ├── app/                        ← App Router (4 route groups)
@@ -457,7 +504,10 @@ edu-platform/
         ├── types/                      ← 8 TypeScript type definitions
         ├── providers/                  ← Theme, Query, Root providers
         ├── lib/                        ← Utilities, constants, cn()
-        └── config/                     ← Environment config
+        ├── config/                     ← Environment config
+        └── test/                       ← Frontend test setup (Vitest)
+            ├── setup.ts                ← Test environment configuration
+            └── __tests__/              ← 8 test files (30 tests)
 ```
 
 ---
@@ -551,23 +601,30 @@ Each instance is fully isolated — different database, different payment gatewa
 - **Role seeding** in `Pest.php` `beforeEach` ensures consistent role availability across all tests.
 - **Documenting gaps as tests** (e.g., `NotificationGapsTest`, `PurchaseIdempotencyTest`) serves as regression guards when features are eventually implemented.
 
-### 11.7 MinIO Signed URL Pitfalls
+### 11.7 Frontend Testing & Code Quality
+- **Vitest + React Testing Library** is the modern standard for Next.js testing. Vitest is faster than Jest and has native ESM/TypeScript support.
+- **Service layer tests** are high-value, low-effort — they verify API contract compliance without mocking HTTP.
+- **Hook tests** require a `QueryClientProvider` wrapper — create a `createWrapper()` helper that returns a fresh QueryClient per test to avoid state leakage.
+- **Component tests** benefit from mocking heavy dependencies (navigation, React Query) at the module level with `vi.mock()`.
+- **Code audit pattern:** Systematic categorization (API Integration, State Management, Routing, Cache) with severity levels helps prioritize fixes. Many "critical" issues turn out to be already fixed — always verify before rewriting.
+
+### 11.8 MinIO Signed URL Pitfalls
 - **Hostname mismatch breaks signatures:** MinIO generates signed URLs with the internal hostname (`minio:9000`), but rewriting to `localhost:9000` invalidates the signature. Solution: proxy file downloads through a backend route that streams from MinIO internally.
 - **`$file->file_path` goes through the model accessor:** The `LectureFile` model's `getFilePathAttribute` accessor returns a full MinIO temporary URL, not the raw storage path. Accessing `$file->getOriginal('file_path')` or `$file->getAttributes()['file_path']` bypasses the accessor.
 - **`response()->stream()` for file proxying:** Use `Storage::disk('minio')->readStream()` + `response()->stream()` for memory-efficient file proxying. Set `Content-Disposition: attachment` for downloads.
 - **Frontend blob download:** Use `api.get(url, { responseType: "blob" })` with `URL.createObjectURL()` for authenticated file downloads. Axios interceptors automatically include the Bearer token.
 
-### 11.8 Entitlement-Based Access Routing
+### 11.9 Entitlement-Based Access Routing
 - **Fake enrollment detection:** `EnrollmentService::getStudentEnrollments()` creates synthetic enrollment records (`id = 'entitlement-fake-{courseId}'`) for students with entitlement-only access. Frontend must detect these via `String(id).startsWith("entitlement-fake-")` to avoid routing errors.
 - **Per-lecture independent access:** Lectures should be independently accessible, not cascading. Sequential blocking should only propagate from blocking exams, not from access denial. Using `isBlockedByPreviousExam` instead of `!has_access` prevents the entire sidebar from locking.
 - **Mandatory exam-first UX:** When a lecture has a blocking exam not yet passed, show the exam tab automatically on initial load. The "متابعة المحاضرة" (Continue Lesson) button in the exam tab returns to the video after passing.
 
-### 11.9 Next.js 16 + React Query Patterns
+### 11.10 Next.js 16 + React Query Patterns
 - **App Router layouts for route groups:** Using `(main)`, `(auth)`, `(player)`, `(dashboard)` route groups allows different layouts (sidebar vs. no sidebar) without duplicate page components.
 - **React Query polling over WebSocket:** For a single-tenant platform with moderate user counts, 15-second polling with `refetchInterval` is simpler and more reliable than WebSocket infrastructure. Pair with `useRef` tracking + toast notifications for new data detection.
 - **Filament `poll()` method:** Filament v5.6.8 uses `$table->poll('15s')` (not `polling()`). This is a breaking change from v4.
 - **`course_assistants` pivot:** Uses `user_id` column (not `assistant_id`). Always verify pivot table schema before writing relationship queries.
 
-### 11.10 Laravel 13 Response Methods
+### 11.11 Laravel 13 Response Methods
 - **`response()->redirect()` removed:** In Laravel 13, `ResponseFactory::redirect()` no longer exists. Use `redirect()->away()` or `return redirect($url)` instead.
 - **Route parameter binding:** When a route has `lectures/{lecture}/files/{file}`, ensure the `{file}` parameter resolves to the correct model. Route model binding works but verify with `route:list` that the route is registered correctly.

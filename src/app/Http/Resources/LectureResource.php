@@ -33,6 +33,17 @@ class LectureResource extends JsonResource
 
     public function toArray(Request $request): array
     {
+        $user = auth('sanctum')->user();
+        
+        if ($this->hasStudentBeenSet) {
+            $student = $this->student;
+        } else {
+            $student = $user ? \App\Models\Student::where('user_id', $user->id)->first() : null;
+        }
+        
+        $accessService = app(\App\Services\VideoAccessService::class);
+        $hasAccess = $user ? $accessService->canAccess($user, $this->resource) : false;
+
         $videoData = null;
         if ($this->relationLoaded('video') && $this->video) {
             $videoPath = $this->video->video_path;
@@ -45,46 +56,38 @@ class LectureResource extends JsonResource
 
             $videoData = [
                 'id' => $this->video->id,
-                'video_path' => $videoPath,
                 'status' => $status,
-                'bunny_video_id' => $this->video->bunny_video_id,
                 'duration' => $this->video->duration,
             ];
-            
-            if ($status === 'completed') {
-                if ($videoPath && (str_contains($videoPath, 'youtube.com') || str_contains($videoPath, 'youtu.be'))) {
-                    // YouTube videos
-                    $videoData['stream_url'] = $videoPath;
-                    $videoData['stream_type'] = 'video/youtube';
-                } else if ($this->video->bunny_video_id) {
-                    // Bunny Stream — signed embed URL
-                    $bunnyService = app(\App\Services\BunnyStreamService::class);
-                    $videoData['stream_url'] = $bunnyService->getSignedPlaybackUrl($this->video->bunny_video_id);
-                    $videoData['stream_type'] = 'application/x-mpegURL';
-                } else if ($videoPath && str_ends_with(strtolower($videoPath), '.mp4')) {
-                    // Legacy MP4 files — direct MinIO temporary URL
-                    $url = \Illuminate\Support\Facades\Storage::disk('minio')
-                        ->temporaryUrl($videoPath, now()->addHours(2));
-                    $minioEndpoint = rtrim(config('filesystems.disks.minio.endpoint', 'http://minio:9000'), '/');
-                    $publicUrl = config('filesystems.disks.minio.url', 'http://localhost:9000/lms-videos');
-                    $parsed = parse_url($publicUrl);
-                    $publicHost = ($parsed['scheme'] ?? 'http') . '://' . ($parsed['host'] ?? 'localhost') . (isset($parsed['port']) ? ':' . $parsed['port'] : '');
-                    $videoData['stream_url'] = str_replace($minioEndpoint, $publicHost, $url);
-                    $videoData['stream_type'] = 'video/mp4';
+
+            if ($hasAccess) {
+                $videoData['video_path'] = $videoPath;
+                $videoData['bunny_video_id'] = $this->video->bunny_video_id;
+
+                if ($status === 'completed') {
+                    if ($videoPath && (str_contains($videoPath, 'youtube.com') || str_contains($videoPath, 'youtu.be'))) {
+                        // YouTube videos
+                        $videoData['stream_url'] = $videoPath;
+                        $videoData['stream_type'] = 'video/youtube';
+                    } else if ($this->video->bunny_video_id) {
+                        // Bunny Stream — signed embed URL
+                        $bunnyService = app(\App\Services\BunnyStreamService::class);
+                        $videoData['stream_url'] = $bunnyService->getSignedPlaybackUrl($this->video->bunny_video_id);
+                        $videoData['stream_type'] = 'application/x-mpegURL';
+                    } else if ($videoPath && str_ends_with(strtolower($videoPath), '.mp4')) {
+                        // Legacy MP4 files — direct MinIO temporary URL
+                        $url = \Illuminate\Support\Facades\Storage::disk('minio')
+                            ->temporaryUrl($videoPath, now()->addHours(2));
+                        $minioEndpoint = rtrim(config('filesystems.disks.minio.endpoint', 'http://minio:9000'), '/');
+                        $publicUrl = config('filesystems.disks.minio.url', 'http://localhost:9000/lms-videos');
+                        $parsed = parse_url($publicUrl);
+                        $publicHost = ($parsed['scheme'] ?? 'http') . '://' . ($parsed['host'] ?? 'localhost') . (isset($parsed['port']) ? ':' . $parsed['port'] : '');
+                        $videoData['stream_url'] = str_replace($minioEndpoint, $publicHost, $url);
+                        $videoData['stream_type'] = 'video/mp4';
+                    }
                 }
             }
-
         }
-
-        $user = auth('sanctum')->user();
-        
-        if ($this->hasStudentBeenSet) {
-            $student = $this->student;
-        } else {
-            $student = $user ? \App\Models\Student::where('user_id', $user->id)->first() : null;
-        }
-        
-        $accessService = app(\App\Services\VideoAccessService::class);
 
         $examsFormatted = [];
         if ($this->relationLoaded('exams')) {
@@ -157,7 +160,7 @@ class LectureResource extends JsonResource
             'duration' => $this->duration,
             'sort_order' => $this->sort_order,
             'video' => $videoData,
-            'files' => $this->whenLoaded('files'),
+            'files' => $hasAccess ? $this->whenLoaded('files') : [],
             'progress' => ($this->progressMap && array_key_exists($this->id, $this->progressMap))
                 ? $this->progressMap[$this->id]
                 : $this->progress,
@@ -167,7 +170,7 @@ class LectureResource extends JsonResource
             'assignments' => $assignmentsFormatted,
             'is_locked' => $user ? $accessService->isBlockedByExam($user, $this->resource, 'lecture_access') : false,
             'video_locked' => $user ? $accessService->isBlockedByExam($user, $this->resource, 'video') : false,
-            'has_access' => $user ? $accessService->canAccess($user, $this->resource) : false,
+            'has_access' => $hasAccess,
         ];
     }
 }

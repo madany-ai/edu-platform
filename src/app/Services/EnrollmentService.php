@@ -14,7 +14,7 @@ class EnrollmentService
 {
     public function enrollStudent(Course $course, Student $student, EnrollmentSource $source = EnrollmentSource::Manual): Enrollment
     {
-        return Enrollment::firstOrCreate(
+        return Enrollment::updateOrCreate(
             ['student_id' => $student->id, 'course_id' => $course->id],
             [
                 'status' => EnrollmentStatus::Active->value,
@@ -112,6 +112,11 @@ class EnrollmentService
             return collect();
         }
 
-        return \App\Models\Entitlement::where('student_id', $student->id)->get();
+        return \App\Models\Entitlement::where('student_id', $student->id)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                  ->orWhere('expires_at', '>', now());
+            })
+            ->get();
     }
 }

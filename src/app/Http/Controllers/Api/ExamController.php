@@ -135,6 +135,12 @@ class ExamController extends Controller
             return response()->json(['message' => 'غير مسجل في هذه الدورة أو المحاضرة.'], 403);
         }
 
+        // Check if preceding blocking exams have been passed
+        $videoAccessService = app(\App\Services\VideoAccessService::class);
+        if ($videoAccessService->isBlockedByExam($user, $lecture, $exam->is_assignment ? 'assignment' : 'exam', $exam->id)) {
+            return response()->json(['message' => 'هذا الاختبار مغلق حتى تجتاز الاختبارات السابقة أولاً.'], 403);
+        }
+
         $attempt = $this->examService->startAttempt($exam, $student);
 
         return response()->json($attempt);
@@ -146,7 +152,10 @@ class ExamController extends Controller
 
         $validated = request()->validate([
             'answers' => 'required|array',
-            'answers.*.question_id' => 'required|exists:questions,id',
+            'answers.*.question_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('questions', 'id')->where('exam_id', $attempt->exam_id),
+            ],
             'answers.*.answer' => 'required|string',
         ]);
 
@@ -159,7 +168,16 @@ class ExamController extends Controller
     {
         $this->authorize('viewResult', $attempt);
 
-        return response()->json($attempt->load('answers.question.choices'));
+        $attempt->load('answers.question.choices');
+        $attempt->answers->each(function ($answer) {
+            if ($answer->question && $answer->question->choices) {
+                $answer->question->choices->each(function ($choice) {
+                    $choice->makeVisible('is_correct');
+                });
+            }
+        });
+
+        return response()->json($attempt);
     }
 
     public function myAttempts(Request $request): JsonResponse

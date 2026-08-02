@@ -13,6 +13,19 @@ class ProgressService
     public function updateLectureProgress(Student $student, Lecture $lecture, array $data): array
     {
         return DB::transaction(function () use ($student, $lecture, $data) {
+            $lecture->loadMissing('video');
+            $videoDuration = $lecture->video?->duration ?? $lecture->duration ?? 0;
+
+            $currentTime = (int) ($data['current_time'] ?? 0);
+            if ($videoDuration > 0 && $currentTime > $videoDuration) {
+                $currentTime = $videoDuration;
+            }
+
+            $isCompleted = (bool) ($data['is_completed'] ?? false);
+            if ($videoDuration > 0 && $currentTime < ($videoDuration * 0.8)) {
+                $isCompleted = false;
+            }
+
             $activity = StudentActivity::updateOrCreate(
                 [
                     'student_id' => $student->id,
@@ -22,8 +35,8 @@ class ProgressService
                 ],
                 [
                     'metadata' => [
-                        'current_time' => $data['current_time'],
-                        'is_completed' => $data['is_completed'],
+                        'current_time' => $currentTime,
+                        'is_completed' => $isCompleted,
                     ]
                 ]
             );
@@ -36,7 +49,7 @@ class ProgressService
                 ->where('entity_id', $lecture->id)
                 ->exists();
 
-            if ($data['is_completed'] && !$wasCompleted) {
+            if ($isCompleted && !$wasCompleted) {
                 StudentActivity::create([
                     'student_id' => $student->id,
                     'type' => 'video_completed',

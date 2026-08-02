@@ -56,6 +56,10 @@ class CheckEnrollment
         $isEnrolled = Enrollment::where('student_id', $student->id)
             ->where('course_id', $courseId)
             ->where('status', 'active')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                  ->orWhere('expires_at', '>', now());
+            })
             ->exists();
 
         $hasEntitlement = Entitlement::where('student_id', $student->id)

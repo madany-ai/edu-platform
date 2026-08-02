@@ -24,7 +24,7 @@ class Product extends Model
     {
         return [
             'is_active' => 'boolean',
-            'price'     => 'float',
+            'price'     => 'decimal:2',
         ];
     }
 

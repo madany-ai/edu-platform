@@ -37,20 +37,39 @@ class EnrollmentController extends Controller
 
     public function enroll(Course $course): JsonResponse
     {
-        $enrollment = $this->enrollmentService->enrollByUserId($course, request()->user()->id);
+        $user = request()->user();
+        $student = Student::where('user_id', $user->id)->first();
+
+        if (! $student || ! $student->is_verified) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'عفواً، يجب تفعيل حسابك أولاً قبل التسجيل في أي دورة.'
+            ], 403);
+        }
+
+        $isPublished = $course->status === \App\Enums\CourseStatus::Published || $course->status === 'published';
+        if (! $isPublished) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'هذه الدورة غير متاحة للتسجيل حالياً.'
+            ], 403);
+        }
+
+        if ((float) $course->price > 0) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'هذه الدورة مدفوعة، يرجى الشراء عبر إنشاء طلب رسمياً.'
+            ], 403);
+        }
+
+        $enrollment = $this->enrollmentService->enrollStudent($course, $student);
 
         return response()->json(new EnrollmentResource($enrollment), 201);
     }
 
     public function purchase(Course $course): JsonResponse
     {
-        $enrollment = $this->enrollmentService->enrollByUserId(
-            $course,
-            request()->user()->id,
-            EnrollmentSource::Purchase
-        );
-
-        return response()->json(new EnrollmentResource($enrollment), 201);
+        return $this->enroll($course);
     }
 
     public function courseEnrollments(Course $course): AnonymousResourceCollection

@@ -136,4 +136,6 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
         ->middleware('role:assistant');
 });
 
-Route::get('lectures/{lecture}/key', [\App\Http\Controllers\Api\CourseController::class, 'streamKey']);
+// Video stream key (token-based auth — rate-limited)
+Route::get('lectures/{lecture}/key', [\App\Http\Controllers\Api\CourseController::class, 'streamKey'])
+    ->middleware('throttle:30,1');

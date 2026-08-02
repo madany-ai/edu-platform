@@ -103,17 +103,11 @@ it('enrollment is idempotent (firstOrCreate)', function () {
     expect($count)->toBe(1);
 });
 
-it('purchases course', function () {
+it('rejects direct purchase for paid course via course purchase endpoint', function () {
     $response = $this->actingAs($this->studentUser)
         ->postJson("/api/courses/{$this->paidCourse->id}/purchase");
 
-    $response->assertStatus(201);
-
-    $this->assertDatabaseHas('enrollments', [
-        'student_id' => $this->student->id,
-        'course_id' => $this->paidCourse->id,
-        'source' => 'purchase',
-    ]);
+    $response->assertStatus(403);
 });
 
 it('instructor can revoke enrollment', function () {
