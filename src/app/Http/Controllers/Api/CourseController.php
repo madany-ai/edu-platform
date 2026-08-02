@@ -310,4 +310,17 @@ class CourseController extends Controller
             ->header('Content-Type', 'application/octet-stream')
             ->header('Cache-Control', 'no-cache, private');
     }
+
+    public function standaloneIndex(Request $request): AnonymousResourceCollection
+    {
+        $lectures = Lecture::query()
+            ->standalone()
+            ->where('status', 'published')
+            ->whereHas('products', fn ($q) => $q->where('is_active', true))
+            ->with(['video', 'instructor', 'products'])
+            ->latest()
+            ->paginate($request->get('per_page', 15));
+
+        return \App\Http\Resources\LectureResource::collection($lectures);
+    }
 }

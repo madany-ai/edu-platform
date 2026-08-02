@@ -106,17 +106,19 @@ class VideoAccessService
             return true;
         }
 
-        // 2. Instructor can access their own course lectures
+        // 2. Instructor can access their own lectures (standalone or course)
         if ($user->hasRole('instructor')) {
-            $lecture->loadMissing('section.course');
-            return $lecture->section->course->instructor_id === $user->id;
+            return $lecture->resolveInstructorId() === $user->id;
         }
 
         // 3. Assistants can access assigned course lectures
         if ($user->hasRole('assistant')) {
+            if ($lecture->isStandalone()) {
+                return false;
+            }
             $lecture->loadMissing('section.course');
-            $courseId = $lecture->section->course->id;
-            return $this->isAssistantForCourse($user, $courseId);
+            $courseId = $lecture->section?->course?->id;
+            return $courseId ? $this->isAssistantForCourse($user, $courseId) : false;
         }
 
         // 4. Students must have a valid Entitlement OR be enrolled in the course
@@ -135,10 +137,10 @@ class VideoAccessService
         }
 
         // Check if student is enrolled in the course (free or paid)
-        $lecture->loadMissing('section.course');
-        $course = $lecture->section->course;
-        if ($course) {
-            if ($this->isEnrolled($student, $course->id)) {
+        if (! $lecture->isStandalone()) {
+            $lecture->loadMissing('section.course');
+            $course = $lecture->section?->course;
+            if ($course && $this->isEnrolled($student, $course->id)) {
                 if ($this->isBlockedByExam($user, $lecture, 'video')) {
                     return false;
                 }
@@ -159,8 +161,12 @@ class VideoAccessService
             return false;
         }
         
+        if ($lecture->isStandalone() || !$lecture->section) {
+            return false;
+        }
+
         $lecture->loadMissing('section.course');
-        $course = $lecture->section->course;
+        $course = $lecture->section?->course;
         if (!$course) {
             return false;
         }

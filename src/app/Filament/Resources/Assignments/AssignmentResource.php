@@ -74,7 +74,6 @@ class AssignmentResource extends Resource
                             ->label('نوع السؤال')
                             ->options([
                                 'multiple_choice' => 'اختيار متعدد',
-                                'true_false' => 'صح / خطأ',
                                 'essay' => 'مقال',
                             ])
                             ->live()

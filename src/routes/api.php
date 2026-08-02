@@ -24,6 +24,7 @@ Route::get('courses', [CourseController::class, 'index']);
 Route::get('courses/{course}', [CourseController::class, 'show']);
 Route::get('governorates', [\App\Http\Controllers\Api\MiscController::class, 'governorates']);
 Route::get('grade-levels', [\App\Http\Controllers\Api\MiscController::class, 'gradeLevels']);
+Route::get('standalone-lectures', [CourseController::class, 'standaloneIndex']);
 
 // ─── Video Stream Proxy (token-based auth — no Sanctum session needed) ───
 Route::get('video/{videoId}/playlist', [\App\Http\Controllers\Api\VideoStreamController::class, 'playlist'])

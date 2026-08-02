@@ -17,17 +17,35 @@ use Spatie\Activitylog\Support\LogOptions;
 class Lecture extends Model
 {
     use HasUuids, LogsActivity;
-    protected $fillable = ['section_id', 'title', 'description', 'duration', 'sort_order', 'video_path', 'pdf_url'];
+    protected $fillable = [
+        'section_id',
+        'instructor_id',
+        'title',
+        'description',
+        'duration',
+        'sort_order',
+        'video_path',
+        'pdf_url',
+        'status',
+        'price',
+        'thumbnail',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'status' => \App\Enums\CourseStatus::class,
+            'price' => 'decimal:2',
+        ];
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['title', 'section_id'])
+            ->logOnly(['title', 'section_id', 'instructor_id', 'status', 'price'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
     }
-
-
 
     protected static function booted()
     {
@@ -42,9 +60,44 @@ class Lecture extends Model
         });
     }
 
+    public function isStandalone(): bool
+    {
+        return $this->section_id === null;
+    }
+
+    public function resolveInstructorId(): ?string
+    {
+        if ($this->instructor_id) {
+            return $this->instructor_id;
+        }
+
+        $this->loadMissing('section.course');
+        return $this->section?->course?->instructor_id;
+    }
+
     public function section(): BelongsTo
     {
         return $this->belongsTo(CourseSection::class, 'section_id');
+    }
+
+    public function instructor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'instructor_id');
+    }
+
+    public function products()
+    {
+        return $this->morphMany(Product::class, 'sellable');
+    }
+
+    public function scopeStandalone($query)
+    {
+        return $query->whereNull('section_id');
+    }
+
+    public function scopeInCourse($query)
+    {
+        return $query->whereNotNull('section_id');
     }
 
     public function video(): HasOne
