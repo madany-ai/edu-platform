@@ -15,6 +15,13 @@ use App\Models\User;
 use App\Services\VideoAccessService;
 
 beforeEach(function () {
+    \Illuminate\Support\Facades\Http::fake([
+        'https://accept.paymob.com/*' => \Illuminate\Support\Facades\Http::response([
+            'token' => 'fake_token',
+            'id' => 12345,
+        ], 201),
+    ]);
+
     $this->instructor = User::factory()->create(['status' => 'active']);
     $this->instructor->assignRole('instructor');
 

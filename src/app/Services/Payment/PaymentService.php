@@ -65,6 +65,15 @@ class PaymentService
 
         DB::transaction(function () use ($order, $payload, $gatewayName) {
             if ($payload->status === 'paid') {
+                if ($payload->amountCents !== (int) $order->amount_cents) {
+                    Log::error("Webhook Amount Mismatch for Order {$order->id}", [
+                        'expected' => $order->amount_cents,
+                        'received' => $payload->amountCents
+                    ]);
+                    $order->update(['status' => \App\Enums\OrderStatus::Failed->value]);
+                    return;
+                }
+
                 // 1. Grant entitlements / enrollments
                 $this->grantService->handle($order);
 
@@ -83,6 +92,12 @@ class PaymentService
                     'status' => \App\Enums\OrderStatus::Failed->value,
                     'failure_reason' => 'فشلت عملية الدفع عبر البوابة.',
                     'metadata' => array_merge($order->metadata ?? [], ['webhook' => $payload->rawPayload]),
+                ]);
+            } elseif ($payload->status === 'refunded') {
+                $this->grantService->revoke($order);
+                $order->update([
+                    'status' => \App\Enums\OrderStatus::Refunded->value,
+                    'refunded_at' => now()
                 ]);
             }
         });

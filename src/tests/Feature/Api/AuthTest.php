@@ -90,7 +90,6 @@ it('allows login with correct credentials', function () {
     $response->assertStatus(200)
         ->assertJsonStructure([
             'user' => ['id', 'name', 'email'],
-            'token',
         ]);
 });
 
@@ -169,15 +168,12 @@ it('rejects unauthenticated access to /me', function () {
 
 it('allows user to logout', function () {
     $user = User::factory()->create();
-    $token = $user->createToken('test')->plainTextToken;
 
-    $response = $this->withHeader('Authorization', "Bearer $token")
+    $response = $this->actingAs($user)
         ->postJson('/api/auth/logout');
 
     $response->assertStatus(200)
         ->assertJson(['message' => 'Logged out']);
-
-    expect($user->fresh()->tokens)->toHaveCount(0);
 });
 
 it('rejects unauthenticated logout', function () {

@@ -259,7 +259,8 @@ class ExamService
             }
 
             if ($question->type === 'essay') {
-                // Essay questions require manual grading
+                // Essay questions require manual grading, their score is saved in the answer record
+                $earnedPoints += (float) $answer->score;
             } else {
                 $correctChoice = Choice::where('question_id', $question->id)
                     ->where('is_correct', true)

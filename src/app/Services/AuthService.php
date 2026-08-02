@@ -97,14 +97,28 @@ class AuthService
 
         $user->update(['last_login_at' => now()]);
 
+        \Illuminate\Support\Facades\Auth::guard('web')->login($user);
+        if (request()->hasSession()) {
+            request()->session()->regenerate();
+        }
+
         return [
             'user' => $user,
-            'token' => $user->createToken('api')->plainTextToken,
+            // 'token' => $user->createToken('api')->plainTextToken, // SPA uses stateful session cookie
         ];
     }
 
     public function logout(User $user): void
     {
-        $user->currentAccessToken()->delete();
+        \Illuminate\Support\Facades\Auth::guard('web')->logout();
+        if (request()->hasSession()) {
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+        }
+        
+        $token = $user->currentAccessToken();
+        if ($token && method_exists($token, 'delete')) {
+            $token->delete();
+        }
     }
 }

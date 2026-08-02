@@ -34,7 +34,6 @@ class DemoSeeder extends Seeder
         Role::firstOrCreate(['name' => 'instructor']);
         Role::firstOrCreate(['name' => 'student']);
         Role::firstOrCreate(['name' => 'assistant']);
-        Role::firstOrCreate(['name' => 'super_admin']);
 
         // ═══════════════════════════════════════════════════════════════
         // 2. INSTRUCTOR (Science Teacher)

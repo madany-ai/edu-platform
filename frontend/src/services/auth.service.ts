@@ -9,7 +9,7 @@ export interface LoginPayload {
 
 export interface LoginResponse {
   user: User;
-  token: string;
+  token?: string;
 }
 
 export interface RegisterPayload {
@@ -50,11 +50,13 @@ export interface ResetPasswordPayload {
 
 export const authService = {
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
+    await api.get("/sanctum/csrf-cookie");
     const { data } = await api.post<LoginResponse>("/auth/login", payload);
     return data;
   },
 
   register: async (payload: RegisterPayload): Promise<RegisterResponse> => {
+    await api.get("/sanctum/csrf-cookie");
     const { data } = await api.post<RegisterResponse>("/auth/register", payload);
     return data;
   },

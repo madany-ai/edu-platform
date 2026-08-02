@@ -102,9 +102,10 @@ test('Paymob Webhook verifies signature, updates order to completed and grants e
         'is_capture' => false,
         'is_refunded' => false,
         'is_standalone_payment' => true,
-        'pending' => false,
+        'is_voided' => false,
         'order' => ['id' => 1234567],
         'owner' => 100,
+        'pending' => false,
         'source_data' => [
             'pan' => '2345',
             'sub_type' => 'MasterCard',
@@ -118,7 +119,7 @@ test('Paymob Webhook verifies signature, updates order to completed and grants e
         'amount_cents', 'created_at', 'currency', 'error_occured',
         'has_parent_transaction', 'id', 'integration_id', 'is_3d_secure',
         'is_auth', 'is_capture', 'is_refunded', 'is_standalone_payment',
-        'pending', 'order.id', 'owner', 'pending', 'source_data.pan',
+        'is_voided', 'order.id', 'owner', 'pending', 'source_data.pan',
         'source_data.sub_type', 'source_data.type', 'success',
     ];
 
@@ -152,6 +153,26 @@ test('Paymob Webhook rejects invalid HMAC signature with 403', function () {
 
     $response = $this->postJson('/api/webhooks/paymob?hmac=invalid_signature', [
         'obj' => ['amount_cents' => 1000],
+    ]);
+
+    $response->assertStatus(403);
+});
+
+test('Paymob Webhook rejects empty HMAC signature (fail-closed)', function () {
+    config(['services.paymob.hmac_secret' => 'test_hmac_secret']);
+
+    $response = $this->postJson('/api/webhooks/paymob', [
+        'obj' => ['amount_cents' => 1000],
+    ]);
+
+    $response->assertStatus(403);
+});
+
+test('Fawry Webhook rejects empty signature (fail-closed)', function () {
+    config(['services.fawry.security_key' => 'test_fawry_secret']);
+
+    $response = $this->postJson('/api/webhooks/fawry', [
+        'merchantRefNum' => '123',
     ]);
 
     $response->assertStatus(403);

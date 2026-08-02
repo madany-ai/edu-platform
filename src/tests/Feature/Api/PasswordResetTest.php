@@ -186,7 +186,7 @@ it('allows login with new password after reset', function () {
     ]);
 
     $response->assertOk()
-        ->assertJsonStructure(['user' => ['id', 'name', 'email'], 'token']);
+        ->assertJsonStructure(['user' => ['id', 'name', 'email']]);
 });
 
 it('rejects login with old password after reset', function () {

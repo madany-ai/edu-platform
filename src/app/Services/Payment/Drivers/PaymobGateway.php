@@ -108,7 +108,7 @@ class PaymobGateway implements PaymentGatewayInterface
             'is_capture',
             'is_refunded',
             'is_standalone_payment',
-            'pending',
+            'is_voided',
             'order.id',
             'owner',
             'pending',
@@ -129,7 +129,7 @@ class PaymobGateway implements PaymentGatewayInterface
 
         $calculatedHmac = hash_hmac('sha512', $concatenated, $hmacSecret);
 
-        if ($receivedHmac && !hash_equals($calculatedHmac, $receivedHmac)) {
+        if (!$receivedHmac || !hash_equals($calculatedHmac, $receivedHmac)) {
             Log::warning('Paymob Webhook HMAC Verification Failed', [
                 'received' => $receivedHmac,
                 'calculated' => $calculatedHmac,

@@ -63,7 +63,7 @@ class FawryGateway implements PaymentGatewayInterface
         $concatenated = $fawryRefNumber . $merchantRefNum . $orderAmount . $orderStatus . $securityKey;
         $calculatedSignature = hash('sha256', $concatenated);
 
-        if ($receivedSignature && !hash_equals(strtolower($calculatedSignature), strtolower($receivedSignature))) {
+        if (!$receivedSignature || !hash_equals(strtolower($calculatedSignature), strtolower($receivedSignature))) {
             Log::warning('Fawry Webhook Signature Verification Failed', [
                 'received' => $receivedSignature,
                 'calculated' => $calculatedSignature,

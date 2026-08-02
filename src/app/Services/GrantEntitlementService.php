@@ -78,4 +78,22 @@ class GrantEntitlementService
             );
         }
     }
+
+    public function revoke(Order $order): void
+    {
+        DB::transaction(function () use ($order) {
+            Log::info("GrantEntitlementService: Revoking entitlements for Order {$order->id}");
+
+            // Delete entitlements associated with this order
+            Entitlement::where('order_id', $order->id)->delete();
+
+            // Revoke course enrollment if order purchasable was a course
+            $purchasable = $order->purchasable;
+            if ($purchasable instanceof Product && $purchasable->sellable instanceof \App\Models\Course) {
+                \App\Models\Enrollment::where('student_id', $order->student_id)
+                    ->where('course_id', $purchasable->sellable_id)
+                    ->update(['status' => \App\Enums\EnrollmentStatus::Suspended->value]);
+            }
+        });
+    }
 }

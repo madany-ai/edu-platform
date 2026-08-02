@@ -11,9 +11,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 use App\Http\Resources\OrderResource;
+use App\Services\Payment\PaymentService;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        private PaymentService $paymentService
+    ) {}
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -42,6 +46,7 @@ class OrderController extends Controller
         $request->validate([
             'purchasable_id' => 'required|string',
             'purchasable_type' => 'required|string|in:product,bundle',
+            'payment_gateway' => 'nullable|string|in:paymob,fawry',
         ]);
 
         $user = $request->user();
@@ -117,22 +122,27 @@ class OrderController extends Controller
             ], 200);
         }
 
+        $gateway = $request->input('payment_gateway', 'paymob');
+
         $order = Order::create([
             'student_id' => $student->id,
             'purchasable_id' => $purchasable->id,
             'purchasable_type' => $purchasableClass,
             'amount_cents' => (int) round((float) $purchasable->price * 100),
             'currency' => 'EGP',
-            'payment_method' => 'manual',
+            'payment_method' => 'manual', // will be overwritten by initiatePayment
             'transaction_id' => 'PENDING-' . strtoupper((string) \Illuminate\Support\Str::uuid()),
             'status' => \App\Enums\OrderStatus::Pending->value,
             'idempotency_key' => $idempotencyKey,
         ]);
 
+        $checkoutResult = $this->paymentService->initiatePayment($order, $gateway);
+
         return response()->json([
             'status' => 'success',
-            'message' => 'تم إرسال طلب الشراء بنجاح. سيتم تفعيل المحتوى بعد التحقق من الدفع.',
+            'message' => 'تم إرسال طلب الشراء بنجاح. سيتم توجيهك لبوابة الدفع.',
             'data' => new OrderResource($order),
+            'payment_url' => $checkoutResult->paymentUrl,
         ], 201);
     }
 }

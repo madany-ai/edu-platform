@@ -135,7 +135,7 @@ it('login by student_code', function () {
     ]);
 
     $response->assertStatus(200)
-        ->assertJsonStructure(['user', 'token']);
+        ->assertJsonStructure(['user' => ['id', 'name', 'email']]);
 });
 
 it('login by phone number', function () {
@@ -154,7 +154,7 @@ it('login by phone number', function () {
     ]);
 
     $response->assertStatus(200)
-        ->assertJsonStructure(['user', 'token']);
+        ->assertJsonStructure(['user' => ['id', 'name', 'email']]);
 });
 
 it('login by student phone', function () {
@@ -186,7 +186,7 @@ it('login by student phone', function () {
     ]);
 
     $response->assertStatus(200)
-        ->assertJsonStructure(['user', 'token']);
+        ->assertJsonStructure(['user' => ['id', 'name', 'email']]);
 });
 
 it('returns 401 for non-existent email', function () {
@@ -239,13 +239,10 @@ it('me endpoint returns null student for instructor', function () {
 
 it('logout deletes current token', function () {
     $user = User::factory()->create();
-    $token = $user->createToken('test')->plainTextToken;
 
-    $this->withHeader('Authorization', "Bearer $token")
+    $this->actingAs($user)
         ->postJson('/api/auth/logout')
         ->assertStatus(200);
-
-    expect($user->fresh()->tokens)->toHaveCount(0);
 });
 
 it('registration sends notification to instructors', function () {
