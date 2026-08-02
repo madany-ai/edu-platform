@@ -243,22 +243,33 @@ class CourseController extends Controller
     public function downloadFile(Request $request, \App\Models\Lecture $lecture, \App\Models\LectureFile $file)
     {
         if ($file->lecture_id !== $lecture->id) {
-            return response()->json(['message' => 'File not found.'], 404);
+            return response()->json(['message' => 'الملف غير موجود.'], 404);
         }
 
         $storagePath = $file->getAttributes()['file_path'];
 
-        if (!\Illuminate\Support\Facades\Storage::disk('minio')->exists($storagePath)) {
-            return response()->json(['message' => 'File not found on storage.'], 404);
+        $extension = strtolower(pathinfo($storagePath, PATHINFO_EXTENSION));
+        $allowedExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'zip', 'rar', 'txt', 'jpg', 'jpeg', 'png'];
+
+        if (!in_array($extension, $allowedExtensions, true)) {
+            return response()->json(['message' => 'نوع الملف غير مسموح بتحميله.'], 403);
         }
 
-        $mimeType = \Illuminate\Support\Facades\Storage::disk('minio')->mimeType($storagePath);
+        $disk = \Illuminate\Support\Facades\Storage::disk('minio');
+
+        if (!$disk->exists($storagePath)) {
+            return response()->json(['message' => 'الملف غير موجود على السيرفر.'], 404);
+        }
+
+        $mimeType = 'application/octet-stream';
         $filename = basename($storagePath);
-        $stream = \Illuminate\Support\Facades\Storage::disk('minio')->readStream($storagePath);
+        $stream = $disk->readStream($storagePath);
 
         return response()->stream(function () use ($stream) {
-            fpassthru($stream);
-            fclose($stream);
+            if (is_resource($stream)) {
+                fpassthru($stream);
+                fclose($stream);
+            }
         }, 200, [
             'Content-Type'        => $mimeType,
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
@@ -293,8 +304,17 @@ class CourseController extends Controller
             return response()->json(['message' => 'Missing token'], 400);
         }
 
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
         $accessService = app(\App\Services\VideoAccessService::class);
         
+        if (!$accessService->canAccess($user, $lecture)) {
+            return response()->json(['message' => 'Unauthorized access to lecture'], 403);
+        }
+
         if (!$accessService->validateToken($token, $lecture, $request->ip())) {
             return response()->json(['message' => 'Invalid or expired token'], 403);
         }

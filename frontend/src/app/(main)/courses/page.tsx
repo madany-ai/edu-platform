@@ -33,7 +33,7 @@ function CoursesContent() {
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const debouncedSearch = useDebounce(search);
   
-  const [activeTab, setActiveTab] = useState<"courses" | "lectures" | "sections" | "bundles">("courses");
+  const [activeTab, setActiveTab] = useState<"courses" | "lectures" | "bundles">("courses");
 
   // Fetching data
   const { data: coursesData, isLoading: coursesLoading } = useCourses(
@@ -281,7 +281,7 @@ function CoursesContent() {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <PageHeader
         title="المتجر الأكاديمي 🧪"
-        description="تصفح واشترك في الدورات الكاملة، الحلقات الشهرية، أو المحاضرات الفردية مباشرة."
+        description="تصفح واشترك في الدورات الكاملة، المحاضرات الفردية، أو باقات العروض مباشرة."
       />
 
       <div className="mb-8 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
@@ -319,17 +319,6 @@ function CoursesContent() {
             المحاضرات الفردية 🧪
           </button>
           <button
-            onClick={() => setActiveTab("sections")}
-            className={cn(
-              "px-4 py-2 rounded-lg font-bold text-xs transition-all",
-              activeTab === "sections"
-                ? "bg-primary text-primary-foreground science-glow-text"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            الاشتراكات الشهرية 📅
-          </button>
-          <button
             onClick={() => setActiveTab("bundles")}
             className={cn(
               "px-4 py-2 rounded-lg font-bold text-xs transition-all",
@@ -352,15 +341,6 @@ function CoursesContent() {
             ))}
           </div>
         ) : renderProductsList(lectures, "محاضرات منفردة", PlayCircle)
-      )}
-      {activeTab === "sections" && (
-        sectionsLoading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-44 glass-card rounded-2xl animate-pulse" />
-            ))}
-          </div>
-        ) : renderProductsList(sections, "اشتراكات شهرية", Calendar)
       )}
       {activeTab === "bundles" && (
         bundlesLoading ? (

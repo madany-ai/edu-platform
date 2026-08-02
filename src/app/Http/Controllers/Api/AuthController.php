@@ -61,19 +61,10 @@ class AuthController extends Controller
         $user = request()->user();
         $user->load('roles');
         
-        $roles = $user->roles->pluck('name');
-        
-        if ($roles->contains('student')) {
+        if ($user->roles->pluck('name')->contains('student')) {
             $user->load('student');
         }
 
-        return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'status' => $user->status,
-            'roles' => $roles,
-            'student' => $user->relationLoaded('student') ? $user->student : null,
-        ]);
+        return response()->json(new \App\Http\Resources\UserMeResource($user));
     }
 }

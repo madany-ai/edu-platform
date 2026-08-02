@@ -49,6 +49,22 @@ class GrantEntitlementService
 
         Log::info("GrantEntitlementService: Granting " . count($lectureIds) . " lectures from Product {$product->id} to Student {$order->student_id}");
 
+        // If sellable is a Course, create/reactivate real Enrollment for student
+        if ($product->sellable instanceof \App\Models\Course) {
+            \App\Models\Enrollment::updateOrCreate(
+                [
+                    'student_id' => $order->student_id,
+                    'course_id'  => $product->sellable_id,
+                ],
+                [
+                    'status'     => \App\Enums\EnrollmentStatus::Active->value,
+                    'source'     => \App\Enums\EnrollmentSource::Purchase->value,
+                    'expires_at' => $expiresAt,
+                    'started_at' => now(),
+                ]
+            );
+        }
+
         foreach ($lectureIds as $lectureId) {
             Entitlement::updateOrCreate(
                 [

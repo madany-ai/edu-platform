@@ -35,6 +35,11 @@ class ProductResource extends Resource
 
     protected static ?string $navigationLabel = 'المنتجات';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     protected static ?string $pluralLabel = 'المنتجات';
 
     protected static ?string $modelLabel = 'منتج';

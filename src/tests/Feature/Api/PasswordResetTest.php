@@ -18,7 +18,7 @@ it('sends reset link for valid email', function () {
 
     $response->assertOk()
         ->assertJson([
-            'message' => 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.',
+            'message' => 'إذا كان البريد الإلكتروني مسجلاً، فسيتم إرسال رابط إعادة تعيين كلمة المرور.',
         ]);
 
     $this->assertDatabaseHas('password_reset_tokens', [
@@ -26,14 +26,14 @@ it('sends reset link for valid email', function () {
     ]);
 });
 
-it('rejects reset for non-existent email', function () {
+it('returns same response for non-existent email without leaking user existence', function () {
     $response = $this->postJson('/api/auth/forgot-password', [
         'email' => 'unknown@example.com',
     ]);
 
-    $response->assertStatus(404)
+    $response->assertOk()
         ->assertJson([
-            'message' => 'البريد الإلكتروني غير مسجل في النظام.',
+            'message' => 'إذا كان البريد الإلكتروني مسجلاً، فسيتم إرسال رابط إعادة تعيين كلمة المرور.',
         ]);
 });
 

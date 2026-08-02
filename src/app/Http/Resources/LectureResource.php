@@ -171,6 +171,22 @@ class LectureResource extends JsonResource
             'is_locked' => $user ? $accessService->isBlockedByExam($user, $this->resource, 'lecture_access') : false,
             'video_locked' => $user ? $accessService->isBlockedByExam($user, $this->resource, 'video') : false,
             'has_access' => $hasAccess,
+            'section' => $this->whenLoaded('section', function () {
+                return [
+                    'id' => $this->section->id,
+                    'title' => $this->section->title,
+                    'course' => $this->section->relationLoaded('course') && $this->section->course ? [
+                        'id' => $this->section->course->id,
+                        'title' => $this->section->course->title,
+                    ] : null,
+                ];
+            }),
+            'instructor' => $this->whenLoaded('instructor', function () {
+                return [
+                    'id' => $this->instructor->id,
+                    'name' => $this->instructor->name,
+                ];
+            }),
         ];
     }
 }

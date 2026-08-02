@@ -162,11 +162,24 @@ class ExamService
             }
         }
 
-        return ExamAttempt::create([
-            'exam_id' => $exam->id,
-            'student_id' => $student->id,
-            'started_at' => now(),
-        ]);
+        try {
+            return ExamAttempt::create([
+                'exam_id' => $exam->id,
+                'student_id' => $student->id,
+                'started_at' => now(),
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            $latest = ExamAttempt::where('exam_id', $exam->id)
+                ->where('student_id', $student->id)
+                ->latest()
+                ->first();
+
+            if ($latest) {
+                return $latest;
+            }
+
+            throw $e;
+        }
     }
 
     public function submitAttempt(ExamAttempt $attempt, array $answers): ExamAttempt
@@ -187,14 +200,44 @@ class ExamService
                 ]);
             }
 
+            $hasEssay = $exam->questions()->where('type', 'essay')->exists();
+            $status = $hasEssay ? 'pending_review' : 'completed';
+
             $score = $this->gradeAttempt($attempt);
 
             $attempt->update([
                 'score' => $score,
+                'status' => $status,
                 'submitted_at' => now(),
             ]);
 
             return $attempt->load('answers.question.choices');
+        });
+    }
+
+    public function gradeEssayAttempt(ExamAttempt $attempt, array $essayScores): ExamAttempt
+    {
+        return DB::transaction(function () use ($attempt, $essayScores) {
+            $attempt->load(['exam.questions', 'answers']);
+
+            foreach ($essayScores as $item) {
+                $questionId = $item['question_id'];
+                $essayScore = (float) $item['score'];
+
+                $answer = $attempt->answers->firstWhere('question_id', $questionId);
+                if ($answer) {
+                    $answer->update(['score' => $essayScore]);
+                }
+            }
+
+            $score = $this->gradeAttempt($attempt);
+
+            $attempt->update([
+                'score' => $score,
+                'status' => 'completed',
+            ]);
+
+            return $attempt->fresh(['answers.question.choices']);
         });
     }
 

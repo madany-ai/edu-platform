@@ -29,25 +29,24 @@ class CheckEnrollment
 
         $courseId = $course->id;
 
-        if ($course->instructor_id === $user->id) {
-            return $next($request);
-        }
-
-        if ($user->hasRole('super_admin')) {
-            return $next($request);
-        }
-
+        $isAssignedAssistant = false;
         if ($user->hasRole('assistant')) {
-            $isAssigned = \App\Models\CourseAssistant::where('user_id', $user->id)
+            $isAssignedAssistant = \App\Models\CourseAssistant::where('user_id', $user->id)
                 ->where('course_id', $courseId)
                 ->exists();
-
-            if ($isAssigned) {
-                return $next($request);
-            }
         }
 
-        $student = $user->student;
+        $courseStatus = $course->status instanceof \App\Enums\CourseStatus ? $course->status->value : $course->status;
+        $isOwnerOrAdmin = $course->instructor_id === $user->id || $user->hasRole('super_admin') || $user->hasRole('admin') || $isAssignedAssistant;
+        if (!$isOwnerOrAdmin && $courseStatus !== 'published') {
+            return response()->json(['message' => 'هذه الدورة غير متاحة حالياً.'], 403);
+        }
+
+        if ($course->instructor_id === $user->id || $isOwnerOrAdmin) {
+            return $next($request);
+        }
+
+        $student = $user->student ?? \App\Models\Student::where('user_id', $user->id)->first();
 
         if (! $student) {
             return response()->json(['message' => 'غير مسجل في هذه الدورة.'], 403);

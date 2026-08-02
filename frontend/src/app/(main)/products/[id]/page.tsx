@@ -46,7 +46,7 @@ export default function ProductPage() {
       const section = product.sellable;
       return (
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-gradient mb-4">المحاضرات المشمولة في هذا الشهر/الوحدة:</h3>
+          <h3 className="text-xl font-bold text-gradient mb-4">المحاضرات المشمولة:</h3>
           <div className="grid gap-3">
             {section?.lectures?.map((lecture: any) => (
               <div key={lecture.id} className="glass-card p-4 rounded-xl flex items-center gap-4">
@@ -106,7 +106,7 @@ export default function ProductPage() {
             
             <div className="pt-4 flex items-center gap-6">
               <div>
-                <span className="text-sm text-muted-foreground block mb-1">سعر الاشتراك</span>
+                <span className="text-sm text-muted-foreground block mb-1">السعر</span>
                 <span className="text-3xl font-black text-primary science-glow-text">
                   {product.price === 0 ? "مجاني" : `${product.price} EGP`}
                 </span>

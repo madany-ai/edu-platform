@@ -179,14 +179,14 @@ it('validateToken rejects token for suspended student', function () {
 });
 
 it('streamKey endpoint rejects missing token', function () {
-    $response = $this->getJson("/api/lectures/{$this->lecture1->id}/key");
+    $response = $this->actingAs($this->studentUser)->getJson("/api/lectures/{$this->lecture1->id}/key");
 
     $response->assertStatus(400)
         ->assertJsonPath('message', 'Missing token');
 });
 
 it('streamKey endpoint rejects invalid token', function () {
-    $response = $this->getJson("/api/lectures/{$this->lecture1->id}/key?token=invalid-token");
+    $response = $this->actingAs($this->studentUser)->getJson("/api/lectures/{$this->lecture1->id}/key?token=invalid-token");
 
     $response->assertStatus(403)
         ->assertJsonPath('message', 'Invalid or expired token');
@@ -195,7 +195,7 @@ it('streamKey endpoint rejects invalid token', function () {
 it('streamKey endpoint rejects token for wrong lecture', function () {
     $token = $this->service->generateSignedToken($this->studentUser, $this->lecture1, '127.0.0.1');
 
-    $response = $this->getJson("/api/lectures/{$this->lecture2->id}/key?token={$token}");
+    $response = $this->actingAs($this->studentUser)->getJson("/api/lectures/{$this->lecture2->id}/key?token={$token}");
 
     $response->assertStatus(403);
 });
@@ -203,7 +203,7 @@ it('streamKey endpoint rejects token for wrong lecture', function () {
 it('streamKey endpoint returns encryption key for valid token', function () {
     $token = $this->service->generateSignedToken($this->studentUser, $this->lecture1, '127.0.0.1');
 
-    $response = $this->getJson("/api/lectures/{$this->lecture1->id}/key?token={$token}");
+    $response = $this->actingAs($this->studentUser)->getJson("/api/lectures/{$this->lecture1->id}/key?token={$token}");
 
     $response->assertOk()
         ->assertHeader('Content-Type', 'application/octet-stream')
@@ -221,7 +221,7 @@ it('streamKey endpoint returns 404 when lecture has no video', function () {
 
     $token = $this->service->generateSignedToken($this->studentUser, $lectureNoVideo, '127.0.0.1');
 
-    $response = $this->getJson("/api/lectures/{$lectureNoVideo->id}/key?token={$token}");
+    $response = $this->actingAs($this->studentUser)->getJson("/api/lectures/{$lectureNoVideo->id}/key?token={$token}");
 
     $response->assertStatus(404);
 });

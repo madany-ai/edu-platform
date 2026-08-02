@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Resources\ProductResource;
+use App\Http\Resources\BundleResource;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Bundle;
@@ -26,21 +28,27 @@ class ProductController extends Controller
             }
         }
 
-        $products = $query->with('sellable')->latest()->get();
+        $products = $query->with('sellable')->latest()->paginate($request->get('per_page', 15));
+        $paginated = ProductResource::collection($products)->response()->getData(true);
 
         return response()->json([
             'status' => 'success',
-            'data' => $products
+            'data' => $paginated['data'] ?? [],
+            'links' => $paginated['links'] ?? null,
+            'meta' => $paginated['meta'] ?? null,
         ]);
     }
 
-    public function bundles(): JsonResponse
+    public function bundles(Request $request): JsonResponse
     {
-        $bundles = Bundle::with('products.sellable')->latest()->get();
+        $bundles = Bundle::with('products.sellable')->latest()->paginate($request->get('per_page', 15));
+        $paginated = BundleResource::collection($bundles)->response()->getData(true);
 
         return response()->json([
             'status' => 'success',
-            'data' => $bundles
+            'data' => $paginated['data'] ?? [],
+            'links' => $paginated['links'] ?? null,
+            'meta' => $paginated['meta'] ?? null,
         ]);
     }
 
@@ -56,7 +64,7 @@ class ProductController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $product
+            'data' => new ProductResource($product)
         ]);
     }
 
@@ -66,7 +74,7 @@ class ProductController extends Controller
         
         return response()->json([
             'status' => 'success',
-            'data' => $bundle
+            'data' => new BundleResource($bundle)
         ]);
     }
 }

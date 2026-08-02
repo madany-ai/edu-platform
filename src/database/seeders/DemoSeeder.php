@@ -24,6 +24,10 @@ class DemoSeeder extends Seeder
 {
     public function run(): void
     {
+        if (app()->environment('production')) {
+            $this->command->error('⛔ DemoSeeder cannot be executed in production environment!');
+            return;
+        }
         // ═══════════════════════════════════════════════════════════════
         // 1. ROLES
         // ═══════════════════════════════════════════════════════════════
@@ -600,14 +604,60 @@ class DemoSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        // Single section product
-        Product::create([
+        // ═══════════════════════════════════════════════════════════════
+        // 10.1 STANDALONE LECTURES
+        // ═══════════════════════════════════════════════════════════════
+        $standaloneLecture1 = Lecture::create([
             'instructor_id' => $instructor->id,
-            'name' => 'اشتراك شهر: الوحدة السادسة — جسم الإنسان',
-            'sellable_id' => $s2_3->id,
-            'sellable_type' => CourseSection::class,
-            'price' => 49.99,
+            'title' => 'محاضرة منفردة: ملخص التفاعلات الكيميائية بالتفصيل 🧪',
+            'description' => 'شرح مكثف وشامل لجميع معادلات الكيمياء للترم الأول مع أمثلة مجابة.',
+            'duration' => 45,
+            'sort_order' => 1,
+            'status' => 'published',
+            'price' => 35.00,
+        ]);
+
+        $standaloneLecture1->video()->create([
+            'video_path' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            'status' => 'completed',
+            'bunny_video_id' => 'youtube',
+            'duration' => 45,
+        ]);
+
+        $standaloneProduct1 = Product::create([
+            'instructor_id' => $instructor->id,
+            'name' => 'محاضرة: ملخص التفاعلات الكيميائية',
+            'sellable_id' => $standaloneLecture1->id,
+            'sellable_type' => Lecture::class,
+            'price' => 35.00,
             'access_duration_days' => 30,
+            'is_active' => true,
+        ]);
+
+        $standaloneLecture2 = Lecture::create([
+            'instructor_id' => $instructor->id,
+            'title' => 'محاضرة منفردة: مراجعة قوانين السرعة والعجلة ⚡',
+            'description' => 'حل 50 مسألة على قوانين الحركة والسرعة النسبية والعجلة المنتظمة.',
+            'duration' => 60,
+            'sort_order' => 2,
+            'status' => 'published',
+            'price' => 25.00,
+        ]);
+
+        $standaloneLecture2->video()->create([
+            'video_path' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            'status' => 'completed',
+            'bunny_video_id' => 'youtube',
+            'duration' => 60,
+        ]);
+
+        $standaloneProduct2 = Product::create([
+            'instructor_id' => $instructor->id,
+            'name' => 'محاضرة: مراجعة قوانين السرعة والعجلة',
+            'sellable_id' => $standaloneLecture2->id,
+            'sellable_type' => Lecture::class,
+            'price' => 25.00,
+            'access_duration_days' => null,
             'is_active' => true,
         ]);
 
@@ -616,11 +666,11 @@ class DemoSeeder extends Seeder
         // ═══════════════════════════════════════════════════════════════
         $bundle = Bundle::create([
             'instructor_id' => $instructor->id,
-            'name' => 'الباقة الشاملة: علوم تالت إعدادي — الفصلين + المراجعة',
+            'name' => 'باقة التفوق الشاملة: الكورسات + المحاضرات المنفردة 💎',
             'price' => 299.99,
         ]);
 
-        $products = Product::all();
+        $products = Product::where('is_active', true)->get();
         foreach ($products as $p) {
             $bundle->products()->attach($p->id);
         }

@@ -315,7 +315,7 @@ it('rejects purchase of non-existent product', function () {
     ]);
 
     $response->assertStatus(404)
-        ->assertJson(['message' => 'المنتج غير موجود.']);
+        ->assertJson(['message' => 'المحتوى المطلوب غير موجود.']);
 });
 
 it('rejects order with missing purchasable_type', function () {
@@ -344,5 +344,5 @@ it('rejects purchase of non-existent bundle', function () {
     ]);
 
     $response->assertStatus(404)
-        ->assertJson(['message' => 'المنتج غير موجود.']);
+        ->assertJson(['message' => 'المحتوى المطلوب غير موجود.']);
 });

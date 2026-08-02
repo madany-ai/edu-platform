@@ -15,7 +15,6 @@ class QuestionResource extends JsonResource
             'student' => $this->student ? [
                 'id' => $this->student->id,
                 'name' => $this->student->user?->name ?? 'محذوف',
-                'student_code' => $this->student->student_code,
             ] : null,
             'lecture' => $this->lecture ? [
                 'id' => $this->lecture->id,

@@ -108,21 +108,29 @@ class OrderResource extends Resource
                     ->modalSubmitActionLabel('نعم، تأكيد')
                     ->visible(fn (Order $record): bool => ($record->status instanceof \App\Enums\OrderStatus ? $record->status->value : $record->status) === 'pending')
                     ->action(function (Order $record): void {
-                        \Illuminate\Support\Facades\DB::transaction(function () use ($record) {
-                            app(GrantEntitlementService::class)->handle($record);
+                        try {
+                            \Illuminate\Support\Facades\DB::transaction(function () use ($record) {
+                                app(GrantEntitlementService::class)->handle($record);
 
-                            $record->update([
-                                'status' => 'completed',
-                                'paid_at' => now(),
-                                'payment_method' => 'manual',
-                            ]);
-                        });
+                                $record->update([
+                                    'status' => 'completed',
+                                    'paid_at' => now(),
+                                    'payment_method' => 'manual',
+                                ]);
+                            });
 
-                        Notification::make()
-                            ->title('تم تأكيد الدفع')
-                            ->body("تم تفعيل طلب بنجاح.")
-                            ->success()
-                            ->send();
+                            Notification::make()
+                                ->title('تم تأكيد الدفع')
+                                ->body("تم تفعيل الطلب وتطبيق الصلاحيات بنجاح.")
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title('فشل تأكيد الدفع')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
                     }),
 
                 Action::make('refund')

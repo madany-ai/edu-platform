@@ -29,10 +29,8 @@ class PasswordResetController extends Controller
         );
 
         return response()->json([
-            'message' => $status === Password::RESET_LINK_SENT
-                ? 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.'
-                : 'البريد الإلكتروني غير مسجل في النظام.',
-        ], $status === Password::RESET_LINK_SENT ? 200 : 404);
+            'message' => 'إذا كان البريد الإلكتروني مسجلاً، فسيتم إرسال رابط إعادة تعيين كلمة المرور.',
+        ], 200);
     }
 
     public function resetPassword(): JsonResponse

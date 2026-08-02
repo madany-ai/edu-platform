@@ -3,7 +3,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { authService, type LoginPayload, type RegisterPayload } from "@/services/auth.service";
-import { STORAGE_KEYS } from "@/lib/constants";
 import type { User } from "@/types";
 
 interface AuthContextType {
@@ -26,14 +25,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUser = useCallback(async () => {
     try {
-      const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
-      if (!token) {
-        return;
-      }
       const userData = await authService.me();
       setUser(userData);
     } catch {
-      localStorage.removeItem(STORAGE_KEYS.TOKEN);
       setUser(null);
     }
   }, []);
@@ -49,9 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchUser]);
 
   const login = async (payload: LoginPayload) => {
-    const response = await authService.login(payload);
-    localStorage.setItem(STORAGE_KEYS.TOKEN, response.token);
-    // Login response doesn't include student data, so fetch full user from /auth/me
+    await authService.login(payload);
     await fetchUser();
   };
 
@@ -64,7 +56,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authService.logout();
     } finally {
-      localStorage.removeItem(STORAGE_KEYS.TOKEN);
       setUser(null);
       router.push("/login");
     }

@@ -79,7 +79,7 @@ describe('Student Posts Questions', function () {
                 'question' => [
                     'id',
                     'body',
-                    'student' => ['id', 'name', 'student_code'],
+                    'student' => ['id', 'name'],
                     'lecture' => ['id', 'title', 'course'],
                     'created_at',
                 ],

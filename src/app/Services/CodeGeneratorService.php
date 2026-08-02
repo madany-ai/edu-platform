@@ -42,13 +42,13 @@ class CodeGeneratorService
         $maxAttempts = 100;
         
         for ($i = 0; $i < $maxAttempts; $i++) {
-            $code = $prefix . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+            $code = $prefix . str_pad((string) random_int(1, 999999), 6, '0', STR_PAD_LEFT);
             if (! $exists($code)) {
                 return $code;
             }
         }
 
-        // Fallback: use timestamp-based code
-        return $prefix . now()->format('His');
+        // Fallback: use unique alphanumeric string
+        return $prefix . strtoupper(Str::random(6));
     }
 }

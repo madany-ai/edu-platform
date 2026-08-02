@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ExamAttempt extends Model
 {
     use HasUuids;
-    protected $fillable = ['exam_id', 'student_id', 'score', 'started_at', 'submitted_at'];
+    protected $fillable = ['exam_id', 'student_id', 'score', 'status', 'started_at', 'submitted_at'];
 
     protected function casts(): array
     {

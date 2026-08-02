@@ -26,7 +26,9 @@ Route::get('governorates', [\App\Http\Controllers\Api\MiscController::class, 'go
 Route::get('grade-levels', [\App\Http\Controllers\Api\MiscController::class, 'gradeLevels']);
 Route::get('standalone-lectures', [CourseController::class, 'standaloneIndex']);
 
-// ─── Video Stream Proxy (token-based auth — no Sanctum session needed) ───
+// ─── Payment Webhooks ───
+Route::post('webhooks/{gateway}', [\App\Http\Controllers\Api\PaymentWebhookController::class, 'handle'])
+    ->where('gateway', 'paymob|fawry');
 Route::get('video/{videoId}/playlist', [\App\Http\Controllers\Api\VideoStreamController::class, 'playlist'])
     ->name('video.playlist')
     ->middleware('throttle:120,1');
@@ -115,6 +117,7 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     Route::get('bundles/{bundle}', [ProductController::class, 'showBundle']);
 
     // Orders & Purchases
+    Route::get('orders', [OrderController::class, 'index']);
     Route::post('orders', [OrderController::class, 'store']);
 
     // Q&A — Student
@@ -135,8 +138,7 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     // Q&A — Assistant
     Route::get('assistant/questions', [QAController::class, 'staffQuestions'])
         ->middleware('role:assistant');
+    // Video stream key (token-based auth — rate-limited)
+    Route::get('lectures/{lecture}/key', [\App\Http\Controllers\Api\CourseController::class, 'streamKey'])
+        ->middleware('throttle:10,1');
 });
-
-// Video stream key (token-based auth — rate-limited)
-Route::get('lectures/{lecture}/key', [\App\Http\Controllers\Api\CourseController::class, 'streamKey'])
-    ->middleware('throttle:30,1');

@@ -19,6 +19,7 @@ export interface CourseSection {
   id: string;
   title: string;
   sort_order: number;
+  course?: Course;
   lectures?: Lecture[];
 }
 
@@ -40,6 +41,7 @@ export interface Lecture {
   is_locked?: boolean;
   video_locked?: boolean;
   has_access?: boolean;
+  instructor?: Instructor | null;
   exams?: CourseExam[];
   assignments?: CourseExam[];
 }
@@ -73,4 +75,5 @@ export interface LectureFile {
   id: string;
   type: string;
   file_path: string;
+  original_name?: string;
 }

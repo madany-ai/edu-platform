@@ -20,6 +20,10 @@ class VideoStreamController extends Controller
      */
     public function playlist(Request $request, string $videoId)
     {
+        if (!preg_match('/^[a-f0-9\-]{36}$/i', $videoId)) {
+            return response()->json(['error' => 'معرف الفيديو غير صالح'], 400);
+        }
+
         $token = $request->query('token', '');
         $payload = $this->tokenService->validateVideoToken($token, $videoId);
 
@@ -65,6 +69,10 @@ class VideoStreamController extends Controller
      */
     public function segment(Request $request, string $videoId)
     {
+        if (!preg_match('/^[a-f0-9\-]{36}$/i', $videoId)) {
+            return response()->json(['error' => 'معرف الفيديو غير صالح'], 400);
+        }
+
         $token = $request->query('token', '');
         $file  = $request->query('file', '');
 

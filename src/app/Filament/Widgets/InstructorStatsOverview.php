@@ -44,9 +44,26 @@ class InstructorStatsOverview extends StatsOverviewWidget
         } else {
             $orders = Order::where('status', 'completed')->with('purchasable')->get();
             foreach ($orders as $order) {
-                if ($order->purchasable && $order->purchasable->instructor_id === $user->id) {
-                    $totalRevenue += ($order->amount_cents / 100);
-                    $completedOrdersCount++;
+                $purchasable = $order->purchasable;
+                if (!$purchasable) continue;
+
+                if ($purchasable instanceof \App\Models\Product) {
+                    if ($purchasable->instructor_id === $user->id) {
+                        $totalRevenue += ($order->amount_cents / 100);
+                        $completedOrdersCount++;
+                    }
+                } elseif ($purchasable instanceof \App\Models\Bundle) {
+                    $purchasable->loadMissing('products');
+                    $totalBundlePrice = (float) $purchasable->products->sum('price');
+                    $instructorProductsPrice = (float) $purchasable->products
+                        ->where('instructor_id', $user->id)
+                        ->sum('price');
+
+                    if ($totalBundlePrice > 0 && $instructorProductsPrice > 0) {
+                        $shareRatio = $instructorProductsPrice / $totalBundlePrice;
+                        $totalRevenue += (($order->amount_cents / 100) * $shareRatio);
+                        $completedOrdersCount++;
+                    }
                 }
             }
             

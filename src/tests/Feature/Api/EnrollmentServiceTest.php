@@ -41,30 +41,32 @@ beforeEach(function () {
     $this->service = app(\App\Services\EnrollmentService::class);
 });
 
-it('getStudentEnrollments returns synthetic enrollment for entitlement-only student', function () {
+it('getStudentEnrollments returns enrollment when course product is granted', function () {
+    $product = \App\Models\Product::create([
+        'instructor_id' => $this->instructor->id,
+        'name' => 'Course Product',
+        'sellable_id' => $this->course->id,
+        'sellable_type' => Course::class,
+        'price' => 100.00,
+    ]);
+
     $order = \App\Models\Order::create([
         'student_id' => $this->student->id,
-        'purchasable_id' => $this->course->id,
-        'purchasable_type' => Course::class,
+        'purchasable_id' => $product->id,
+        'purchasable_type' => \App\Models\Product::class,
         'amount_cents' => 10000,
         'status' => 'completed',
         'paid_at' => now(),
     ]);
 
-    Entitlement::create([
-        'student_id' => $this->student->id,
-        'lecture_id' => $this->lecture->id,
-        'order_id' => $order->id,
-        'expires_at' => now()->addDays(30),
-    ]);
+    (new \App\Services\GrantEntitlementService())->handle($order);
 
     $enrollments = $this->service->getStudentEnrollments($this->studentUser->id);
 
-    $fakeEnrollment = $enrollments->first(fn($e) => str_starts_with($e->id ?? '', 'entitlement-fake-'));
-    expect($fakeEnrollment)->not->toBeNull()
-        ->and($fakeEnrollment->course_id)->toBe($this->course->id)
-        ->and($fakeEnrollment->status)->toBe(\App\Enums\EnrollmentStatus::Active)
-        ->and($fakeEnrollment->source)->toBe(\App\Enums\EnrollmentSource::Purchase);
+    $enrollment = $enrollments->first(fn($e) => $e->course_id === $this->course->id);
+    expect($enrollment)->not->toBeNull()
+        ->and($enrollment->status)->toBe(\App\Enums\EnrollmentStatus::Active)
+        ->and($enrollment->source)->toBe(\App\Enums\EnrollmentSource::Purchase);
 });
 
 it('getStudentEnrollments does not duplicate synthetic when real enrollment exists', function () {

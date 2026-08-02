@@ -120,8 +120,8 @@ services:
     container_name: lms_mailpit
     restart: unless-stopped
     ports:
-      - "8025:8025" # Web UI
-      - "1025:1025" # SMTP
+      - "127.0.0.1:8025:8025" # Web UI
+      - "127.0.0.1:1025:1025" # SMTP
     networks:
       - lms_network
 
@@ -131,7 +131,7 @@ services:
     container_name: lms_minio
     restart: unless-stopped
     ports:
-      - "9000:9000"
+      - "127.0.0.1:9000:9000"
       - "127.0.0.1:9001:9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-lms_minio_admin}

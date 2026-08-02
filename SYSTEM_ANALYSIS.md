@@ -7,6 +7,8 @@
 >
 > **الإجمالي:** 10 حرجة (Critical) · 24 عالية (High) · 20 متوسطة (Medium) · 15 منخفضة (Low)
 
+> **تحديث 2026-08-02 (الجلسة الثانية):** تم تطبيق حزمة إصلاحات `cd7c78a` + ميلغريشنات `2026_08_02_*` غطّت معظم الثغرات الحرجة (انظر القسم 11)، وأُجريت مراجعة ثانية للواجهة الأمامية شملت صفحات المحتوى والأداء (القسم 12).
+
 ---
 
 ## 1) ملخص تنفيذي
@@ -337,6 +339,88 @@
 | P1 | `VideoAccessService.php` + `CheckEnrollment.php` | تفعيل `expires_at` + فحص Published |
 | P2 | `.dockerignore` + `.env` | عزل الأسرار + تدوير المفاتيح |
 | P2 | `compose`/nginx | TLS + إغلاق المنافذ + APP_DEBUG=false |
+
+---
+
+## 11) مراجعة الإصلاحات المطبقة (commit `cd7c78a` + ميلغريشنات `2026_08_02_*`)
+
+تمت مراجعة التغييرات الملتزمة حديثًا (Soft Deletes + RefundService + تحصين واجهات الوصول) وتبيّن أنها سليمة فعليًا:
+
+| بند التقرير الأصلي | الحالة | ماذا طُبّق |
+|---|---|---|
+| 2.1 تجاوز الدفع (`enroll`/`purchase`) | ✅ مُصلَح | `enroll` يتطلب طالبًا محقّقًا + كورس Published + مجاني؛ `purchase` يُفوَّض إلى `enroll`. |
+| 2.2 تسريب روابط البث العامة | ✅ مُصلَح | `LectureResource` لا يُرسل `video_path`/`bunny_video_id`/`stream_url` إلا إذا `canAccess` (للزائر `false`)، و`files` مشروطة بالوصول. |
+| 2.3 تسريب `is_correct` قبل الامتحان | ✅ مُصلَح | `Choice::$hidden=['is_correct']`؛ لا يُكشف إلا في `result()` عبر `makeVisible`. |
+| 2.4 حقن أسئلة من امتحان آخر | ✅ مُصلَح | `Rule::exists(...)->where('exam_id', $attempt->exam_id)` + تصحيح من درجات امتحان الـ Attempt الحقيقي. |
+| 2.5 محاولات غير محدودة + بلا توقيت | ✅ مُصلَح | حد أقصى `max_attempts` (افتراضي 3) + انتهاء المدة يعيد تسليم الصفر تلقائيًا + رفض التسليم بعد الوقت. |
+| 2.6 إندبوينت `/key` العام | ❌ لم يُصلَح | `routes/api.php:141` ما زال عامًا بلا throttle/auth. |
+| 2.7 حذف Cascade يدمر السجل المالي | ✅ مُصلَح | SoftDeletes على `orders`/`enrollments`/`entitlements`/`students` (`000001`). |
+| 2.8 كشف دورات Draft | ✅ مُصلَح | `CourseController::show` → 404 لغير المنشور إلا للمالك/سوبر أدمن. |
+| 2.9 TOCTOU `firstOrCreate` | ⚠️ جزئيًا | `EnrollmentService` → `updateOrCreate`؛ لكن `ExamService::startAttempt` ومولّد الأكواد ما زالا بدون معالجة Race. |
+| 2.10 تأكيد الطلب غير ذرّي | ❌ لم يُصلَح | تأكيد Filament ما زال: تحديث `completed` ثم منح في معاملة منفصلة. |
+| 3.1 فلوس بـ float + `intval` | ✅ مُصلَح | `(int) round($price*100)` + casts `decimal:2` للمنتج والباقة. |
+| 3.2 نموذج Order بدائي | ✅ مُصلَح | ميلغريشن `000002`: `payment_gateway`/`checkout_id`/`payment_url`/`gateway_reference`/`metadata`/`failure_reason`/`refunded_at`/`amount_refunded_cents`/`idempotency_key`(unique) + فهرس `(student_id,status)`. |
+| 3.3 `expires_at` لا يُطبَّق | ✅ مُصلَح | فلاتر `expires_at` في `CheckEnrollment`/`VideoAccessService`/`EnrollmentService`/`getStudentEntitlements`. |
+| 3.4 Refund لا يلغي الوصول | ✅ مُصلَح | `RefundService` يضبط `Refunded` + يحذف Entitlements المرتبطة بالطلب. |
+| 3.5 لا يمكن بيع محاضرة منفردة | ✅ مُصلَح بنيويًا | ميلغريشن `100001`: `section_id` nullable + `instructor_id`/`status`/`price`/`thumbnail` على `lectures`. |
+| 3.7 منح صفر صلاحيات بصمت | ✅ مُصلَح | `GrantEntitlementService` يرمي استثناء إذا لم تُحل أي محاضرة. |
+| 3.8 منح الأدمن اليدوي مكسور | ✅ مُصلَح | `entitlements.order_id` أصبح nullable (`000003`). |
+| 3.10 ExamPolicy على امتحان يتيم | ✅ مُصلَح | `update`/`delete` يعيدان `false` عند غياب `lecture`. |
+| 3.11 `startAttempt` يتجاوز الحجب التسلسلي | ✅ مُصلَح | فحص `isBlockedByExam` قبل بدء المحاولة. |
+| 3.12 تزوير التقدم | ✅ مُصلَح | تقييد `current_time` بمدة الفيديو + منع الإكمال تحت 80%. |
+| 3.17 تضارب إحصائيات الإيراد | ✅ مُصلَح | `DashboardService` يحسب من `orders.amount_cents` (completed) بدل مجموع أسعار الكورسات. |
+| 3.19 فهارس Postgres الناقصة | ✅ مُصلَح (معظمها) | ميلغريشن `000004` غطّى الفهارس المطلوبة + unique على `(lecture_id, is_assignment)`. |
+| 4.8 طلبات بلا فحص `is_active` | ✅ مُصلَح | `OrderController::store` يفحص `is_active` + يرفض تكرار طلب معلق. |
+| 4.14 تكرار Entitlements | ✅ مُصلَح | unique على `(student_id, lecture_id)` (`000003`). |
+| 4.15 طلبات مكررة / بلا idempotency | ✅ مُصلَح | `idempotency_key` unique + فحص الطلب المعلّق المكرر. |
+| 4.18 Entitlements منتهية تظهر مملوكة | ✅ مُصلَح | فلترة `expires_at` في `getStudentEntitlements`. |
+| 5.14 DevTools في الإنتاج | ✅ مُصلَح | `query-provider.tsx` يقيّده بـ `NODE_ENV === "development"`. |
+| 5.15 إرسال Bearer لأي HLS host | ✅ مُصلَح | `video-player.tsx` يرسل التوكن فقط لطلبات الـ API المحلية. |
+
+**لم يُصلَح بعد:** 2.6، 2.10، 4.3 (تضخيم نسبة المقالية)، 4.4 (تسريب `ProductController::show` للـ sellable الخام)، 4.5-4.7، 4.9-4.13، 4.16 (Hack `entitlement-fake-*`)، 4.17، 4.19-4.20، 5.1-5.13، وكل بنود البنية التحتية (القسم 7).
+
+---
+
+## 12) مراجعة الواجهة الأمامية الثانية — صفحات المحتوى + السرعة (2026-08-02)
+
+### 12.1 صفحات المحتوى المطلوبة — تأكيد الوجود
+| الصفحة | الملف | الحالة |
+|---|---|---|
+| صفحة محتويات الكورس (عامة) | `frontend/src/app/(main)/courses/[id]/page.tsx` | ✅ موجودة: أقسام/محاضرات، حالات مسجّل/مفتوح/مقفول، تبويبات (محاضرات/أقسام/باقات). |
+| صفحة المحاضرة (Playlist داخل كورس) | `frontend/src/app/(player)/courses/[id]/lectures/[lectureId]/page.tsx` | ✅ موجودة: تبويبات نظرة عامة/موارد/أسئلة + تحويل حاجز للامتحان. |
+| صفحة المحاضرة المنفردة (جديدة — غير ملتزمة) | `frontend/src/app/(main)/lectures/[id]/page.tsx` | ✅ موجودة (untracked) لكن بها نواقص ربط (12.3). |
+| صفحة محتويات الباقة | `frontend/src/app/(main)/bundles/[id]/page.tsx` | ✅ موجودة. |
+| الكتالوج العام | `frontend/src/app/(main)/courses/page.tsx` | ✅ تبويبات كورسات/محاضرات/باقات. |
+
+### 12.2 مسار مفقود → 404 (⚠️ عالية)
+- `src/lib/constants.ts:12` يوجه روابط المحاضرة إلى `/courses/{courseId}/lectures/{lectureId}`.
+- تحت `(main)` لا يوجد `page.tsx` لهذا المسار — يوجد فقط `exam/page.tsx`. صفحة المحاضرة موجودة حصريًا تحت `(player)`.
+- أي `<Link>` من لوحة الطالب (`(dashboard)/dashboard/courses`) أو تحويل `(player)/play` يستهدف المسار العام → **404 أثناء التشغيل**.
+- **الحل:** إضافة صفحة تحويل/عرض تحت `(main)` لنفس المسار، أو توجيه كل الروابط إلى `(player)`.
+
+### 12.3 نواقص ربط صفحة المحاضرة المنفردة (⚠️)
+- الباك اند `LectureResource` لا يُرجع `section` أو `instructor`، و`CourseController::showLecture` لا يحمّل `instructor` → بانر "متوفرة داخل كورس" وشارة المعلم في `(main)/lectures/[id]/page.tsx` **لن تظهر أبدًا**. الإصلاح: إضافة الحقلين للـ Resource + `->with('instructor')`.
+- مطابقة المنتج عبر نص حرفي `p.sellable_type === "App\\Models\\Lecture"` — هشّ وقابل للكسر.
+- `original_name` أُضيف لنوع الملفات الأمامي لكن لا يوجد عمود في `LectureFile` (يقع في المسار الاحتياطي — غير مؤذٍ).
+
+### 12.4 إزالة الاشتراك الشهري — الحالة
+- ✅ **مُلتَزَم (Backend):** لا يوجد أي نموذج اشتراكات (`plans`/`plan_subscriptions`)؛ `enroll` أصبح للكورسات المجانية فقط.
+- 🚧 **قيد التنفيذ (غير ملتزم):**
+  - تبويب "الاشتراكات الشهرية 📅" حُذف من `(main)/courses/page.tsx` ✅ — **لكن بقيت مخلفات:** سطر 43 ما زال يستدعي `useProducts("section")` (طلب API ميت في كل زيارة) + استيراد `Calendar` بلا استخدام + متغير `sections`.
+  - `DemoSeeder` استبدل منتج "اشتراك شهر" بمحاضرتين منفردتين؛ `ProductResource` مخفي من قائمة Filament.
+- ⚠️ **نص اشتراك متبقٍ:** `(main)/products/[id]/page.tsx:49` ("المحاضرات المشمولة في هذا الشهر/الوحدة") و`:109` ("سعر الاشتراك").
+- ✅ لا يوجد أي "حوار اشتراك شهري" في الواجهة، ولا مسار دفع اشتراكات.
+
+### 12.5 الأداء والسرعة (Performance)
+- ❌ **لا يوجد `next/image` إطلاقًا** — كل الصور `<img>` عادية (`course-card.tsx:22`، `(main)/page.tsx:66`، لوحة الطالب، `quiz-tab.tsx`) → لا تحسين/`lazy`/`priority`، وشيفت في التخطيط.
+- ❌ **اعتماد ميت:** `framer-motion@^12.42.2` في `package.json:25` بلا أي استخدام في `src` (يزيد حجم الحزمة). (`@base-ui/react` مستخدم فعليًا كأساس للمكونات).
+- ❌ كل صفحات `(main)` بـ `"use client"` → شحن JS كامل لكل صفحة بدون استفادة من Server Components/Streaming.
+- ❌ لا `loading.tsx` لكل مسار ولا حدود `Suspense` حول أقسام البيانات (فقط `PageLoading` عام). (`src/app/loading.tsx` فقط).
+- ❌ **الكتالوج يطلق 4 طلبات متوازية عند كل فتح** (كورسات + منتجات محاضرات + منتجات أقسام ميتة + باقات)، و`useProducts`/`useBundles` تجلب **كل** `is_active=true` بلا Pagination → الحمولة تنمو بلا حد.
+- ⚠️ صفحة الـ Player (300+ سطر) بها **صفر** `useMemo`/`useCallback`.
+- ✅ إيجابي: `VideoPlayer` محمّل بـ `dynamic(..., {ssr:false})`؛ DevTools الإنتاج مقفول (12.2/5.14)؛ التوكن يُرسل للـ API المحلي فقط.
+- ⚠️ `next.config.ts` headers بلا CSP (يوجد فقط clickjacking/no-sniff/referrer/permissions).
+- ⚠️ لا وسائط موقّعة قصيرة العمر في الواجهة (تعتمد على Bearer + روابط Bunny الموقّعة).
 
 ---
 
