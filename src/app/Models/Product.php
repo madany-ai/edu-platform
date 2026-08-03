@@ -42,4 +42,9 @@ class Product extends Model
             default => collect(),
         };
     }
+
+    public function bundles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Bundle::class, 'bundle_products');
+    }
 }

@@ -34,6 +34,9 @@ class ProductResource extends JsonResource
                     'duration' => $l->duration,
                 ]);
             } elseif ($this->sellable instanceof Course && $this->sellable->relationLoaded('sections')) {
+                $sellableSummary['instructor'] = $this->sellable->relationLoaded('instructor') && $this->sellable->instructor ? [
+                    'name' => $this->sellable->instructor->name,
+                ] : null;
                 $sellableSummary['sections'] = $this->sellable->sections->map(fn ($s) => [
                     'id' => $s->id,
                     'title' => $s->title,
@@ -44,6 +47,17 @@ class ProductResource extends JsonResource
                     ]) : [],
                     'lectures_count' => $s->relationLoaded('lectures') ? $s->lectures->count() : null,
                 ]);
+            } elseif ($this->sellable instanceof Lecture) {
+                $sellableSummary['description'] = $this->sellable->description;
+                $sellableSummary['duration'] = $this->sellable->relationLoaded('video') && $this->sellable->video 
+                    ? $this->sellable->video->duration 
+                    : $this->sellable->duration;
+                $sellableSummary['instructor'] = $this->sellable->relationLoaded('instructor') && $this->sellable->instructor ? [
+                    'name' => $this->sellable->instructor->name,
+                ] : null;
+                $sellableSummary['course'] = $this->sellable->relationLoaded('section') && $this->sellable->section && $this->sellable->section->relationLoaded('course') ? [
+                    'title' => $this->sellable->section->course->title,
+                ] : null;
             }
         }
 
