@@ -47,8 +47,8 @@ export function useCreateOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: { purchasable_id: string; purchasable_type: 'product' | 'bundle' }) => {
-      const { data } = await api.post<{ status: string; message: string; data: any }>("/orders", payload);
+    mutationFn: async (payload: { purchasable_id: string; purchasable_type: 'product' | 'bundle', payment_gateway: 'paymob' | 'fawry' }) => {
+      const { data } = await api.post<{ status: string; message: string; data: any; payment_url: string }>("/orders", payload);
       return data;
     },
     onSuccess: () => {

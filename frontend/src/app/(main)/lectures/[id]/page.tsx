@@ -12,7 +12,8 @@ import { PageLoading } from "@/components/shared/loading-spinner";
 import { ErrorState } from "@/components/shared/error-state";
 import { useLecture } from "@/hooks/useCourses";
 import { useMyEntitlements } from "@/hooks/useEnrollment";
-import { useProducts, useCreateOrder } from "@/hooks/useProducts";
+import { useProducts } from "@/hooks/useProducts";
+import { PaymentModal } from "@/components/shared/payment-modal";
 import { toast } from "sonner";
 import {
   PlayCircle,
@@ -34,7 +35,9 @@ export default function StandaloneLecturePage() {
   const { data: lecture, isLoading, error } = useLecture(id);
   const { data: entitlements } = useMyEntitlements();
   const { data: products } = useProducts("lecture");
-  const createOrderMutation = useCreateOrder();
+  
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [purchaseTarget, setPurchaseTarget] = useState<{ id: string; price: number } | null>(null);
 
   if (isLoading) return <PageLoading />;
   if (error || !lecture) return <ErrorState title="خطأ في التحميل" description="لم نتمكن من العثور على المحاضرة المحددة" />;
@@ -62,17 +65,8 @@ export default function StandaloneLecturePage() {
       return;
     }
 
-    createOrderMutation.mutate(
-      { purchasable_id: lectureProduct.id, purchasable_type: "product" },
-      {
-        onSuccess: () => {
-          toast.success("تم إرسال طلب الشراء بنجاح. سيتم تفعيل المحاضرة لك فور تأكيد الطلب.");
-        },
-        onError: (err: any) => {
-          toast.error(err.response?.data?.message || "فشلت عملية الشراء. يرجى المحاولة لاحقاً.");
-        },
-      }
-    );
+    setPurchaseTarget({ id: lectureProduct.id, price: lectureProduct.price });
+    setIsPaymentModalOpen(true);
   };
 
   return (
@@ -128,13 +122,10 @@ export default function StandaloneLecturePage() {
                 <Button
                   size="lg"
                   onClick={handlePurchaseLecture}
-                  disabled={createOrderMutation.isPending}
                   className="bg-primary hover:bg-primary-hover text-primary-foreground font-bold px-8 py-6 rounded-xl shadow-xl shadow-primary/25 gap-3"
                 >
                   <ShoppingBag className="h-5 w-5" />
-                  {createOrderMutation.isPending
-                    ? "جاري إرسال الطلب..."
-                    : `شراء المحاضرة بـ ${lectureProduct.price} EGP`}
+                  شراء المحاضرة بـ {lectureProduct.price} EGP
                 </Button>
               )}
             </div>
@@ -269,11 +260,10 @@ export default function StandaloneLecturePage() {
                 {!isUnlocked && lectureProduct && (
                   <Button
                     onClick={handlePurchaseLecture}
-                    disabled={createOrderMutation.isPending}
                     className="w-full bg-primary hover:bg-primary-hover text-primary-foreground font-bold py-6 rounded-xl shadow-lg shadow-primary/20 gap-2"
                   >
                     <ShoppingBag className="h-5 w-5" />
-                    {createOrderMutation.isPending ? "جاري الشراء..." : "طلب الشراء الآن"}
+                    طلب الشراء الآن
                   </Button>
                 )}
 
@@ -287,6 +277,14 @@ export default function StandaloneLecturePage() {
           </div>
         </div>
       </div>
+
+      <PaymentModal 
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        purchasableId={purchaseTarget?.id || ""}
+        purchasableType="product"
+        price={purchaseTarget?.price || 0}
+      />
     </div>
   );
 }

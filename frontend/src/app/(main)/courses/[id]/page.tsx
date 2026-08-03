@@ -13,7 +13,8 @@ import { PageLoading } from "@/components/shared/loading-spinner";
 import { ErrorState } from "@/components/shared/error-state";
 import { useCourse } from "@/hooks/useCourses";
 import { useMyEnrollments, useEnroll, usePurchase, useMyEntitlements } from "@/hooks/useEnrollment";
-import { useProducts, useCreateOrder } from "@/hooks/useProducts";
+import { useProducts } from "@/hooks/useProducts";
+import { PaymentModal } from "@/components/shared/payment-modal";
 import { toast } from "sonner";
 import {
   CheckCircle2,
@@ -32,6 +33,8 @@ export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [purchaseTarget, setPurchaseTarget] = useState<{ id: string; price: number } | null>(null);
 
   const { data: courseData, isLoading: courseLoading, error: courseError } = useCourse(id);
   const { data: enrollmentsData } = useMyEnrollments();
@@ -41,7 +44,6 @@ export default function CourseDetailPage() {
   
   const enrollMutation = useEnroll();
   const purchaseMutation = usePurchase();
-  const createOrderMutation = useCreateOrder();
 
   const course = courseData;
   const enrolled = enrollmentsData?.data?.some(
@@ -69,17 +71,8 @@ export default function CourseDetailPage() {
       toast.error("لا يوجد منتج متاح لهذا الكورس حالياً. يرجى التواصل مع الإدارة.");
       return;
     }
-    createOrderMutation.mutate(
-      { purchasable_id: courseProduct.id, purchasable_type: "product" },
-      {
-        onSuccess: () => {
-          toast.success("تم إرسال طلب الشراء بنجاح. سيتم تفعيل المحتوى بعد التحقق من الدفع.");
-        },
-        onError: (err: any) => {
-          toast.error(err.response?.data?.message || "فشلت عملية الشراء. يرجى المحاولة مرة أخرى.");
-        },
-      }
-    );
+    setPurchaseTarget({ id: courseProduct.id, price: courseProduct.price });
+    setIsPaymentModalOpen(true);
   };
 
   const handleBuyLecture = (product: any) => {
@@ -87,7 +80,8 @@ export default function CourseDetailPage() {
       toast.error("يرجى تسجيل الدخول أولاً");
       return;
     }
-    toast.info("خدمات الدفع الإلكتروني قيد الإعداد حالياً. يرجى التواصل مع الإدارة أو الدعم الفني لتفعيل هذه المحاضرة لحسابك.");
+    setPurchaseTarget({ id: product.id, price: product.price });
+    setIsPaymentModalOpen(true);
   };
 
   const toggleSection = (sectionId: string) => {
@@ -212,7 +206,6 @@ export default function CourseDetailPage() {
                                         variant="outline"
                                         size="sm"
                                         className="text-xs h-8 border-primary/30 text-primary hover:bg-primary/10 gap-1"
-                                        disabled={createOrderMutation.isPending}
                                         onClick={() => handleBuyLecture(lectureProduct)}
                                       >
                                         شراء المحاضرة ({lectureProduct.price} EGP)
@@ -327,9 +320,8 @@ export default function CourseDetailPage() {
                       className="w-full gap-2"
                       size="lg"
                       onClick={handlePurchase}
-                      disabled={createOrderMutation.isPending}
                     >
-                      {createOrderMutation.isPending ? "جاري المعالجة..." : `شراء - ${course.price} ج.م`}
+                      شراء - {course.price} ج.م
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   )
@@ -388,6 +380,14 @@ export default function CourseDetailPage() {
           </div>
         </div>
       </div>
+
+      <PaymentModal 
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        purchasableId={purchaseTarget?.id || ""}
+        purchasableType="product"
+        price={purchaseTarget?.price || 0}
+      />
     </div>
   );
 }

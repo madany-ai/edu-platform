@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/services/api.client";
 import { useParams, useRouter } from "next/navigation";
@@ -8,11 +9,15 @@ import { PageLoading } from "@/components/shared/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen, Layers, Sparkles } from "lucide-react";
 import { useCreateOrder } from "@/hooks/useProducts";
+import { PaymentModal } from "@/components/shared/payment-modal";
+import { useAuth } from "@/providers/auth-provider";
+import { toast } from "sonner";
 
 export default function BundlePage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const createOrderMutation = useCreateOrder();
+  const { user } = useAuth();
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   const { data: response, isLoading } = useQuery({
     queryKey: ["bundles", id],
@@ -20,18 +25,15 @@ export default function BundlePage() {
   });
 
   const handlePurchase = () => {
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول أولاً");
+      router.push("/login");
+      return;
+    }
+    
     if (!bundle) return;
-    createOrderMutation.mutate(
-      {
-        purchasable_id: bundle.id,
-        purchasable_type: "bundle",
-      },
-      {
-        onSuccess: () => {
-          router.push("/dashboard/courses");
-        },
-      }
-    );
+    
+    setIsPaymentModalOpen(true);
   };
 
   if (isLoading) return <PageLoading />;
@@ -70,14 +72,13 @@ export default function BundlePage() {
                   {bundle.price} EGP
                 </span>
               </div>
-              <Button
-                size="lg"
+              <Button 
+                size="lg" 
                 onClick={handlePurchase}
-                disabled={createOrderMutation.isPending}
-                className="bg-primary hover:bg-primary-hover text-primary-foreground font-bold px-8 rounded-xl gap-2 shadow-lg shadow-primary/20"
+                className="bg-primary hover:bg-primary-hover text-primary-foreground font-bold shadow-lg shadow-primary/20 w-full sm:w-auto px-8 gap-2"
               >
                 <Sparkles className="h-5 w-5" />
-                {createOrderMutation.isPending ? "جاري الشراء..." : "شراء الباقة"}
+                شراء الباقة الآن
               </Button>
             </div>
           </div>
@@ -108,6 +109,16 @@ export default function BundlePage() {
           )}
         </div>
       </div>
+      
+      {bundle && (
+        <PaymentModal 
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          purchasableId={bundle.id}
+          purchasableType="bundle"
+          price={bundle.price}
+        />
+      )}
     </div>
   );
 }

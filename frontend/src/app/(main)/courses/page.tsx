@@ -4,8 +4,9 @@ import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/hooks/useCourses";
-import { useProducts, useBundles, useCreateOrder } from "@/hooks/useProducts";
+import { useProducts, useBundles } from "@/hooks/useProducts";
 import { CourseCard } from "@/components/course-card";
+import { PaymentModal } from "@/components/shared/payment-modal";
 import { SearchInput } from "@/components/shared/search-input";
 import { CourseCardSkeleton } from "@/components/shared/page-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -37,7 +38,8 @@ function CoursesContent() {
   const { data: lecturesData, isLoading: lecturesLoading } = useProducts("lecture");
   const { data: bundlesData, isLoading: bundlesLoading } = useBundles();
 
-  const createOrderMutation = useCreateOrder();
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [purchaseTarget, setPurchaseTarget] = useState<{ id: string; type: 'product' | 'bundle'; price: number; name: string } | null>(null);
 
   const courses = coursesData?.data ?? [];
   const lectures = lecturesData ?? [];
@@ -50,20 +52,8 @@ function CoursesContent() {
       return;
     }
 
-    toast.info(`جاري بدء معالجة شراء: ${name}...`);
-
-    createOrderMutation.mutate(
-      { purchasable_id: id, purchasable_type: type },
-      {
-        onSuccess: (res) => {
-          toast.success(`تم الشراء بنجاح! تم تفعيل المحتوى الدراسي.`);
-        },
-        onError: (err: any) => {
-          const errMsg = err.response?.data?.message || "فشلت عملية الشراء، يرجى المحاولة مرة أخرى.";
-          toast.error(errMsg);
-        },
-      }
-    );
+    setPurchaseTarget({ id, type, price, name });
+    setIsPaymentModalOpen(true);
   };
 
   const renderCoursesTab = () => {
@@ -169,12 +159,11 @@ function CoursesContent() {
                 </Link>
                 <Button
                   onClick={() => handlePurchase(item.id, 'product', item.price, item.name)}
-                  disabled={createOrderMutation.isPending}
                   size="sm"
                   className="bg-primary hover:bg-primary-hover text-primary-foreground font-bold rounded-xl gap-1.5 hidden sm:flex"
                 >
                   <Sparkles className="h-4 w-4" />
-                  {createOrderMutation.isPending ? "جاري..." : "شراء"}
+                  شراء
                 </Button>
               </div>
             </div>
@@ -255,12 +244,11 @@ function CoursesContent() {
                 </Link>
                 <Button
                   onClick={() => handlePurchase(bundle.id, 'bundle', bundle.price, bundle.name)}
-                  disabled={createOrderMutation.isPending}
                   size="sm"
                   className="bg-primary hover:bg-primary-hover text-primary-foreground font-bold rounded-xl gap-1.5 hidden sm:flex"
                 >
                   <Sparkles className="h-4 w-4" />
-                  {createOrderMutation.isPending ? "جاري..." : "شراء"}
+                  شراء الباقة
                 </Button>
               </div>
             </div>

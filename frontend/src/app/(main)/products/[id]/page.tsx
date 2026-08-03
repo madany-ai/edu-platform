@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/services/api.client";
 import { useParams, useRouter } from "next/navigation";
@@ -14,12 +15,13 @@ import { ArrowLeft, BookOpen, Layers, PlayCircle, Sparkles, CheckCircle2, Users,
 import { useCreateOrder } from "@/hooks/useProducts";
 import { toast } from "sonner";
 import { useAuth } from "@/providers/auth-provider";
+import { PaymentModal } from "@/components/shared/payment-modal";
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const createOrderMutation = useCreateOrder();
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   const { data: response, isLoading, error } = useQuery({
     queryKey: ["products", id],
@@ -35,21 +37,7 @@ export default function ProductPage() {
     
     if (!product) return;
     
-    createOrderMutation.mutate(
-      {
-        purchasable_id: product.id,
-        purchasable_type: "product",
-      },
-      {
-        onSuccess: () => {
-          toast.success("تم إرسال طلب الشراء بنجاح!");
-          router.push("/dashboard");
-        },
-        onError: (err: any) => {
-          toast.error(err.response?.data?.message || "فشلت عملية الشراء.");
-        }
-      }
-    );
+    setIsPaymentModalOpen(true);
   };
 
   if (isLoading) return <PageLoading />;
@@ -64,8 +52,8 @@ export default function ProductPage() {
   }
 
   const product = response.data;
-  const isLecture = product.sellable_type.includes("Lecture");
-  const isCourse = product.sellable_type.includes("Course") && !product.sellable_type.includes("Section");
+  const isLecture = product.sellable_type === "lecture" || String(product.sellable_type).toLowerCase().includes("lecture");
+  const isCourse = product.sellable_type === "course" || (String(product.sellable_type).toLowerCase().includes("course") && !String(product.sellable_type).toLowerCase().includes("section"));
   
   const sellable = product.sellable;
   const instructorName = sellable?.instructor?.name || "معلم المادة";
@@ -139,12 +127,49 @@ export default function ProductPage() {
                     <p className="text-xs text-muted-foreground">شرح تفصيلي ومسجل بجودة عالية</p>
                   </div>
                 </div>
+                
+                {sellable?.exams?.length > 0 && (
+                  <div className="glass-card p-4 rounded-xl flex items-center gap-3">
+                    <div className="h-10 w-10 bg-purple-500/10 text-purple-500 rounded-full flex items-center justify-center">
+                      <BookOpen className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-bold">امتحانات إلكترونية</p>
+                      <p className="text-xs text-muted-foreground">{sellable.exams.length} امتحان مرفق بالمحاضرة</p>
+                    </div>
+                  </div>
+                )}
+                
+                {sellable?.assignments?.length > 0 && (
+                  <div className="glass-card p-4 rounded-xl flex items-center gap-3">
+                    <div className="h-10 w-10 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center">
+                      <CheckCircle2 className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-bold">واجبات تدريبية</p>
+                      <p className="text-xs text-muted-foreground">{sellable.assignments.length} واجب لتطبيق الشرح</p>
+                    </div>
+                  </div>
+                )}
+
+                {sellable?.files?.length > 0 && (
+                  <div className="glass-card p-4 rounded-xl flex items-center gap-3">
+                    <div className="h-10 w-10 bg-indigo-500/10 text-indigo-500 rounded-full flex items-center justify-center">
+                      <Layers className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-bold">ملفات وملخصات</p>
+                      <p className="text-xs text-muted-foreground">{sellable.files.length} ملف PDF مرفق</p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="glass-card p-4 rounded-xl flex items-center gap-3">
                   <div className="h-10 w-10 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center">
                     <CheckCircle2 className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="font-bold">وصول دائم / محدد</p>
+                    <p className="font-bold">وصول للمحتوى</p>
                     <p className="text-xs text-muted-foreground">صلاحية مشاهدة حسب الباقة المشتراة</p>
                   </div>
                 </div>
@@ -199,10 +224,9 @@ export default function ProductPage() {
                   className="w-full gap-2 bg-primary hover:bg-primary-hover text-primary-foreground font-bold shadow-md shadow-primary/20"
                   size="lg"
                   onClick={handlePurchase}
-                  disabled={createOrderMutation.isPending}
                 >
                   <Sparkles className="h-4 w-4" />
-                  {createOrderMutation.isPending ? "جاري المعالجة..." : "شراء الآن"}
+                  شراء الآن
                 </Button>
 
                 <Separator />
@@ -261,6 +285,16 @@ export default function ProductPage() {
           </div>
         </div>
       </div>
+      
+      {product && (
+        <PaymentModal 
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          purchasableId={product.id}
+          purchasableType="product"
+          price={product.price}
+        />
+      )}
     </div>
   );
 }

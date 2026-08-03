@@ -58,6 +58,9 @@ class ProductResource extends JsonResource
                 $sellableSummary['course'] = $this->sellable->relationLoaded('section') && $this->sellable->section && $this->sellable->section->relationLoaded('course') ? [
                     'title' => $this->sellable->section->course->title,
                 ] : null;
+                $sellableSummary['exams'] = $this->sellable->relationLoaded('exams') ? $this->sellable->exams->map(fn($e) => ['id' => $e->id, 'title' => $e->title, 'duration' => $e->duration]) : [];
+                $sellableSummary['assignments'] = $this->sellable->relationLoaded('assignments') ? $this->sellable->assignments->map(fn($a) => ['id' => $a->id, 'title' => $a->title]) : [];
+                $sellableSummary['files'] = $this->sellable->relationLoaded('files') ? $this->sellable->files->map(fn($f) => ['id' => $f->id]) : [];
             }
         }
 
