@@ -97,12 +97,12 @@ export default function StandaloneLecturePage() {
         <div className="glass-card rounded-2xl overflow-hidden border border-white/10 relative shadow-2xl">
           {isUnlocked ? (
             <div className="aspect-video w-full bg-black flex items-center justify-center relative">
-              {lecture.video?.video_path ? (
+              {lecture.video?.stream_url ? (
                 <iframe
                   src={
-                    lecture.video.video_path.includes("youtube.com") || lecture.video.video_path.includes("youtu.be")
-                      ? lecture.video.video_path.replace("watch?v=", "embed/")
-                      : lecture.video.video_path
+                    lecture.video.stream_url.includes("youtube.com") || lecture.video.stream_url.includes("youtu.be")
+                      ? lecture.video.stream_url.replace("watch?v=", "embed/")
+                      : lecture.video.stream_url
                   }
                   className="w-full h-full border-0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -184,7 +184,7 @@ export default function StandaloneLecturePage() {
                       className="flex items-center justify-between p-3.5 rounded-xl bg-secondary/30 border border-white/5"
                     >
                       <span className="text-sm font-medium text-foreground">
-                        {file.original_name || file.file_path?.split("/").pop() || "ملف مرفق"}
+                        {file.original_name || `ملف مرفق ${file.id.substring(0, 6)}`}
                       </span>
                       {isUnlocked ? (
                         <a

@@ -16,12 +16,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
-  BookOpen,
   PlayCircle,
-  Clock,
-  Award,
-  CreditCard,
-  Calendar,
   Layers,
   Sparkles,
 } from "lucide-react";
@@ -40,14 +35,12 @@ function CoursesContent() {
     debouncedSearch ? { search: debouncedSearch } : undefined
   );
   const { data: lecturesData, isLoading: lecturesLoading } = useProducts("lecture");
-  const { data: sectionsData, isLoading: sectionsLoading } = useProducts("section");
   const { data: bundlesData, isLoading: bundlesLoading } = useBundles();
 
   const createOrderMutation = useCreateOrder();
 
   const courses = coursesData?.data ?? [];
   const lectures = lecturesData ?? [];
-  const sections = sectionsData ?? [];
   const bundles = bundlesData ?? [];
 
   const handlePurchase = (id: string, type: 'product' | 'bundle', price: number, name: string) => {

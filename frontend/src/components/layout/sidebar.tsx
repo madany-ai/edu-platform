@@ -8,6 +8,7 @@ import { ROUTES } from "@/lib/constants";
 import {
   LayoutDashboard,
   BookOpen,
+  PlayCircle,
   GraduationCap,
   Settings,
   LogOut,
@@ -19,6 +20,7 @@ import {
 const studentLinks = [
   { href: ROUTES.DASHBOARD, label: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/dashboard/courses", label: "دوراتي", icon: BookOpen },
+  { href: "/dashboard/lectures", label: "محاضراتي", icon: PlayCircle },
   { href: "/dashboard/exams", label: "الامتحانات والواجبات", icon: BookOpen },
   { href: "/dashboard/questions", label: "أسئلتي", icon: MessageCircle },
   { href: "/dashboard/notifications", label: "الإشعارات", icon: Bell },

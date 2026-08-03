@@ -63,10 +63,8 @@ export interface CourseExam {
 
 export interface LectureVideo {
   id: string;
-  bunny_video_id?: string;
   duration: number;
   status?: string;
-  video_path?: string;
   stream_url?: string;
   stream_type?: string;
 }
@@ -74,6 +72,5 @@ export interface LectureVideo {
 export interface LectureFile {
   id: string;
   type: string;
-  file_path: string;
   original_name?: string;
 }

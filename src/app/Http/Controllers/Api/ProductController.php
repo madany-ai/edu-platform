@@ -57,7 +57,9 @@ class ProductController extends Controller
         if ($product->sellable_type === \App\Models\CourseSection::class) {
             $product->load('sellable.lectures');
         } elseif ($product->sellable_type === \App\Models\Course::class) {
-            $product->load('sellable.sections.lectures');
+            $product->load('sellable.sections.lectures', 'sellable.instructor');
+        } elseif ($product->sellable_type === \App\Models\Lecture::class) {
+            $product->load(['sellable.instructor', 'sellable.video', 'sellable.section.course']);
         } else {
             $product->load('sellable');
         }

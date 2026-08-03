@@ -96,11 +96,13 @@ class EnrollmentService
             return collect();
         }
 
-        return \App\Models\Entitlement::where('student_id', $student->id)
+        return \App\Models\Entitlement::with(['lecture.instructor', 'lecture.video', 'lecture.section.course'])
+            ->where('student_id', $student->id)
             ->where(function ($q) {
                 $q->whereNull('expires_at')
                   ->orWhere('expires_at', '>', now());
             })
+            ->latest()
             ->get();
     }
 }

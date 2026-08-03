@@ -1,5 +1,6 @@
 import api from "./api.client";
 import type { User } from "@/types";
+import env from "@/config/env";
 
 export interface LoginPayload {
   email: string;
@@ -50,13 +51,13 @@ export interface ResetPasswordPayload {
 
 export const authService = {
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
-    await api.get("/sanctum/csrf-cookie");
+    await api.get("/sanctum/csrf-cookie", { baseURL: env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, "") });
     const { data } = await api.post<LoginResponse>("/auth/login", payload);
     return data;
   },
 
   register: async (payload: RegisterPayload): Promise<RegisterResponse> => {
-    await api.get("/sanctum/csrf-cookie");
+    await api.get("/sanctum/csrf-cookie", { baseURL: env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, "") });
     const { data } = await api.post<RegisterResponse>("/auth/register", payload);
     return data;
   },
