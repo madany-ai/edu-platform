@@ -103,7 +103,7 @@ it('getStudentStats returns values from student_statistics table', function () {
 
     expect($stats['completed_lectures'])->toBe(15)
         ->and($stats['total_watch_minutes'])->toBe(420)
-        ->and($stats['average_exam_score'])->toBe(85.5);
+        ->and((float) $stats['average_exam_score'])->toBe(85.5);
 });
 
 it('getStudentStats defaults to zero when no student_statistics row', function () {

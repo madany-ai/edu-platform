@@ -40,7 +40,7 @@ class Student extends Model
         'user_id', 'student_code', 'first_name', 'second_name', 'third_name', 'last_name',
         'phone', 'father_phone', 'mother_phone', 'guardian_job',
         'governorate_id', 'city_id', 'school_id', 'school_name', 'grade_level_id', 'academic_track_id',
-        'gender', 'birth_date', 'profile_image', 'is_verified',
+        'group_id', 'gender', 'birth_date', 'profile_image', 'is_verified',
     ];
 
     protected static function boot(): void
@@ -125,5 +125,30 @@ class Student extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'student_id');
+    }
+
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(Group::class);
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class, 'student_id');
+    }
+
+    public function centerGrades(): HasMany
+    {
+        return $this->hasMany(CenterGrade::class, 'student_id');
+    }
+
+    public function transfers(): HasMany
+    {
+        return $this->hasMany(StudentTransfer::class, 'student_id')->orderBy('transferred_at', 'desc');
+    }
+
+    public function communicationLogs(): HasMany
+    {
+        return $this->hasMany(CommunicationLog::class, 'student_id')->orderBy('date', 'desc');
     }
 }

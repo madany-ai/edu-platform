@@ -42,6 +42,7 @@ Route::get('video/{videoId}/segment', [\App\Http\Controllers\Api\VideoStreamCont
 Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('auth/me', [AuthController::class, 'me']);
+    Route::put('auth/profile', [AuthController::class, 'updateProfile']);
 
     // Dashboard
     Route::get('dashboard/student', [DashboardController::class, 'student']);
@@ -141,4 +142,10 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     // Video stream key (token-based auth — rate-limited)
     Route::get('lectures/{lecture}/key', [\App\Http\Controllers\Api\CourseController::class, 'streamKey'])
         ->middleware('throttle:10,1');
+
+    // ─── Center Management (Student) ───
+    Route::get('center/my-attendance', [\App\Http\Controllers\Api\CenterStudentController::class, 'myAttendance']);
+    Route::get('center/my-grades', [\App\Http\Controllers\Api\CenterStudentController::class, 'myGrades']);
+    Route::get('center/my-group', [\App\Http\Controllers\Api\CenterStudentController::class, 'myGroup']);
+    Route::get('center/my-report', [\App\Http\Controllers\Api\CenterStudentController::class, 'myReport']);
 });

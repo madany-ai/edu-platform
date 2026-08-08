@@ -353,7 +353,7 @@ it('student views attempt result', function () {
 
     $this->actingAs($this->studentUser)->getJson("/api/attempts/{$attemptId}/result")
         ->assertOk()
-        ->assertJsonPath('score', 100);
+        ->assertJsonPath('score', fn ($val) => (float) $val === 100.0);
 });
 
 it('my-attempts lists only submitted attempts', function () {

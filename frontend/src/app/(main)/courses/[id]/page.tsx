@@ -47,12 +47,9 @@ export default function CourseDetailPage() {
 
   const course = courseData;
   const enrolled = enrollmentsData?.data?.some(
-    (e) => (e.course_id === id || e.course?.id === id) && !String(e.id).startsWith("entitlement-fake-")
-  ) ?? false;
-  // Also consider synthesized enrollments for display purposes (showing the course in the list)
-  const hasAnyEnrollment = enrollmentsData?.data?.some(
     (e) => e.course_id === id || e.course?.id === id
   ) ?? false;
+  const hasAnyEnrollment = enrolled;
 
   const unlockedLectures = new Set(entitlements?.map((e: any) => e.lecture_id) || []);
   const courseProduct = courseProducts?.find((p: any) => p.sellable_id === id);
@@ -298,7 +295,7 @@ export default function CourseDetailPage() {
                 )}
 
                 {user ? (
-                  enrolled || firstAccessibleLectureId ? (
+                  enrolled || hasAnyEnrollment || firstAccessibleLectureId ? (
                     <Link href={continueLearningUrl}>
                       <Button className="w-full gap-2" size="lg">
                         <CheckCircle2 className="h-4 w-4" />

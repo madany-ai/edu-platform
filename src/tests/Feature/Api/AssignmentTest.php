@@ -148,7 +148,7 @@ it('allows student to view submission result with answers', function () {
     $this->actingAs($this->studentUser)
         ->getJson("/api/attempts/{$attemptId}/result")
         ->assertOk()
-        ->assertJsonPath('score', 100)
+        ->assertJsonPath('score', fn ($val) => (float) $val === 100.0)
         ->assertJsonStructure(['answers' => [0 => ['question', 'answer']]]);
 });
 

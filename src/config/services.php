@@ -46,4 +46,14 @@ return [
         'secret_key' => env('TURNSTILE_SECRET_KEY'),
     ],
 
+    'paymob' => [
+        'base_url' => env('PAYMOB_BASE_URL', 'https://accept.paymob.com'),
+        'api_key' => env('PAYMOB_API_KEY'),
+        'public_key' => env('PAYMOB_PUBLIC_KEY'),
+        'secret_key' => env('PAYMOB_SECRET_KEY'),
+        'hmac' => env('PAYMOB_HMAC'),
+        'integration_id' => env('PAYMOB_INTEGRATION_ID'),
+        'iframe_id' => env('PAYMOB_IFRAME_ID'),
+    ],
+
 ];

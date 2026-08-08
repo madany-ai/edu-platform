@@ -14,12 +14,13 @@ class PaymobGateway implements PaymentGatewayInterface
 {
     public function createCheckout(Order $order): CheckoutResult
     {
+        $baseUrl = rtrim(config('services.paymob.base_url', 'https://accept.paymob.com'), '/');
         $apiKey = config('services.paymob.api_key', env('PAYMOB_API_KEY'));
         $integrationId = config('services.paymob.integration_id', env('PAYMOB_INTEGRATION_ID'));
         $iframeId = config('services.paymob.iframe_id', env('PAYMOB_IFRAME_ID'));
 
         // 1. Authentication Request
-        $authResponse = Http::post('https://accept.paymob.com/api/auth/tokens', [
+        $authResponse = Http::post("{$baseUrl}/api/auth/tokens", [
             'api_key' => $apiKey,
         ]);
 
@@ -31,12 +32,12 @@ class PaymobGateway implements PaymentGatewayInterface
         $authToken = $authResponse->json('token');
 
         // 2. Order Registration
-        $orderResponse = Http::post('https://accept.paymob.com/api/ecommerce/orders', [
+        $orderResponse = Http::post("{$baseUrl}/api/ecommerce/orders", [
             'auth_token' => $authToken,
             'delivery_needed' => false,
             'amount_cents' => $order->amount_cents,
             'currency' => $order->currency ?? 'EGP',
-            'merchant_order_id' => $order->id,
+            'merchant_order_id' => $order->id . '_' . uniqid(),
             'items' => [],
         ]);
 
@@ -51,22 +52,30 @@ class PaymobGateway implements PaymentGatewayInterface
         $student = $order->student;
         $user = $student?->user;
 
-        $paymentKeyResponse = Http::post('https://accept.paymob.com/api/acceptance/payment_keys', [
+        $phone = preg_replace('/[^0-9]/', '', (string) ($student?->phone ?? '')) ?: '01000000000';
+        $firstName = !empty($student?->first_name) ? $student->first_name : (!empty($user?->name) ? explode(' ', $user->name)[0] : 'Student');
+        $lastName = !empty($student?->last_name) ? $student->last_name : 'User';
+        $email = !empty($user?->email) ? $user->email : 'student@example.com';
+
+        $paymentKeyResponse = Http::post("{$baseUrl}/api/acceptance/payment_keys", [
             'auth_token' => $authToken,
             'amount_cents' => $order->amount_cents,
             'expiration' => 3600, // 1 hour
             'order_id' => $paymobOrderId,
             'billing_data' => [
-                'first_name' => $student?->first_name ?? 'Student',
-                'last_name' => $student?->last_name ?? 'User',
-                'email' => $user?->email ?? 'student@example.com',
-                'phone_number' => $student?->phone ?? '01000000000',
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'email' => $email,
+                'phone_number' => $phone,
+                'apartment' => 'NA',
                 'floor' => 'NA',
                 'building' => 'NA',
                 'street' => 'NA',
                 'city' => 'Cairo',
                 'country' => 'EG',
                 'state' => 'Cairo',
+                'postal_code' => 'NA',
+                'shipping_method' => 'NA',
             ],
             'currency' => $order->currency ?? 'EGP',
             'integration_id' => (int) $integrationId,
@@ -78,7 +87,7 @@ class PaymobGateway implements PaymentGatewayInterface
         }
 
         $paymentToken = $paymentKeyResponse->json('token');
-        $paymentUrl = "https://accept.paymob.com/api/acceptance/iframes/{$iframeId}?payment_token={$paymentToken}";
+        $paymentUrl = "{$baseUrl}/api/acceptance/iframes/{$iframeId}?payment_token={$paymentToken}";
 
         return new CheckoutResult(
             paymentUrl: $paymentUrl,
@@ -89,10 +98,16 @@ class PaymobGateway implements PaymentGatewayInterface
 
     public function verifyWebhook(Request $request): WebhookPayload
     {
-        $hmacSecret = config('services.paymob.hmac_secret', env('PAYMOB_HMAC_SECRET'));
-        $receivedHmac = $request->query('hmac') ?? $request->input('hmac');
+        $hmacSecret = config('services.paymob.hmac', env('PAYMOB_HMAC', env('PAYMOB_HMAC_SECRET')));
+        $receivedHmac = $request->query('hmac') ?? $request->input('hmac') ?? $request->header('hmac');
 
-        $obj = $request->input('obj') ?? $request->all();
+        $obj = $request->input('obj');
+        if (is_string($obj)) {
+            $obj = json_decode($obj, true) ?? [];
+        }
+        if (empty($obj) || !is_array($obj)) {
+            $obj = $request->all();
+        }
 
         // Standard Paymob HMAC concatenated fields list
         $keys = [

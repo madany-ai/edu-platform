@@ -18,6 +18,10 @@ class UserMeResource extends JsonResource
                 'first_name' => $this->student->first_name,
                 'last_name' => $this->student->last_name,
                 'student_code' => $this->student->student_code,
+                'phone' => $this->student->phone,
+                'father_phone' => $this->student->father_phone,
+                'mother_phone' => $this->student->mother_phone,
+                'school_name' => $this->student->school_name,
                 'is_verified' => (bool) $this->student->is_verified,
             ];
         }

@@ -49,7 +49,7 @@ export default function StandaloneLecturePage() {
 
   // Find product for this lecture
   const lectureProduct = products?.find(
-    (p: any) => p.sellable_id === lecture.id && p.sellable_type === "App\\Models\\Lecture"
+    (p: any) => p.sellable_id === lecture.id && p.sellable_type === "lecture"
   );
 
   const course = lecture.section?.course;

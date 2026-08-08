@@ -230,7 +230,7 @@ it('getStudentResult returns latest submitted attempt', function () {
     $result = $this->service->getStudentResult($this->student, $exam);
 
     expect($result->id)->toBe($newAttempt->id)
-        ->and($result->score)->toBe(80);
+        ->and((float) $result->score)->toBe(80.0);
 });
 
 it('getExamByLecture returns assignment when isAssignment is true', function () {

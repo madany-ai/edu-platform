@@ -121,4 +121,46 @@ class AuthService
             $token->delete();
         }
     }
+
+    public function updateProfile(User $user, array $data): User
+    {
+        if (isset($data['name'])) {
+            $user->update(['name' => $data['name']]);
+        }
+
+        $student = $user->student;
+        if (!$student && $user->hasRole(['student', 'super_admin', 'admin', 'instructor'])) {
+            $student = Student::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'student_code' => 'ST' . rand(100000, 999999),
+                    'first_name' => $data['first_name'] ?? explode(' ', $user->name)[0] ?? 'Student',
+                    'second_name' => 'A',
+                    'third_name' => 'B',
+                    'last_name' => 'C',
+                    'phone' => $data['phone'] ?? '01000000000',
+                    'father_phone' => $data['father_phone'] ?? '01000000000',
+                    'mother_phone' => $data['mother_phone'] ?? '01000000000',
+                    'guardian_job' => 'Guardian',
+                    'gender' => 'male',
+                    'is_verified' => true,
+                ]
+            );
+        }
+
+        if ($student) {
+            $studentData = array_filter([
+                'phone' => $data['phone'] ?? null,
+                'father_phone' => $data['father_phone'] ?? null,
+                'mother_phone' => $data['mother_phone'] ?? null,
+                'school_name' => $data['school_name'] ?? null,
+            ], fn($val) => $val !== null);
+
+            if (!empty($studentData)) {
+                $student->update($studentData);
+            }
+        }
+
+        return $user->fresh(['student', 'roles']);
+    }
 }

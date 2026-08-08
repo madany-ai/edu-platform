@@ -67,4 +67,24 @@ class AuthController extends Controller
 
         return response()->json(new \App\Http\Resources\UserMeResource($user));
     }
+
+    public function updateProfile(\Illuminate\Http\Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'phone' => 'sometimes|nullable|string|max:20',
+            'father_phone' => 'sometimes|nullable|string|max:20',
+            'mother_phone' => 'sometimes|nullable|string|max:20',
+            'school_name' => 'sometimes|nullable|string|max:255',
+        ]);
+
+        $updatedUser = $this->authService->updateProfile($user, $validated);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'تم تحديث البيانات بنجاح.',
+            'data' => new \App\Http\Resources\UserMeResource($updatedUser),
+        ]);
+    }
 }

@@ -15,6 +15,8 @@ import {
   Bell,
   Atom,
   MessageCircle,
+  UserCheck,
+  Award,
 } from "lucide-react";
 
 const studentLinks = [
@@ -22,6 +24,8 @@ const studentLinks = [
   { href: "/dashboard/courses", label: "دوراتي", icon: BookOpen },
   { href: "/dashboard/lectures", label: "محاضراتي", icon: PlayCircle },
   { href: "/dashboard/exams", label: "الامتحانات والواجبات", icon: BookOpen },
+  { href: "/dashboard/attendance", label: "سجل الحضور والغياب", icon: UserCheck },
+  { href: "/dashboard/center-grades", label: "درجات السنتر الورقية", icon: Award },
   { href: "/dashboard/questions", label: "أسئلتي", icon: MessageCircle },
   { href: "/dashboard/notifications", label: "الإشعارات", icon: Bell },
   { href: "/dashboard/settings", label: "الإعدادات", icon: Settings },

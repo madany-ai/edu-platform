@@ -13,13 +13,15 @@ import {
   Settings,
   Bell,
   MessageCircle,
+  UserCheck,
+  Award,
 } from "lucide-react";
 
 const studentLinks = [
   { href: ROUTES.DASHBOARD, label: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/dashboard/courses", label: "دوراتي", icon: BookOpen },
-  { href: "/dashboard/lectures", label: "محاضراتي", icon: PlayCircle },
-  { href: "/dashboard/exams", label: "الامتحانات", icon: BookOpen },
+  { href: "/dashboard/attendance", label: "الغياب", icon: UserCheck },
+  { href: "/dashboard/center-grades", label: "الدرجات", icon: Award },
   { href: "/dashboard/questions", label: "أسئلتي", icon: MessageCircle },
   { href: "/dashboard/settings", label: "الإعدادات", icon: Settings },
 ];

@@ -16,6 +16,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -179,6 +180,11 @@ class StudentResource extends Resource
                         $gradeLevel = \App\Models\GradeLevel::find($gradeLevelId);
                         return $gradeLevel && (str_contains($gradeLevel->name, 'ثانوي') || str_contains($gradeLevel->name, 'الثانوي'));
                     }),
+                Select::make('group_id')
+                    ->label('مجموعة السنتر')
+                    ->relationship('group', 'name')
+                    ->searchable()
+                    ->preload(),
                 TextInput::make('password')
                     ->label('كلمة المرور')
                     ->password()
@@ -228,6 +234,10 @@ class StudentResource extends Resource
                         'rejected' => 'مرفوض',
                         default => (string) $state,
                     }),
+                TextColumn::make('group.name')
+                    ->label('مجموعة السنتر')
+                    ->sortable()
+                    ->default('بدون مجموعة'),
                 TextColumn::make('created_at')
                     ->label('تاريخ التسجيل')
                     ->dateTime('Y-m-d')
@@ -238,6 +248,9 @@ class StudentResource extends Resource
                     ->sortable(),
             ])
             ->filters([
+                SelectFilter::make('group_id')
+                    ->label('مجموعة السنتر')
+                    ->relationship('group', 'name'),
                 SelectFilter::make('status')
                     ->label('الحالة')
                     ->options([
@@ -407,6 +420,108 @@ class StudentResource extends Resource
                             ->send();
                     })
                     ->visible(fn (Student $record): bool => $record->entitlements()->exists()),
+
+                Action::make('transferGroup')
+                    ->label('نقل المجموعة')
+                    ->icon(Heroicon::OutlinedArrowsRightLeft)
+                    ->color('warning')
+                    ->modalHeading('نقل الطالب إلى مجموعة دراسية أخرى')
+                    ->form([
+                        Select::make('to_group_id')
+                            ->label('المجموعة الجديدة')
+                            ->relationship('group', 'name')
+                            ->required()
+                            ->searchable()
+                            ->preload(),
+
+                        TextInput::make('reason')
+                            ->label('سبب النقل')
+                            ->placeholder('مثال: تغيير الموعد بناءً على طلب الطالب')
+                            ->maxLength(255),
+                    ])
+                    ->action(function (Student $record, array $data): void {
+                        $fromGroupId = $record->group_id;
+                        $toGroupId = $data['to_group_id'];
+
+                        if ($fromGroupId === $toGroupId) {
+                            Notification::make()
+                                ->title('الطالب موجود بالفعل في هذه المجموعة!')
+                                ->warning()
+                                ->send();
+                            return;
+                        }
+
+                        \App\Models\StudentTransfer::create([
+                            'student_id' => $record->id,
+                            'from_group_id' => $fromGroupId,
+                            'to_group_id' => $toGroupId,
+                            'reason' => $data['reason'] ?? null,
+                            'transferred_at' => now(),
+                        ]);
+
+                        $record->update(['group_id' => $toGroupId]);
+
+                        Notification::make()
+                            ->title('تم نقل الطالب إلى المجموعة الجديدة بنجاح مع حفظ سجل النقل')
+                            ->success()
+                            ->send();
+                    }),
+
+                Action::make('addCommunicationLog')
+                    ->label('تواصل ولي الأمر')
+                    ->icon(Heroicon::OutlinedPhone)
+                    ->color('info')
+                    ->modalHeading('تسجيل تواصل مع ولي الأمر')
+                    ->form([
+                        DatePicker::make('date')
+                            ->label('تاريخ التواصل')
+                            ->default(now())
+                            ->required(),
+
+                        Select::make('contact_method')
+                            ->label('وسيلة التواصل')
+                            ->options([
+                                'اتصال هاتف' => 'اتصال هاتف',
+                                'واتساب' => 'واتساب',
+                                'مقابلة في السنتر' => 'مقابلة في السنتر',
+                            ])
+                            ->default('اتصال هاتف')
+                            ->required(),
+
+                        TextInput::make('reason')
+                            ->label('سبب التواصل')
+                            ->placeholder('مثال: متابعة الغياب / تراجع المستوى')
+                            ->required(),
+
+                        Textarea::make('notes')
+                            ->label('تفاصيل الملاحظات'),
+                    ])
+                    ->action(function (Student $record, array $data): void {
+                        \App\Models\CommunicationLog::create([
+                            'student_id' => $record->id,
+                            'date' => $data['date'],
+                            'contact_method' => $data['contact_method'],
+                            'reason' => $data['reason'],
+                            'notes' => $data['notes'] ?? null,
+                            'created_by' => auth()->id(),
+                        ]);
+
+                        Notification::make()
+                            ->title('تم تسجيل تواصل ولي الأمر بنجاح!')
+                            ->success()
+                            ->send();
+                    }),
+
+                Action::make('printQrCode')
+                    ->label('طباعة كارنيه / QR')
+                    ->icon(Heroicon::OutlinedQrCode)
+                    ->color('primary')
+                    ->modalHeading('كارنيه الطالب - QR Code')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('إغلاق')
+                    ->modalContent(fn (Student $record) => view('filament.modals.student-qr-card', [
+                        'student' => $record,
+                    ])),
 
                 DeleteAction::make(),
             ])

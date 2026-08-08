@@ -70,6 +70,7 @@ class ProductResource extends JsonResource
             'price' => (float) $this->price,
             'access_duration_days' => $this->access_duration_days,
             'is_active' => (bool) $this->is_active,
+            'sellable_id' => $this->sellable_id,
             'sellable_type' => $sellableType,
             'sellable' => $sellableSummary,
             'created_at' => $this->created_at?->toISOString(),

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('orders', function (Blueprint $table) {
             $table->string('payment_gateway')->nullable()->after('payment_method');
-            $table->string('checkout_id')->nullable()->after('payment_gateway');
+            $table->text('checkout_id')->nullable()->after('payment_gateway');
             $table->text('payment_url')->nullable()->after('checkout_id');
             $table->string('gateway_reference')->nullable()->after('payment_url');
             $table->json('metadata')->nullable()->after('gateway_reference');

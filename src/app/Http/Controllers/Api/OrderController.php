@@ -106,7 +106,7 @@ class OrderController extends Controller
         }
 
         // Idempotency / Duplicate pending order check
-        $idempotencyKey = $request->header('X-Idempotency-Key') ?? 'IDEMP-' . md5($student->id . '-' . $purchasableClass . '-' . $id);
+        $idempotencyKey = $request->header('X-Idempotency-Key') ?? 'IDEMP-' . md5($student->id . '-' . $purchasableClass . '-' . $id . '-' . uniqid());
         
         $existingOrder = Order::where('student_id', $student->id)
             ->where('purchasable_type', $purchasableClass)
@@ -115,11 +115,7 @@ class OrderController extends Controller
             ->first();
 
         if ($existingOrder) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'يوجد طلب شراء معلق بالفعل لهذا المحتوى.',
-                'data' => new OrderResource($existingOrder),
-            ], 200);
+            $existingOrder->forceDelete();
         }
 
         $gateway = $request->input('payment_gateway', 'paymob');
