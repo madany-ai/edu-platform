@@ -9,6 +9,16 @@ use SensitiveParameter;
 
 class Login extends BaseLogin
 {
+    public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable
+    {
+        return 'تسجيل الدخول';
+    }
+
+    public function getHeading(): string|\Illuminate\Contracts\Support\Htmlable
+    {
+        return 'تسجيل الدخول';
+    }
+
     protected function getEmailFormComponent(): Component
     {
         return TextInput::make('email')
@@ -16,6 +26,27 @@ class Login extends BaseLogin
             ->required()
             ->autocomplete()
             ->autofocus();
+    }
+
+    protected function getPasswordFormComponent(): Component
+    {
+        return TextInput::make('password')
+            ->label('كلمة المرور')
+            ->password()
+            ->revealable()
+            ->required();
+    }
+
+    protected function getRememberFormComponent(): Component
+    {
+        return \Filament\Forms\Components\Checkbox::make('remember')
+            ->label('تذكرني');
+    }
+
+    protected function getAuthenticateFormAction(): \Filament\Actions\Action
+    {
+        return parent::getAuthenticateFormAction()
+            ->label('تسجيل الدخول');
     }
 
     protected function getCredentialsFromFormData(#[SensitiveParameter] array $data): array

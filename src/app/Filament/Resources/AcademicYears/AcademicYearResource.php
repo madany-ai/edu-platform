@@ -67,12 +67,14 @@ class AcademicYearResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                DatePicker::make('start_date')
+                TextColumn::make('start_date')
                     ->label('تاريخ البداية')
+                    ->date()
                     ->sortable(),
 
-                DatePicker::make('end_date')
+                TextColumn::make('end_date')
                     ->label('تاريخ النهاية')
+                    ->date()
                     ->sortable(),
 
                 IconColumn::make('is_active')

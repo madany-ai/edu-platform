@@ -1,8 +1,8 @@
 <x-filament-panels::page>
     <div class="space-y-6">
-        <x-filament-panels::form wire:submit="loadRankings">
+        <form wire:submit="loadRankings" class="space-y-6">
             {{ $this->form }}
-        </x-filament-panels::form>
+        </form>
 
         <div class="bg-white dark:bg-gray-900 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-800">
             <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
@@ -47,21 +47,21 @@
                                         @endif
                                     </td>
                                     <td class="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
-                                        {{ $item->student_code ?? 'بدون كود' }}
+                                        {{ data_get($item, 'student_code') ?? 'بدون كود' }}
                                     </td>
                                     <td class="py-3 px-4 font-medium">
-                                        {{ $item->first_name }} {{ $item->second_name }} {{ $item->third_name }} {{ $item->last_name }}
+                                        {{ data_get($item, 'first_name') }} {{ data_get($item, 'second_name') }} {{ data_get($item, 'third_name') }} {{ data_get($item, 'last_name') }}
                                     </td>
                                     <td class="py-3 px-4 font-bold">
-                                        {{ $item->total_score }} <span class="text-xs text-gray-400">/ {{ $item->max_score }}</span>
+                                        {{ data_get($item, 'total_score') }} <span class="text-xs text-gray-400">/ {{ data_get($item, 'max_score') }}</span>
                                     </td>
                                     <td class="py-3 px-4">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $item->percentage >= 85 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' }}">
-                                            {{ $item->percentage }}%
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ data_get($item, 'percentage') >= 85 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' }}">
+                                            {{ data_get($item, 'percentage') }}%
                                         </span>
                                     </td>
                                     <td class="py-3 px-4 text-gray-500">
-                                        {{ $item->exams_count }} اختبارات
+                                        {{ data_get($item, 'exams_count') }} اختبارات
                                     </td>
                                 </tr>
                             @endforeach

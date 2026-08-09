@@ -20,8 +20,15 @@ import {
 import Link from "next/link";
 
 export default function StudentDashboardPage() {
-  const { user } = useAuth();
+  const { user, isInstructor, isAssistant } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    const isStaff = isInstructor || isAssistant || user?.roles?.some((r: any) => ["instructor", "assistant"].includes(typeof r === "string" ? r : r.name));
+    if (isStaff) {
+      router.push("/center");
+    }
+  }, [isInstructor, isAssistant, user, router]);
 
   const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useStudentDashboard();
   const { data: enrollmentsData, isLoading: enrollmentsLoading, error: enrollmentsError, refetch: refetchEnrollments } = useMyEnrollments();

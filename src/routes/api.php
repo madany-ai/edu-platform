@@ -148,4 +148,33 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     Route::get('center/my-grades', [\App\Http\Controllers\Api\CenterStudentController::class, 'myGrades']);
     Route::get('center/my-group', [\App\Http\Controllers\Api\CenterStudentController::class, 'myGroup']);
     Route::get('center/my-report', [\App\Http\Controllers\Api\CenterStudentController::class, 'myReport']);
+
+    // ─── Center Management (Staff: Instructor & Assistant) ───
+    Route::middleware('role:instructor|assistant')->prefix('center/staff')->group(function () {
+        Route::get('academic-years', [\App\Http\Controllers\Api\CenterStaffController::class, 'academicYears']);
+        Route::post('academic-years', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeAcademicYear']);
+        Route::put('academic-years/{id}', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateAcademicYear']);
+
+        Route::get('groups', [\App\Http\Controllers\Api\CenterStaffController::class, 'groups']);
+        Route::get('groups/{id}', [\App\Http\Controllers\Api\CenterStaffController::class, 'showGroup']);
+        Route::post('groups', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeGroup']);
+        Route::put('groups/{id}', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateGroup']);
+
+        Route::get('sessions', [\App\Http\Controllers\Api\CenterStaffController::class, 'sessions']);
+        Route::post('sessions', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeSession']);
+        Route::get('sessions/{id}/attendance', [\App\Http\Controllers\Api\CenterStaffController::class, 'getSessionAttendance']);
+        Route::post('sessions/{id}/attendance', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateAttendance']);
+        Route::post('attendance/scan', [\App\Http\Controllers\Api\CenterStaffController::class, 'scanAttendance']);
+
+        Route::get('exams', [\App\Http\Controllers\Api\CenterStaffController::class, 'exams']);
+        Route::post('exams', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeExam']);
+        Route::get('exams/{id}/grades', [\App\Http\Controllers\Api\CenterStaffController::class, 'getExamGrades']);
+        Route::post('exams/{id}/grades', [\App\Http\Controllers\Api\CenterStaffController::class, 'saveExamGrades']);
+
+        Route::get('rankings', [\App\Http\Controllers\Api\CenterStaffController::class, 'rankings']);
+        Route::get('students', [\App\Http\Controllers\Api\CenterStaffController::class, 'students']);
+        Route::post('students', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeStudent']);
+        Route::put('students/{id}/group', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateStudentGroup']);
+        Route::get('students/{id}/report', [\App\Http\Controllers\Api\CenterStaffController::class, 'studentReport']);
+    });
 });

@@ -362,7 +362,6 @@ class RealDataSeeder extends Seeder
             ['title' => 'المراجعة الشاملة في العلوم - الصف الثالث الإعدادي'],
             [
                 'instructor_id' => $instructor->id,
-                'grade_level_id' => $gradeModels['الصف الثالث الإعدادي']->id,
                 'description' => 'كورسات ومحاضرات مراجعة نهائية وشرح مبسط لجميع الأبواب مع بنك أسئلة واختبارات تفاعلية.',
                 'price' => 250.00,
                 'status' => 'published',
@@ -377,10 +376,7 @@ class RealDataSeeder extends Seeder
         Lecture::firstOrCreate(
             ['section_id' => $section->id, 'title' => 'المحاضرة الأولى: التفاعلات والسرعة الكيميائية'],
             [
-                'course_id' => $course->id,
-                'type' => 'video',
-                'duration_seconds' => 3600,
-                'is_free' => true,
+                'duration' => 3600,
                 'sort_order' => 1,
             ]
         );
