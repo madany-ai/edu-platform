@@ -134,8 +134,7 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
   const handleManualCapture = () => {
     if (!isCameraActive || !videoRef.current || !codeReaderRef.current) return;
     
-    // We can pause the continuous decode briefly if needed, but it's safe to just read from the video element directly using a canvas internally
-    codeReaderRef.current.decodeOnceFromVideoElement(videoRef.current)
+    codeReaderRef.current.decodeFromVideoElement(videoRef.current)
       .then(result => {
         if (result && result.getText()) {
           try {
@@ -154,7 +153,7 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
           handleScanCodeRef.current(result.getText());
         }
       })
-      .catch((err) => {
+      .catch((err: any) => {
         console.error(err);
         setScanError("لم يتم التعرف على أي باركود في الصورة الحالية. تأكد من إضاءة ووضوح الكود.");
         setTimeout(() => setScanError(""), 3000);
@@ -181,7 +180,7 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
       videoRef.current.srcObject = streamRef.current;
       videoRef.current.play().catch(console.error);
 
-      codeReaderRef.current.decodeFromVideoElementContinuously(videoRef.current, (result, err) => {
+      codeReaderRef.current.decodeFromVideoElementContinuously(videoRef.current, (result, err: any) => {
         if (result) {
           const text = result.getText();
           const now = Date.now();
