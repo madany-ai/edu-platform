@@ -26,7 +26,7 @@ export function Footer() {
           <div>
             <h3 className="mb-4 text-lg font-bold text-foreground">{APP_NAME}</h3>
             <p className="text-sm text-muted-foreground/80 leading-relaxed">
-              منصة تعليمية شاملة تقدم دورات متنوعة للطلاب والمعلمين.
+              منصة تدريس مادة الرياضيات للثانوية العامة والصف الثالث الإعدادي.
             </p>
           </div>
           {footerLinks.map((group) => (
@@ -47,8 +47,9 @@ export function Footer() {
             </div>
           ))}
         </div>
-        <div className="mt-8 border-t border-[#3b413c] pt-8 text-center text-xs text-muted-foreground/60">
-          © {new Date().getFullYear()} {APP_NAME}. جميع الحقوق محفوظة.
+        <div className="mt-8 border-t border-[#3b413c] pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground/60">
+          <span>© {new Date().getFullYear()} {APP_NAME}. جميع الحقوق محفوظة.</span>
+          <span>تطوير بواسطة: <span className="font-bold text-primary science-glow-text">madanyai</span></span>
         </div>
       </div>
     </footer>
