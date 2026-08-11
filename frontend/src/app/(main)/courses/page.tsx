@@ -272,66 +272,11 @@ function CoursesContent() {
           onClear={() => setSearch("")}
           showClear={search.length > 0}
           placeholder="ابحث في المتجر..."
-          className="max-w-md"
+          className="max-w-md w-full"
         />
-
-        {/* Unified premium Store Tabs */}
-        <div className="flex gap-1.5 p-1 rounded-xl bg-[#141a15] border border-[#3b413c] overflow-x-auto whitespace-nowrap max-w-full scrollbar-none">
-          <button
-            onClick={() => setActiveTab("courses")}
-            className={cn(
-              "px-4 py-2 rounded-lg font-bold text-xs transition-all",
-              activeTab === "courses"
-                ? "bg-primary text-primary-foreground science-glow-text"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            الدورات الكاملة 📚
-          </button>
-          <button
-            onClick={() => setActiveTab("lectures")}
-            className={cn(
-              "px-4 py-2 rounded-lg font-bold text-xs transition-all",
-              activeTab === "lectures"
-                ? "bg-primary text-primary-foreground science-glow-text"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            المحاضرات الفردية 🧪
-          </button>
-          <button
-            onClick={() => setActiveTab("bundles")}
-            className={cn(
-              "px-4 py-2 rounded-lg font-bold text-xs transition-all",
-              activeTab === "bundles"
-                ? "bg-primary text-primary-foreground science-glow-text"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            باقات العروض 💎
-          </button>
-        </div>
       </div>
 
-      {activeTab === "courses" && renderCoursesTab()}
-      {activeTab === "lectures" && (
-        lecturesLoading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-44 glass-card rounded-2xl animate-pulse" />
-            ))}
-          </div>
-        ) : renderProductsList(lectures, "محاضرات منفردة", PlayCircle)
-      )}
-      {activeTab === "bundles" && (
-        bundlesLoading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-52 glass-card rounded-2xl animate-pulse" />
-            ))}
-          </div>
-        ) : renderBundlesTab()
-      )}
+      {renderCoursesTab()}
     </div>
   );
 }

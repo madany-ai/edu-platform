@@ -65,7 +65,7 @@ export default function StudentCenterGradesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 lg:p-10 space-y-8 max-w-7xl mx-auto">
       <PageHeader
         title="نتائج الامتحانات الورقية (السنتر)"
         description="عرض درجاتك في الاختبارات الدورية والشهرية بالسنتر"

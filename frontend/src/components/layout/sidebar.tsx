@@ -29,7 +29,6 @@ const studentLinks = [
   { href: ROUTES.DASHBOARD, label: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/dashboard/center-report", label: "تقرير السنتر الخاص بي", icon: Building2 },
   { href: "/dashboard/courses", label: "دوراتي", icon: BookOpen },
-  { href: "/dashboard/lectures", label: "محاضراتي", icon: PlayCircle },
   { href: "/dashboard/exams", label: "الامتحانات والواجبات", icon: BookOpen },
   { href: "/dashboard/attendance", label: "سجل الحضور والغياب", icon: UserCheck },
   { href: "/dashboard/center-grades", label: "درجات السنتر الورقية", icon: Award },
@@ -72,7 +71,7 @@ export function Sidebar({ className }: SidebarProps) {
           <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 pb-4">
             <div className="flex items-center gap-2">
               <Atom className="h-6 w-6 text-primary animate-spin" style={{ animationDuration: "6s" }} />
-              <span className="font-bold text-foreground text-sm">مختبر العلوم 🧪</span>
+              <span className="font-bold text-foreground text-sm">مستر حفني 👨‍🏫</span>
             </div>
             {isStaff && (
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary border border-primary/30">

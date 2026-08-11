@@ -69,7 +69,7 @@ export default function StudentAttendancePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 lg:p-10 space-y-8 max-w-7xl mx-auto">
       <PageHeader
         title="سجل الحضور والغياب"
         description="متابعة نسبة حضورك في حصص السنتر الأوفلاين والدروس"
