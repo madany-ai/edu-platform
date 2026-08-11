@@ -15,8 +15,13 @@ const navLinks = [
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, isInstructor, isAssistant } = useAuth();
   const pathname = usePathname();
+
+  const isStaff = isInstructor || isAssistant;
+  const dashboardHref = isStaff ? "/center" : ROUTES.DASHBOARD;
+  const dashboardLabel = isStaff ? "إدارة السنتر" : "حساب الطالب";
+  const isDashboardActive = isStaff ? pathname.startsWith("/center") : pathname.startsWith("/dashboard");
 
   return (
     <header className="sticky top-0 z-50 w-full glass border-b border-[#3b413c] shadow-sm">
@@ -28,21 +33,21 @@ export function Navbar() {
             pathname.startsWith("/dashboard") && "lg:hidden"
           )}
         >
-          <span className="text-lg font-bold text-primary">مختبر العلوم الرقمي</span>
+          <span className="text-lg font-bold text-primary">مستر حفني | معلم رياضيات</span>
         </Link>
-
+ 
         <div className="hidden items-center gap-8 md:flex">
           {isAuthenticated && (
             <Link
-              href={ROUTES.DASHBOARD}
+              href={dashboardHref}
               className={cn(
                 "text-sm font-medium transition-colors hover:text-primary",
-                pathname.startsWith("/dashboard")
+                isDashboardActive
                   ? "border-b-2 border-primary pb-1 font-bold text-primary"
                   : "text-on-surface-variant"
               )}
             >
-              حساب الطالب
+              {dashboardLabel}
             </Link>
           )}
           {navLinks.map((link) => (
@@ -58,7 +63,7 @@ export function Navbar() {
             </Link>
           ))}
         </div>
-
+ 
         <div className="hidden items-center gap-3 md:flex">
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
@@ -83,25 +88,25 @@ export function Navbar() {
             </>
           )}
         </div>
-
+ 
         <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </nav>
-
+ 
       {mobileOpen && (
         <div className="glass border-t border-white/20 px-4 pb-4 pt-2 md:hidden">
           <div className="flex flex-col gap-2">
             {isAuthenticated && (
               <Link
-                href={ROUTES.DASHBOARD}
+                href={dashboardHref}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
                   "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-                  pathname.startsWith("/dashboard") ? "bg-primary/10 text-primary" : "text-on-surface-variant hover:bg-muted"
+                  isDashboardActive ? "bg-primary/10 text-primary" : "text-on-surface-variant hover:bg-muted"
                 )}
               >
-                حساب الطالب
+                {dashboardLabel}
               </Link>
             )}
             {navLinks.map((link) => (

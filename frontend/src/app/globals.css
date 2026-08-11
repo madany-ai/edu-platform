@@ -216,6 +216,12 @@
     background-attachment: fixed;
     min-height: 100vh;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    overscroll-behavior-y: none; /* Prevents pull-to-refresh on mobile for native feel */
+    overflow-x: hidden; /* Ensure no horizontal scrolling */
+  }
+  a, button, [role="button"], input[type="button"], input[type="submit"] {
+    @apply select-none;
+    -webkit-touch-callout: none; /* Disable native long-press popup on iOS */
   }
 }
 

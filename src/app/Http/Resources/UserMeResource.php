@@ -32,6 +32,7 @@ class UserMeResource extends JsonResource
             'email' => $this->email,
             'status' => $this->status,
             'roles' => $roles,
+            'must_change_password' => (bool) $this->must_change_password,
             'student' => $studentData,
         ];
     }

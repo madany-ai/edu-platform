@@ -46,8 +46,15 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      await login({ email: identifier, password, "cf-turnstile-response": turnstileToken });
-      router.push("/dashboard");
+      const loggedInUser = await login({ email: identifier, password, "cf-turnstile-response": turnstileToken });
+      const roles = loggedInUser?.roles || [];
+      const isStaff = roles.some((r: any) => ["instructor", "assistant"].includes(typeof r === "string" ? r : r.name));
+      
+      if (isStaff) {
+        router.push("/center");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err: unknown) {
       if (err && typeof err === "object" && "response" in err) {
         const resp = (err as { response: { data?: { message?: string } } }).response;

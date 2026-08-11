@@ -11,8 +11,9 @@ const footerLinks = [
   {
     title: "تواصل معنا",
     links: [
-      { label: "info@science-mr-islam.com", href: "mailto:info@science-mr-islam.com" },
-      { label: "+20 12 10382495", href: "tel:+201210382495" },
+      { label: "hefnymuhammad5@gmail.com", href: "mailto:hefnymuhammad5@gmail.com" },
+      { label: "+20 10 98482195", href: "tel:+201098482195" },
+      { label: "منيل شيحة, 02", href: "#" },
     ],
   },
 ];

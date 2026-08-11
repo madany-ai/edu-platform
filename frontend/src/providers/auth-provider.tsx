@@ -8,7 +8,7 @@ import type { User } from "@/types";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (payload: LoginPayload) => Promise<void>;
+  login: (payload: LoginPayload) => Promise<User | null>;
   register: (payload: RegisterPayload) => Promise<string>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
@@ -28,24 +28,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const userData = await authService.me();
       setUser(userData);
+      return userData;
     } catch {
       setUser(null);
+      return null;
     }
   }, []);
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      await fetchUser();
-      if (!cancelled) setLoading(false);
+      const u = await fetchUser();
+      if (!cancelled) {
+        setLoading(false);
+        if (u?.must_change_password && !window.location.pathname.includes('/change-password') && !window.location.pathname.includes('/logout')) {
+          router.push('/change-password');
+        }
+      }
     };
     load();
     return () => { cancelled = true; };
-  }, [fetchUser]);
+  }, [fetchUser, router]);
 
   const login = async (payload: LoginPayload) => {
     await authService.login(payload);
-    await fetchUser();
+    const u = await fetchUser();
+    if (u?.must_change_password) {
+      router.push('/change-password');
+    } else {
+      // Assuming redirect logic is handled where login is called, but we can do it here or let the caller handle it.
+      // We will let the caller handle success, but we force push if must_change_password is true.
+    }
+    return u;
   };
 
   const register = async (payload: RegisterPayload) => {

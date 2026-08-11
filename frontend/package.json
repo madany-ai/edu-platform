@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
+    "@ducanh2912/next-pwa": "^10.2.9",
     "@hookform/resolvers": "^5.4.0",
     "@marsidev/react-turnstile": "^1.5.3",
     "@radix-ui/react-label": "^2.1.11",
@@ -40,6 +41,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

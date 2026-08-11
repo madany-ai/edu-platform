@@ -1,10 +1,10 @@
 import { GraduationCap, BookOpen, Users, Award } from "lucide-react";
 
 const stats = [
-  { icon: Users, value: "10K+", label: "طالب مسجل" },
-  { icon: BookOpen, value: "500+", label: "دورة متاحة" },
-  { icon: GraduationCap, label: "150+", value: "مدرب معتمد" },
-  { icon: Award, value: "98%", label: "رضا العملاء" },
+  { icon: Users, value: "5K+", label: "طالب وطالبة" },
+  { icon: BookOpen, value: "100+", label: "محاضرة مسجلة وتفاعلية" },
+  { icon: GraduationCap, value: "50+", label: "طالب من الأوائل" },
+  { icon: Award, value: "99%", label: "نسبة النجاح" },
 ];
 
 export function StatsSection() {

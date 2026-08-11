@@ -616,6 +616,9 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
   const [duration, setDuration] = useState(0);
   const [isApiReady, setIsApiReady] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const speedOptions = [0.5, 1, 1.25, 1.5, 2];
 
   useEffect(() => {
     if (!window.YT) {
@@ -664,29 +667,62 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
 
   const togglePlay = (e: React.MouseEvent) => { e.stopPropagation(); if (!playerRef.current) return; isPlaying ? playerRef.current.pauseVideo() : playerRef.current.playVideo(); };
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => { const t = parseFloat(e.target.value); setCurrentTime(t); playerRef.current?.seekTo?.(t, true); };
-  const toggleFullscreen = () => { document.fullscreenElement ? document.exitFullscreen() : wrapperRef.current?.requestFullscreen(); };
+  const toggleFullscreen = (e: React.MouseEvent) => { e.stopPropagation(); document.fullscreenElement ? document.exitFullscreen() : wrapperRef.current?.requestFullscreen(); };
   const formatTime = (s: number) => { if (isNaN(s)) return "0:00"; const m = Math.floor(s / 60); const sec = Math.floor(s % 60); return `${m}:${sec < 10 ? "0" : ""}${sec}`; };
+
+  const handleContainerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowSpeedMenu(false);
+    setIsHovered(!isHovered);
+  };
+
+  const changeSpeed = (e: React.MouseEvent, rate: number) => {
+    e.stopPropagation();
+    setPlaybackRate(rate);
+    setShowSpeedMenu(false);
+    playerRef.current?.setPlaybackRate?.(rate);
+  };
 
   if (!videoId) return <div className="w-full h-full flex items-center justify-center bg-black text-white text-sm">رابط الفيديو غير صالح</div>;
 
   return (
-    <div ref={wrapperRef} className="w-full h-full relative rounded-lg overflow-hidden bg-black select-none group flex flex-col" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} onContextMenu={(e) => e.preventDefault()}>
-      <div className="flex-1 relative w-full h-full" onClick={togglePlay}>
+    <div ref={wrapperRef} className="w-full h-full relative rounded-lg overflow-hidden bg-black select-none group flex flex-col" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => { setIsHovered(false); setShowSpeedMenu(false); }} onContextMenu={(e) => e.preventDefault()}>
+      <div className="flex-1 relative w-full h-full cursor-pointer" onClick={handleContainerClick}>
         <div className="absolute inset-0 pointer-events-none scale-[1.05]"><div ref={containerRef} className="w-full h-full" /></div>
-        <div className="absolute inset-0 z-10 bg-transparent cursor-pointer" />
+        <div className="absolute inset-0 z-10 bg-transparent pointer-events-none" />
         <div className={`absolute inset-0 z-20 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${(!isPlaying || isHovered) ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-          <div className="w-16 h-16 rounded-full bg-primary/95 text-primary-foreground flex items-center justify-center shadow-lg transition-transform active:scale-95 hover:bg-primary">
-            {isPlaying ? <Pause className="h-8 w-8 fill-current" /> : <Play className="h-8 w-8 fill-current ml-1" />}
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/95 text-primary-foreground flex items-center justify-center shadow-lg transition-transform active:scale-95 hover:bg-primary cursor-pointer pointer-events-auto" onClick={togglePlay}>
+            {isPlaying ? <Pause className="h-8 w-8 sm:h-10 sm:w-10 fill-current" /> : <Play className="h-8 w-8 sm:h-10 sm:w-10 fill-current ml-1 sm:ml-2" />}
           </div>
         </div>
       </div>
-      <div className={`absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/90 to-transparent p-4 transition-opacity duration-300 ${isHovered || !isPlaying ? "opacity-100" : "opacity-0"}`}>
-        <div className="flex items-center gap-4 text-white text-xs font-medium">
-          <button onClick={togglePlay} className="hover:text-primary transition-colors focus:outline-none">{isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}</button>
+      <div className={`absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/90 to-transparent p-3 sm:p-4 transition-opacity duration-300 ${isHovered || !isPlaying ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+        <div className="flex items-center gap-2 sm:gap-4 text-white text-[10px] sm:text-xs font-medium">
+          <button onClick={togglePlay} className="p-1.5 sm:p-2 hover:text-primary transition-colors focus:outline-none pointer-events-auto">
+            {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+          </button>
           <span>{formatTime(currentTime)}</span>
-          <input type="range" min={0} max={duration || 100} value={currentTime} onChange={handleSeek} className="flex-1 h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary" style={{ direction: "ltr" }} />
+          <input type="range" min={0} max={duration || 100} value={currentTime} onChange={handleSeek} className="flex-1 h-1.5 sm:h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary pointer-events-auto" style={{ direction: "ltr" }} />
           <span>{formatTime(duration)}</span>
-          <button onClick={toggleFullscreen} className="hover:text-primary transition-colors focus:outline-none ml-2">{isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}</button>
+          
+          <div className="relative pointer-events-auto">
+            <button onClick={(e) => { e.stopPropagation(); setShowSpeedMenu(!showSpeedMenu); }} className="px-2 py-1 bg-white/10 rounded hover:bg-white/20 transition-colors ml-2 font-mono">
+              {playbackRate}x
+            </button>
+            {showSpeedMenu && (
+              <div className="absolute bottom-full right-0 mb-2 bg-zinc-900 border border-zinc-800 rounded-md shadow-xl py-1 flex flex-col overflow-hidden w-16 z-50">
+                {speedOptions.map((rate) => (
+                  <button key={rate} onClick={(e) => changeSpeed(e, rate)} className={`px-3 py-1.5 text-xs hover:bg-zinc-800 text-right ${playbackRate === rate ? 'text-primary font-bold' : 'text-white'}`}>
+                    {rate}x
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button onClick={toggleFullscreen} className="p-1.5 sm:p-2 hover:text-primary transition-colors focus:outline-none pointer-events-auto ml-1 sm:ml-2">
+            {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+          </button>
         </div>
       </div>
     </div>

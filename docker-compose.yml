@@ -164,9 +164,6 @@ services:
     networks:
       - lms_network
 
-    networks:
-      - lms_network
-
 networks:
   lms_network:
     driver: bridge

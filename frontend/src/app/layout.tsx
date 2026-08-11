@@ -1,4 +1,4 @@
-import { type Metadata } from "next";
+import { type Metadata, type Viewport } from "next";
 import { Tajawal } from "next/font/google";
 import RootProviders from "@/providers/root-providers";
 import { APP_NAME, APP_DESCRIPTION } from "@/lib/constants";
@@ -11,12 +11,28 @@ const tajawal = Tajawal({
   weight: ["300", "400", "500", "700", "800"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#8d6638",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
   title: {
     default: APP_NAME,
     template: `%s | ${APP_NAME}`,
   },
   description: APP_DESCRIPTION,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: APP_NAME,
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({

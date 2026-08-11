@@ -87,4 +87,21 @@ class AuthController extends Controller
             'data' => new \App\Http\Resources\UserMeResource($updatedUser),
         ]);
     }
+
+    public function changePassword(\Illuminate\Http\Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $validated = $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user->password = \Illuminate\Support\Facades\Hash::make($validated['password']);
+        $user->must_change_password = false;
+        $user->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'تم تغيير كلمة المرور بنجاح.',
+        ]);
+    }
 }

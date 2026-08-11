@@ -197,17 +197,6 @@ export default function CourseDetailPage() {
                                         </Button>
                                       </Link>
                                     );
-                                  } else if (lectureProduct) {
-                                    return (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="text-xs h-8 border-primary/30 text-primary hover:bg-primary/10 gap-1"
-                                        onClick={() => handleBuyLecture(lectureProduct)}
-                                      >
-                                        شراء المحاضرة ({lectureProduct.price} EGP)
-                                      </Button>
-                                    );
                                   } else {
                                     return (
                                       <span className="text-xs text-muted-foreground flex items-center gap-1">

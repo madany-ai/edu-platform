@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   status: "pending" | "active" | "rejected";
+  must_change_password?: boolean;
   roles: string[];
   student?: Student;
   created_at: string;

@@ -18,7 +18,7 @@ use Filament\Panel;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable(['name', 'email', 'password', 'status', 'assistant_code', 'phone', 'last_login_at'])]
+#[Fillable(['name', 'email', 'password', 'status', 'assistant_code', 'phone', 'last_login_at', 'must_change_password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -74,6 +74,7 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'status' => \App\Enums\UserStatus::class,
+            'must_change_password' => 'boolean',
         ];
     }
 }
