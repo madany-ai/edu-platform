@@ -28,7 +28,7 @@ class RegisterRequest extends FormRequest
             'gender' => 'required|in:male,female',
             'birth_date' => 'required|date',
             'governorate_id' => 'required|uuid|exists:governorates,id',
-            'grade_level_id' => 'required|uuid|exists:grade_levels,id',
+            'academic_year' => 'required|string|in:prep_1,prep_2,prep_3,sec_1,sec_2,sec_3',
             'cf-turnstile-response' => ['required', 'string', new \App\Rules\TurnstileRule],
         ];
     }

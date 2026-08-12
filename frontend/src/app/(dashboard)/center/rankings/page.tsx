@@ -7,7 +7,6 @@ import { Trophy, Loader2 } from "lucide-react";
 
 export default function RankingsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
-  const [gradeLevels, setGradeLevels] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,14 +18,6 @@ export default function RankingsPage() {
     try {
       const groupsData = await centerService.getGroups();
       setGroups(groupsData);
-      const uniqueGrades = Array.from(
-        new Map(
-          groupsData
-            .filter((g) => g.grade_level)
-            .map((g) => [g.grade_level!.id, g.grade_level!])
-        ).values()
-      );
-      setGradeLevels(uniqueGrades);
     } catch (e) {
       console.error(e);
     } finally {
@@ -57,7 +48,7 @@ export default function RankingsPage() {
         </div>
       </div>
 
-      <CenterRankingsCard groups={groups} gradeLevels={gradeLevels} />
+      <CenterRankingsCard groups={groups} />
     </div>
   );
 }

@@ -35,6 +35,15 @@ import {
   Phone,
 } from "lucide-react";
 
+const ACADEMIC_YEARS = [
+  { id: "prep_1", name: "الصف الأول الإعدادي" },
+  { id: "prep_2", name: "الصف الثاني الإعدادي" },
+  { id: "prep_3", name: "الصف الثالث الإعدادي" },
+  { id: "sec_1", name: "الصف الأول الثانوي" },
+  { id: "sec_2", name: "الصف الثاني الثانوي" },
+  { id: "sec_3", name: "الصف الثالث الثانوي" },
+];
+
 export default function GroupWorkspacePage({ params }: { params: Promise<{ id: string }> }) {
   const { id: groupId } = use(params);
   const { user, isInstructor, isAssistant, loading: authLoading } = useAuth();
@@ -103,7 +112,7 @@ export default function GroupWorkspacePage({ params }: { params: Promise<{ id: s
         last_name: lastName,
         phone,
         father_phone: fatherPhone,
-        grade_level_id: data.group.grade_level_id,
+        academic_year: data.group.academic_year,
         group_id: groupId,
       });
       setMsg(res.message);
@@ -175,7 +184,7 @@ export default function GroupWorkspacePage({ params }: { params: Promise<{ id: s
             <div className="space-y-2">
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-primary/20 text-primary border border-primary/30">
-                  {group.grade_level?.name || "صف دراسي"}
+                  {ACADEMIC_YEARS.find(y => y.id === group.academic_year)?.name || "صف دراسي"}
                 </span>
                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   سعة المجموعة: {group.capacity} طالب (مسجل {students.length})

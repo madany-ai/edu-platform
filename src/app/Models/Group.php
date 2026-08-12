@@ -14,12 +14,18 @@ class Group extends Model
 
     protected $fillable = [
         'academic_year_id',
-        'grade_level_id',
+        'academic_year',
         'name',
         'schedule',
         'capacity',
         'is_active',
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::addGlobalScope(new \App\Models\Scopes\AcademicYearScope);
+    }
 
     protected function casts(): array
     {
@@ -30,14 +36,9 @@ class Group extends Model
         ];
     }
 
-    public function academicYear(): BelongsTo
+    public function sessionYear(): BelongsTo
     {
-        return $this->belongsTo(AcademicYear::class);
-    }
-
-    public function gradeLevel(): BelongsTo
-    {
-        return $this->belongsTo(GradeLevel::class);
+        return $this->belongsTo(AcademicYear::class, 'academic_year_id');
     }
 
     public function students(): HasMany

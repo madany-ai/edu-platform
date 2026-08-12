@@ -34,6 +34,15 @@ const GENDER_OPTIONS = [
   { value: "female", label: "أنثى" },
 ];
 
+const ACADEMIC_YEARS = [
+  { value: "prep_1", label: "الصف الأول الإعدادي" },
+  { value: "prep_2", label: "الصف الثاني الإعدادي" },
+  { value: "prep_3", label: "الصف الثالث الإعدادي" },
+  { value: "sec_1", label: "الصف الأول الثانوي" },
+  { value: "sec_2", label: "الصف الثاني الثانوي" },
+  { value: "sec_3", label: "الصف الثالث الثانوي" },
+];
+
 export default function RegisterPage() {
   const { register } = useAuth();
   const [step, setStep] = useState(1);
@@ -56,9 +65,8 @@ export default function RegisterPage() {
   const [guardianJob, setGuardianJob] = useState("");
 
   const [governorates, setGovernorates] = useState<GovernorateInfo[]>([]);
-  const [gradeLevels, setGradeLevels] = useState<GradeLevelInfo[]>([]);
   const [governorateId, setGovernorateId] = useState("");
-  const [gradeLevelId, setGradeLevelId] = useState("");
+  const [academicYear, setAcademicYear] = useState("");
 
   const [errors, setErrors] = useState<FieldError[]>([]);
   const [loading, setLoading] = useState(false);
@@ -67,12 +75,8 @@ export default function RegisterPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [govs, grades] = await Promise.all([
-          miscService.getGovernorates(),
-          miscService.getGradeLevels(),
-        ]);
+        const govs = await miscService.getGovernorates();
         setGovernorates(govs);
-        setGradeLevels(grades);
       } catch (err) {
         console.error("Failed to load registration dropdowns:", err);
       }
@@ -109,7 +113,7 @@ export default function RegisterPage() {
       if (!birthDate) newErrors.push({ field: "birth_date", message: "تاريخ الميلاد مطلوب" });
       if (!phone) newErrors.push({ field: "phone", message: "رقم الهاتف مطلوب" });
       if (!governorateId) newErrors.push({ field: "governorate_id", message: "المحافظة مطلوبة" });
-      if (!gradeLevelId) newErrors.push({ field: "grade_level_id", message: "الصف الدراسي مطلوب" });
+      if (!academicYear) newErrors.push({ field: "academic_year", message: "الصف الدراسي مطلوب" });
       if (newErrors.length > 0) {
         setErrors(newErrors);
         return;
@@ -154,7 +158,7 @@ export default function RegisterPage() {
         gender: gender as "male" | "female",
         birth_date: birthDate,
         governorate_id: governorateId,
-        grade_level_id: gradeLevelId,
+        academic_year: academicYear,
         "cf-turnstile-response": turnstileToken,
       });
       setSubmitted(true);
@@ -436,21 +440,21 @@ export default function RegisterPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="grade_level_id" className="text-xs">الصف الدراسي *</Label>
-                  <Select value={gradeLevelId} onValueChange={(val) => { setGradeLevelId(val); clearFieldError("grade_level_id"); }}>
-                    <SelectTrigger id="grade_level_id" className="bg-background/50 border-border/60 text-foreground text-sm">
+                  <Label htmlFor="academic_year" className="text-xs">الصف الدراسي *</Label>
+                  <Select value={academicYear} onValueChange={(val) => { setAcademicYear(val); clearFieldError("academic_year"); }}>
+                    <SelectTrigger id="academic_year" className="bg-background/50 border-border/60 text-foreground text-sm">
                       <SelectValue placeholder="اختر الصف الدراسي" />
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border/60 text-foreground">
-                      {gradeLevels.map((grade) => (
-                        <SelectItem key={grade.id} value={grade.id}>
-                          {grade.name}
+                      {ACADEMIC_YEARS.map((grade) => (
+                        <SelectItem key={grade.value} value={grade.value}>
+                          {grade.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {getFieldError("grade_level_id") && (
-                    <p className="text-xs text-destructive">{getFieldError("grade_level_id")}</p>
+                  {getFieldError("academic_year") && (
+                    <p className="text-xs text-destructive">{getFieldError("academic_year")}</p>
                   )}
                 </div>
               </div>

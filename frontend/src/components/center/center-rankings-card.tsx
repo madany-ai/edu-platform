@@ -6,10 +6,18 @@ import { Trophy, Medal, Award, Star, Loader2, Filter } from "lucide-react";
 
 interface RankingsCardProps {
   groups: Group[];
-  gradeLevels: Array<{ id: string; name: string }>;
 }
 
-export function CenterRankingsCard({ groups, gradeLevels }: RankingsCardProps) {
+const ACADEMIC_YEARS = [
+  { id: "prep_1", name: "الصف الأول الإعدادي" },
+  { id: "prep_2", name: "الصف الثاني الإعدادي" },
+  { id: "prep_3", name: "الصف الثالث الإعدادي" },
+  { id: "sec_1", name: "الصف الأول الثانوي" },
+  { id: "sec_2", name: "الصف الثاني الثانوي" },
+  { id: "sec_3", name: "الصف الثالث الثانوي" },
+];
+
+export function CenterRankingsCard({ groups }: RankingsCardProps) {
   const [selectedGroup, setSelectedGroup] = useState<string>(groups[0]?.id || "");
   const [selectedGrade, setSelectedGrade] = useState<string>("");
   const [rankings, setRankings] = useState<RankingItem[]>([]);
@@ -24,7 +32,7 @@ export function CenterRankingsCard({ groups, gradeLevels }: RankingsCardProps) {
     try {
       const data = await centerService.getRankings({
         group_id: selectedGroup || undefined,
-        grade_level_id: selectedGrade || undefined,
+        academic_year: selectedGrade || undefined,
       });
       setRankings(data);
     } catch (e) {
@@ -79,7 +87,7 @@ export function CenterRankingsCard({ groups, gradeLevels }: RankingsCardProps) {
                 className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs font-semibold focus:ring-2 focus:ring-amber-500"
               >
                 <option value="">-- اختار حسب الصف الدراسي --</option>
-                {gradeLevels.map((gl) => (
+                {ACADEMIC_YEARS.map((gl) => (
                   <option key={gl.id} value={gl.id}>
                     {gl.name}
                   </option>

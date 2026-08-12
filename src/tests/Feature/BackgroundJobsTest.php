@@ -2,7 +2,6 @@
 
 use App\Jobs\ProcessVideoHLS;
 use App\Models\Course;
-use App\Models\GradeLevel;
 use App\Models\Governorate;
 use App\Models\User;
 use Illuminate\Support\Facades\Queue;
@@ -12,7 +11,6 @@ it('sends notification to instructors on student registration', function () {
     $instructor->assignRole('instructor');
 
     $governorate = Governorate::create(['name' => 'القاهرة']);
-    $gradeLevel = GradeLevel::create(['name' => 'الثالث الثانوي', 'sort_order' => 3]);
 
     $this->postJson('/api/auth/register', [
         'first_name' => 'أحمد',
@@ -29,7 +27,7 @@ it('sends notification to instructors on student registration', function () {
         'gender' => 'male',
         'birth_date' => '2005-01-01',
         'governorate_id' => $governorate->id,
-        'grade_level_id' => $gradeLevel->id,
+        'academic_year' => 'sec_3',
         'cf-turnstile-response' => 'dummy-token',
     ])->assertStatus(201);
 

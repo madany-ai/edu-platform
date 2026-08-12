@@ -137,26 +137,23 @@ class StudentResource extends Resource
                 TextInput::make('school_name')
                     ->label('المدرسة')
                     ->maxLength(255),
-                Select::make('grade_level_id')
+                Select::make('academic_year')
                     ->label('الصف الدراسي')
-                    ->searchable()
-                    ->getSearchResultsUsing(function (string $search): array {
-                        $normalized = str_replace(['أ', 'إ', 'آ', 'ة', 'ى'], ['ا', 'ا', 'ا', 'ه', 'ي'], $search);
-                        return \App\Models\GradeLevel::query()
-                            ->whereRaw("translate(name, 'أإآةى', 'ااايه') ilike ?", ["%{$normalized}%"])
-                            ->limit(50)
-                            ->pluck('name', 'id')
-                            ->toArray();
-                    })
-                    ->getOptionLabelUsing(fn ($value): ?string => \App\Models\GradeLevel::find($value)?->name)
+                    ->options([
+                        'prep_1' => 'الصف الأول الإعدادي',
+                        'prep_2' => 'الصف الثاني الإعدادي',
+                        'prep_3' => 'الصف الثالث الإعدادي',
+                        'sec_1' => 'الصف الأول الثانوي',
+                        'sec_2' => 'الصف الثاني الثانوي',
+                        'sec_3' => 'الصف الثالث الثانوي',
+                    ])
                     ->live()
                     ->afterStateUpdated(function ($state, callable $set) {
                         if (!$state) {
                             $set('academic_track_id', null);
                             return;
                         }
-                        $gradeLevel = \App\Models\GradeLevel::find($state);
-                        if (!$gradeLevel || !(str_contains($gradeLevel->name, 'ثانوي') || str_contains($gradeLevel->name, 'الثانوي'))) {
+                        if (!in_array($state, ['sec_2', 'sec_3'])) {
                             $set('academic_track_id', null);
                         }
                     }),
@@ -173,12 +170,11 @@ class StudentResource extends Resource
                     })
                     ->getOptionLabelUsing(fn ($value): ?string => \App\Models\AcademicTrack::find($value)?->name)
                     ->visible(function (callable $get) {
-                        $gradeLevelId = $get('grade_level_id');
-                        if (!$gradeLevelId) {
+                        $academicYear = $get('academic_year');
+                        if (!$academicYear) {
                             return false;
                         }
-                        $gradeLevel = \App\Models\GradeLevel::find($gradeLevelId);
-                        return $gradeLevel && (str_contains($gradeLevel->name, 'ثانوي') || str_contains($gradeLevel->name, 'الثانوي'));
+                        return in_array($academicYear, ['sec_2', 'sec_3']);
                     }),
                 Select::make('group_id')
                     ->label('مجموعة السنتر')

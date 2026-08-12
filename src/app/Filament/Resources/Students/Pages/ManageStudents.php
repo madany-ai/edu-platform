@@ -16,7 +16,7 @@ class ManageStudents extends ManageRecords
             CreateAction::make()
                 ->mutateFormDataUsing(function (array $data): array {
                     if (empty($data['student_code'])) {
-                        $tempStudent = new \App\Models\Student(['grade_level_id' => $data['grade_level_id'] ?? null]);
+                        $tempStudent = new \App\Models\Student(['academic_year' => $data['academic_year'] ?? null]);
                         $data['student_code'] = app(\App\Services\CodeGeneratorService::class)->generateStudentCode($tempStudent);
                     }
 
@@ -33,9 +33,11 @@ class ManageStudents extends ManageRecords
                             'email' => $email,
                             'phone' => $data['phone'] ?? null,
                             'password' => \Illuminate\Support\Facades\Hash::make(!empty($data['password']) ? $data['password'] : $data['student_code']),
-                            'must_change_password' => empty($data['password']),
                             'status' => 'active',
                         ]);
+                        $user->must_change_password = empty($data['password']);
+                        $user->save();
+                        
                         $user->assignRole('student');
 
                         $data['user_id'] = $user->id;

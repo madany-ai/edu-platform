@@ -14,7 +14,7 @@ class Semester extends Model
 
     protected $fillable = [
         'academic_year_id',
-        'grade_level_id',
+        'academic_year',
         'name',
         'start_date',
         'end_date',
@@ -33,11 +33,6 @@ class Semester extends Model
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
-    }
-
-    public function gradeLevel(): BelongsTo
-    {
-        return $this->belongsTo(GradeLevel::class);
     }
 
     public function centerExams(): HasMany

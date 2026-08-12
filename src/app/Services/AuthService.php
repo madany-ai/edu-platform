@@ -41,7 +41,7 @@ class AuthService
                 'gender' => $data['gender'],
                 'birth_date' => $data['birth_date'],
                 'governorate_id' => $data['governorate_id'],
-                'grade_level_id' => $data['grade_level_id'],
+                'academic_year' => $data['academic_year'],
             ]);
 
             return $user;
@@ -93,6 +93,13 @@ class AuthService
 
         if ($user->status === \App\Enums\UserStatus::Rejected) {
             return 'rejected';
+        }
+
+        // Check if password matches student code and force password change
+        $student = $user->student;
+        if ($student && \Illuminate\Support\Facades\Hash::check($student->student_code, $user->password)) {
+            $user->must_change_password = true;
+            $user->save();
         }
 
         $user->update(['last_login_at' => now()]);

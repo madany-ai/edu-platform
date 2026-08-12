@@ -60,10 +60,10 @@ class CenterStaffController extends Controller
     // ─── Groups ───
     public function groups(Request $request): JsonResponse
     {
-        $query = Group::with(['gradeLevel', 'academicYear'])->withCount('students');
+        $query = Group::withCount('students');
 
-        if ($request->has('grade_level_id')) {
-            $query->where('grade_level_id', $request->query('grade_level_id'));
+        if ($request->has('academic_year')) {
+            $query->where('academic_year', $request->query('academic_year'));
         }
 
         $groups = $query->orderByDesc('created_at')->get();
@@ -72,7 +72,7 @@ class CenterStaffController extends Controller
 
     public function showGroup(string $id): JsonResponse
     {
-        $group = Group::with(['gradeLevel', 'academicYear'])->findOrFail($id);
+        $group = Group::findOrFail($id);
         $students = Student::where('group_id', $id)->orderBy('first_name')->get();
         $sessions = AcademicSession::where('group_id', $id)->orderByDesc('date')->get();
         $exams = CenterExam::where('group_id', $id)->orderByDesc('date')->get();
@@ -91,7 +91,7 @@ class CenterStaffController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'grade_level_id' => 'required|uuid|exists:grade_levels,id',
+            'academic_year' => 'required|string|in:prep_1,prep_2,prep_3,sec_1,sec_2,sec_3',
             'academic_year_id' => 'nullable|uuid|exists:academic_years,id',
             'capacity' => 'nullable|integer|min:0',
             'schedule' => 'nullable|array',
@@ -99,7 +99,7 @@ class CenterStaffController extends Controller
         ]);
 
         $group = Group::create($validated);
-        return response()->json(['message' => 'تم إضافة المجموعة بنجاح.', 'data' => $group->load('gradeLevel')], 201);
+        return response()->json(['message' => 'تم إضافة المجموعة بنجاح.', 'data' => $group], 201);
     }
 
     public function updateGroup(Request $request, string $id): JsonResponse
@@ -107,7 +107,7 @@ class CenterStaffController extends Controller
         $group = Group::findOrFail($id);
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'grade_level_id' => 'sometimes|uuid|exists:grade_levels,id',
+            'academic_year' => 'sometimes|string|in:prep_1,prep_2,prep_3,sec_1,sec_2,sec_3',
             'academic_year_id' => 'nullable|uuid|exists:academic_years,id',
             'capacity' => 'nullable|integer|min:0',
             'schedule' => 'nullable|array',
@@ -115,7 +115,7 @@ class CenterStaffController extends Controller
         ]);
 
         $group->update($validated);
-        return response()->json(['message' => 'تم تحديث المجموعة بنجاح.', 'data' => $group->load('gradeLevel')]);
+        return response()->json(['message' => 'تم تحديث المجموعة بنجاح.', 'data' => $group]);
     }
 
     // ─── Academic Sessions ───
@@ -135,7 +135,7 @@ class CenterStaffController extends Controller
     {
         $validated = $request->validate([
             'group_id' => 'nullable|uuid|exists:groups,id',
-            'grade_level_id' => 'nullable|uuid|exists:grade_levels,id',
+            'academic_year' => 'nullable|string|in:prep_1,prep_2,prep_3,sec_1,sec_2,sec_3',
             'group_ids' => 'nullable|array',
             'group_ids.*' => 'uuid|exists:groups,id',
             'date' => 'required|date',
@@ -148,8 +148,8 @@ class CenterStaffController extends Controller
 
         if (!empty($validated['group_ids'])) {
             $groupIds = $validated['group_ids'];
-        } elseif (!empty($validated['grade_level_id'])) {
-            $groupIds = Group::where('grade_level_id', $validated['grade_level_id'])->pluck('id')->toArray();
+        } elseif (!empty($validated['academic_year'])) {
+            $groupIds = Group::where('academic_year', $validated['academic_year'])->pluck('id')->toArray();
         } elseif (!empty($validated['group_id'])) {
             $groupIds = [$validated['group_id']];
         } else {
@@ -373,7 +373,7 @@ class CenterStaffController extends Controller
     // ─── Center Exams & Grades ───
     public function exams(Request $request): JsonResponse
     {
-        $query = CenterExam::with(['group', 'semester', 'academicYear']);
+        $query = CenterExam::with(['group', 'semester']);
 
         if ($request->has('group_id')) {
             $query->where('group_id', $request->query('group_id'));
@@ -477,12 +477,12 @@ class CenterStaffController extends Controller
     public function rankings(Request $request): JsonResponse
     {
         $groupId = $request->query('group_id');
-        $gradeLevelId = $request->query('grade_level_id');
+        $academicYear = $request->query('academic_year');
 
         if ($groupId) {
             $rankings = RankingService::getGroupRankings($groupId);
-        } elseif ($gradeLevelId) {
-            $rankings = RankingService::getGradeRankings($gradeLevelId);
+        } elseif ($academicYear) {
+            $rankings = RankingService::getAcademicYearRankings($academicYear);
         } else {
             $firstGroup = Group::where('is_active', true)->first();
             $rankings = $firstGroup ? RankingService::getGroupRankings($firstGroup->id) : collect();
@@ -494,7 +494,7 @@ class CenterStaffController extends Controller
     // ─── Students List & Detail Report ───
     public function students(Request $request): JsonResponse
     {
-        $query = Student::with(['group', 'gradeLevel', 'user']);
+        $query = Student::with(['group', 'user']);
 
         if ($request->has('search')) {
             $search = $request->query('search');
@@ -517,7 +517,7 @@ class CenterStaffController extends Controller
 
     public function studentReport(string $studentId): JsonResponse
     {
-        $student = Student::with(['group', 'gradeLevel', 'governorate', 'city', 'user'])->findOrFail($studentId);
+        $student = Student::with(['group', 'governorate', 'city', 'user'])->findOrFail($studentId);
 
         $attendances = Attendance::with('session')
             ->where('student_id', $studentId)
@@ -568,7 +568,7 @@ class CenterStaffController extends Controller
             'last_name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'father_phone' => 'nullable|string|max:20',
-            'grade_level_id' => 'required|uuid|exists:grade_levels,id',
+            'academic_year' => 'required|string|in:prep_1,prep_2,prep_3,sec_1,sec_2,sec_3',
             'group_id' => 'nullable|uuid|exists:groups,id',
         ]);
 
@@ -592,13 +592,13 @@ class CenterStaffController extends Controller
             'last_name' => $validated['last_name'],
             'phone' => $validated['phone'] ?? null,
             'father_phone' => $validated['father_phone'] ?? null,
-            'grade_level_id' => $validated['grade_level_id'],
+            'academic_year' => $validated['academic_year'],
             'group_id' => $validated['group_id'] ?? null,
         ]);
 
         return response()->json([
             'message' => "تم إضافة الطالب بنجاح! كود الطالب: {$studentCode}",
-            'student' => $student->load(['group', 'gradeLevel'])
+            'student' => $student->load(['group'])
         ], 201);
     }
 }

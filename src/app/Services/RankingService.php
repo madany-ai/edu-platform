@@ -33,12 +33,12 @@ class RankingService
             ->get();
     }
 
-    public static function getGradeRankings(string $gradeLevelId, int $limit = 50): Collection
+    public static function getAcademicYearRankings(string $academicYear, int $limit = 50): Collection
     {
         return DB::table('students')
             ->join('center_grades', 'students.id', '=', 'center_grades.student_id')
             ->join('center_exams', 'center_grades.center_exam_id', '=', 'center_exams.id')
-            ->where('students.grade_level_id', $gradeLevelId)
+            ->where('students.academic_year', $academicYear)
             ->select(
                 'students.id as student_id',
                 'students.first_name',

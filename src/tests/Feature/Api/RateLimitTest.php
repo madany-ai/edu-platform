@@ -14,7 +14,6 @@ it('login endpoint has rate limiting applied', function () {
 
 it('register endpoint has rate limiting applied', function () {
     $governorate = \App\Models\Governorate::create(['name' => 'Cairo']);
-    $gradeLevel = \App\Models\GradeLevel::create(['name' => 'Grade 10']);
 
     $response = $this->postJson('/api/auth/register', [
         'first_name' => 'Test',
@@ -31,7 +30,7 @@ it('register endpoint has rate limiting applied', function () {
         'gender' => 'male',
         'birth_date' => '2000-01-01',
         'governorate_id' => $governorate->id,
-        'grade_level_id' => $gradeLevel->id,
+        'academic_year' => 'sec_1',
         'cf-turnstile-response' => 'test-token',
     ]);
 

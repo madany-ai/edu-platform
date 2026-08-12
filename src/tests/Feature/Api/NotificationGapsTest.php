@@ -2,7 +2,6 @@
 
 use App\Models\Course;
 use App\Models\Entitlement;
-use App\Models\GradeLevel;
 use App\Models\Governorate;
 use App\Models\Notification;
 use App\Models\Order;
@@ -13,7 +12,6 @@ use App\Services\NotificationService;
 
 beforeEach(function () {
     $this->governorate = Governorate::create(['name' => 'القاهرة']);
-    $this->gradeLevel = GradeLevel::create(['name' => 'الصف الثالث الثانوي', 'sort_order' => 3]);
 
     $this->instructor = User::factory()->create(['status' => 'active']);
     $this->instructor->assignRole('instructor');
@@ -83,7 +81,7 @@ it('registration notification is sent to all instructors', function () {
         'gender' => 'male',
         'birth_date' => '2005-01-01',
         'governorate_id' => $this->governorate->id,
-        'grade_level_id' => $this->gradeLevel->id,
+        'academic_year' => 'sec_3',
         'cf-turnstile-response' => 'test',
     ]);
 
@@ -231,6 +229,7 @@ it('notification does not exist for entitlement expiry (known gap)', function ()
     $entitlement = Entitlement::create([
         'student_id' => $this->student->id,
         'lecture_id' => $this->lecture->id,
+        'academic_year' => 'sec_3',
         'order_id' => Order::create([
             'student_id' => $this->student->id,
             'purchasable_id' => $this->course->id,

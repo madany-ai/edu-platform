@@ -50,6 +50,11 @@ export default function LoginPage() {
       const roles = loggedInUser?.roles || [];
       const isStaff = roles.some((r: any) => ["instructor", "assistant"].includes(typeof r === "string" ? r : r.name));
       
+      if (loggedInUser?.must_change_password) {
+        router.push("/change-password");
+        return;
+      }
+
       if (isStaff) {
         router.push("/center");
       } else {

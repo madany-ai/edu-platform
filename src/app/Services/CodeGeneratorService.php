@@ -12,11 +12,12 @@ class CodeGeneratorService
     public function generateStudentCode(Student $student): string
     {
         $gradeNumber = 'X';
-        if ($student->grade_level_id) {
-            $gradeLevel = $student->gradeLevel ?? \App\Models\GradeLevel::find($student->grade_level_id);
-            if ($gradeLevel) {
-                $gradeNumber = $gradeLevel->sort_order ?? 'X';
-            }
+        if ($student->academic_year) {
+            $map = [
+                'prep_1' => '1', 'prep_2' => '2', 'prep_3' => '3',
+                'sec_1' => '4', 'sec_2' => '5', 'sec_3' => '6',
+            ];
+            $gradeNumber = $map[$student->academic_year] ?? 'X';
         }
         $prefix = "ST{$gradeNumber}";
         

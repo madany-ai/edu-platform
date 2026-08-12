@@ -1,12 +1,10 @@
 <?php
 
-use App\Models\GradeLevel;
 use App\Models\Governorate;
 use App\Models\User;
 
 beforeEach(function () {
     $this->governorate = Governorate::create(['name' => 'القاهرة']);
-    $this->gradeLevel = GradeLevel::create(['name' => 'الصف الثالث الثانوي', 'sort_order' => 3]);
 });
 
 function validRegistrationData(array $overrides = []): array
@@ -26,7 +24,7 @@ function validRegistrationData(array $overrides = []): array
         'gender' => 'male',
         'birth_date' => '2000-01-01',
         'governorate_id' => test()->governorate->id,
-        'grade_level_id' => test()->gradeLevel->id,
+        'academic_year' => 'sec_3',
         'cf-turnstile-response' => 'dummy-token',
     ], $overrides);
 }
@@ -70,7 +68,7 @@ it('rejects registration with invalid data', function () {
         ->assertJsonValidationErrors([
             'first_name', 'email', 'password', 'second_name', 'third_name',
             'last_name', 'phone', 'father_phone', 'mother_phone',
-            'guardian_job', 'gender', 'birth_date', 'governorate_id', 'grade_level_id',
+            'guardian_job', 'gender', 'birth_date', 'governorate_id', 'academic_year',
         ]);
 });
 

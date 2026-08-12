@@ -11,20 +11,19 @@ export interface AcademicYear {
 export interface Group {
   id: string;
   name: string;
-  grade_level_id: string;
+  academic_year: string;
   academic_year_id?: string;
   capacity: number;
   schedule?: Array<{ day: string; time: string }>;
   is_active: boolean;
   students_count?: number;
-  grade_level?: { id: string; name: string };
-  academic_year?: { id: string; name: string };
+  academic_year_session?: { id: string; name: string };
 }
 
 export interface AcademicSession {
   id: string;
   group_id?: string;
-  grade_level_id?: string;
+  academic_year?: string;
   date: string;
   topic: string;
   notes?: string;
@@ -117,9 +116,9 @@ export const centerService = {
   },
 
   // Groups
-  getGroups: async (gradeLevelId?: string): Promise<Group[]> => {
+  getGroups: async (academicYear?: string): Promise<Group[]> => {
     const { data } = await api.get<{ data: Group[] }>("/center/staff/groups", {
-      params: { grade_level_id: gradeLevelId },
+      params: { academic_year: academicYear },
     });
     return data.data;
   },
@@ -203,7 +202,7 @@ export const centerService = {
   },
 
   // Rankings
-  getRankings: async (params?: { group_id?: string; grade_level_id?: string }): Promise<RankingItem[]> => {
+  getRankings: async (params?: { group_id?: string; academic_year?: string }): Promise<RankingItem[]> => {
     const { data } = await api.get<{ data: RankingItem[] }>("/center/staff/rankings", { params });
     return data.data;
   },

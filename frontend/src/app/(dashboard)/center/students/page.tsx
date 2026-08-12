@@ -8,10 +8,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, Eye, Loader2, User, Plus, ArrowRightLeft, CheckCircle2 } from "lucide-react";
 
+const ACADEMIC_YEARS = [
+  { id: "prep_1", name: "الصف الأول الإعدادي" },
+  { id: "prep_2", name: "الصف الثاني الإعدادي" },
+  { id: "prep_3", name: "الصف الثالث الإعدادي" },
+  { id: "sec_1", name: "الصف الأول الثانوي" },
+  { id: "sec_2", name: "الصف الثاني الثانوي" },
+  { id: "sec_3", name: "الصف الثالث الثانوي" },
+];
+
 export default function StudentsDirectoryPage() {
   const [students, setStudents] = useState<any[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
-  const [gradeLevels, setGradeLevels] = useState<Array<{ id: string; name: string }>>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
@@ -28,7 +36,7 @@ export default function StudentsDirectoryPage() {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [fatherPhone, setFatherPhone] = useState("");
-  const [selectedGradeId, setSelectedGradeId] = useState("");
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState("");
 
   useEffect(() => {
@@ -38,15 +46,13 @@ export default function StudentsDirectoryPage() {
   const initData = async () => {
     setLoading(true);
     try {
-      const [studentsRes, groupsData, gradesData] = await Promise.all([
+      const [studentsRes, groupsData] = await Promise.all([
         centerService.getStudents({ search: searchQuery }),
         centerService.getGroups(),
-        centerService.getGradeLevels(),
       ]);
       setStudents(studentsRes.data || []);
       setGroups(groupsData);
-      setGradeLevels(gradesData);
-      if (gradesData.length > 0) setSelectedGradeId(gradesData[0].id);
+      setSelectedAcademicYear(ACADEMIC_YEARS[0].id);
       if (groupsData.length > 0) setSelectedGroupId(groupsData[0].id);
     } catch (e) {
       console.error(e);
@@ -76,7 +82,7 @@ export default function StudentsDirectoryPage() {
         last_name: lastName,
         phone,
         father_phone: fatherPhone,
-        grade_level_id: selectedGradeId,
+        academic_year: selectedAcademicYear,
         group_id: selectedGroupId,
       });
       setMsg(res.message);
@@ -179,7 +185,9 @@ export default function StudentsDirectoryPage() {
                       {st.first_name} {st.second_name} {st.last_name}
                     </td>
                     <td className="py-3.5 px-4 text-xs font-semibold">{st.group?.name || "غير محدد"}</td>
-                    <td className="py-3.5 px-4 text-xs text-muted-foreground">{st.grade_level?.name}</td>
+                    <td className="py-3.5 px-4 text-xs text-muted-foreground">
+                      {ACADEMIC_YEARS.find((y) => y.id === (st.academic_year || st.group?.academic_year))?.name || "غير محدد"}
+                    </td>
                     <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">{st.phone || "-"}</td>
                     <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">{st.father_phone || "-"}</td>
                     <td className="py-3.5 px-4 text-center">
@@ -249,11 +257,11 @@ export default function StudentsDirectoryPage() {
               <div>
                 <Label className="text-xs">الصف الدراسي:</Label>
                 <select
-                  value={selectedGradeId}
-                  onChange={(e) => setSelectedGradeId(e.target.value)}
+                  value={selectedAcademicYear}
+                  onChange={(e) => setSelectedAcademicYear(e.target.value)}
                   className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs"
                 >
-                  {gradeLevels.map((gl) => (
+                  {ACADEMIC_YEARS.map((gl) => (
                     <option key={gl.id} value={gl.id}>
                       {gl.name}
                     </option>
@@ -306,7 +314,7 @@ export default function StudentsDirectoryPage() {
                 >
                   {groups.map((g) => (
                     <option key={g.id} value={g.id}>
-                      {g.name} ({g.grade_level?.name})
+                      {g.name} ({ACADEMIC_YEARS.find((y) => y.id === g.academic_year)?.name})
                     </option>
                   ))}
                 </select>

@@ -66,6 +66,19 @@ class CourseResource extends Resource
                     ->directory('courses/thumbnails')
                     ->columnSpanFull(),
 
+                Select::make('academic_year')
+                    ->label('السنة الدراسية (الصف)')
+                    ->options([
+                        'prep_1' => 'الصف الأول الإعدادي',
+                        'prep_2' => 'الصف الثاني الإعدادي',
+                        'prep_3' => 'الصف الثالث الإعدادي',
+                        'sec_1' => 'الصف الأول الثانوي',
+                        'sec_2' => 'الصف الثاني الثانوي',
+                        'sec_3' => 'الصف الثالث الثانوي',
+                    ])
+                    ->required()
+                    ->default('sec_3'),
+
                 TextInput::make('price')
                     ->label('السعر')
                     ->required()

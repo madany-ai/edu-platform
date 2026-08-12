@@ -18,7 +18,14 @@ class Product extends Model
         'price',
         'access_duration_days',
         'is_active',
+        'academic_year',
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::addGlobalScope(new \App\Models\Scopes\AcademicYearScope);
+    }
 
     protected function casts(): array
     {

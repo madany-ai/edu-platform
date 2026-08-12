@@ -8,7 +8,6 @@ use App\Models\Attendance;
 use App\Models\CenterExam;
 use App\Models\CenterGrade;
 use App\Models\CommunicationLog;
-use App\Models\GradeLevel;
 use App\Models\Group;
 use App\Models\Student;
 use App\Models\StudentTransfer;
@@ -23,7 +22,6 @@ class CenterManagementTest extends TestCase
 
     protected User $user;
     protected Student $student;
-    protected GradeLevel $gradeLevel;
     protected AcademicYear $academicYear;
     protected Group $group;
 
@@ -40,11 +38,6 @@ class CenterManagementTest extends TestCase
         ]);
         $this->user->assignRole('student');
 
-        $this->gradeLevel = GradeLevel::create([
-            'name' => 'الصف الثالث الإعدادي',
-            'sort_order' => 3,
-        ]);
-
         $this->academicYear = AcademicYear::create([
             'name' => '2026 - 2027',
             'start_date' => now(),
@@ -54,7 +47,7 @@ class CenterManagementTest extends TestCase
 
         $this->group = Group::create([
             'academic_year_id' => $this->academicYear->id,
-            'grade_level_id' => $this->gradeLevel->id,
+            'academic_year' => 'prep_3',
             'name' => 'مجموعة الأحد والأربعاء 5 مساءً',
             'capacity' => 40,
             'is_active' => true,
@@ -71,7 +64,7 @@ class CenterManagementTest extends TestCase
             'father_phone' => '01000000002',
             'mother_phone' => '01000000003',
             'guardian_job' => 'مهندس',
-            'grade_level_id' => $this->gradeLevel->id,
+            'academic_year' => 'prep_3',
             'group_id' => $this->group->id,
             'gender' => 'male',
             'birth_date' => '2010-05-15',
@@ -134,7 +127,7 @@ class CenterManagementTest extends TestCase
     {
         $newGroup = Group::create([
             'academic_year_id' => $this->academicYear->id,
-            'grade_level_id' => $this->gradeLevel->id,
+            'academic_year' => 'prep_3',
             'name' => 'مجموعة السبت والثلاثاء 4 عصراً',
             'capacity' => 30,
             'is_active' => true,

@@ -121,7 +121,7 @@ export default function SessionsPage() {
       const selectedG = groups.find((g) => g.id === (newGroupId || groups[0]?.id));
       const created = await centerService.createSession({
         group_id: broadcastToGrade ? undefined : (newGroupId || groups[0]?.id),
-        grade_level_id: broadcastToGrade ? selectedG?.grade_level_id : undefined,
+        academic_year: broadcastToGrade ? selectedG?.academic_year : undefined,
         topic: newTopic,
         date: newDate,
       });

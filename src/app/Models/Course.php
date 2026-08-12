@@ -23,7 +23,7 @@ class Course extends Model
     
     protected $fillable = [
         'title', 'description', 'thumbnail', 'status',
-        'price', 'instructor_id', 'course_code',
+        'price', 'instructor_id', 'course_code', 'academic_year',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -37,6 +37,8 @@ class Course extends Model
     protected static function boot(): void
     {
         parent::boot();
+
+        static::addGlobalScope(new \App\Models\Scopes\AcademicYearScope);
 
         static::creating(function (Course $course) {
             if (! $course->course_code) {

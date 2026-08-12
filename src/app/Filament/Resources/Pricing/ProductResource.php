@@ -76,9 +76,8 @@ class ProductResource extends Resource
                     ->label('نوع المحتوى')
                     ->options([
                         Course::class => 'دورة كاملة',
-                        CourseSection::class => 'شهر / قسم',
-                        Lecture::class => 'محاضرة',
                     ])
+                    ->default(Course::class)
                     ->required()
                     ->reactive()
                     ->afterStateUpdated(fn (callable $set) => $set('sellable_id', null)),
@@ -93,12 +92,6 @@ class ProductResource extends Resource
 
                         return match ($type) {
                             Course::class => Course::pluck('title', 'id'),
-                            CourseSection::class => CourseSection::with('course')
-                                ->get()
-                                ->mapWithKeys(fn ($s) => [$s->id => "{$s->course?->title} / {$s->title}"]),
-                            Lecture::class => Lecture::with('section.course')
-                                ->get()
-                                ->mapWithKeys(fn ($l) => [$l->id => "{$l->section?->course?->title} / {$l->section?->title} / {$l->title}"]),
                             default => [],
                         };
                     })
@@ -124,15 +117,11 @@ class ProductResource extends Resource
                     ->label('النوع')
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         Course::class => 'دورة',
-                        CourseSection::class => 'شهر',
-                        Lecture::class => 'محاضرة',
-                        default => $state,
+                        default => 'غير معروف',
                     })
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         Course::class => 'success',
-                        CourseSection::class => 'warning',
-                        Lecture::class => 'info',
                         default => 'gray',
                     }),
 
@@ -140,8 +129,6 @@ class ProductResource extends Resource
                     ->label('المرتبط بـ')
                     ->formatStateUsing(function (Product $record): string {
                         if ($record->sellable instanceof Course) return $record->sellable->title;
-                        if ($record->sellable instanceof CourseSection) return "{$record->sellable->course?->title} / {$record->sellable->title}";
-                        if ($record->sellable instanceof Lecture) return "{$record->sellable->section?->course?->title} / {$record->sellable->section?->title} / {$record->sellable->title}";
                         return '-';
                     }),
 
@@ -167,8 +154,6 @@ class ProductResource extends Resource
                     ->label('نوع المحتوى')
                     ->options([
                         Course::class => 'دورة كاملة',
-                        CourseSection::class => 'شهر / قسم',
-                        Lecture::class => 'محاضرة',
                     ]),
             ])
             ->defaultSort('created_at', 'desc')

@@ -1,13 +1,11 @@
 <?php
 
-use App\Models\GradeLevel;
 use App\Models\Governorate;
 use App\Models\Student;
 use App\Models\User;
 
 beforeEach(function () {
     $this->governorate = Governorate::create(['name' => 'القاهرة']);
-    $this->gradeLevel = GradeLevel::create(['name' => 'الصف الثالث الثانوي', 'sort_order' => 3]);
 });
 
 function regData(array $overrides = []): array
@@ -27,7 +25,7 @@ function regData(array $overrides = []): array
         'gender' => 'male',
         'birth_date' => '2000-01-01',
         'governorate_id' => test()->governorate->id,
-        'grade_level_id' => test()->gradeLevel->id,
+        'academic_year' => 'sec_3',
         'cf-turnstile-response' => 'dummy-token',
     ], $overrides);
 }
@@ -98,11 +96,11 @@ it('rejects registration with non-existent governorate', function () {
 
 it('rejects registration with non-existent grade level', function () {
     $response = $this->postJson('/api/auth/register', regData([
-        'grade_level_id' => '00000000-0000-0000-0000-000000000000',
+        'academic_year' => 'invalid_year',
     ]));
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['grade_level_id']);
+        ->assertJsonValidationErrors(['academic_year']);
 });
 
 it('login by student_code', function () {

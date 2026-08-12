@@ -29,7 +29,7 @@ export interface RegisterPayload {
   gender: "male" | "female";
   birth_date: string;
   governorate_id: string;
-  grade_level_id: string;
+  academic_year: string;
 }
 
 export interface RegisterResponse {
