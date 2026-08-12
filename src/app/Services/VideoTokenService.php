@@ -16,12 +16,13 @@ class VideoTokenService
      * Generate a short-lived HMAC token for video streaming.
      * Token is tied to: user_id, video_id, lecture_id, expiry.
      */
-    public function generateVideoToken(string $videoId, int|string $userId, string $lectureId, int $expiryHours = 4): string
+    public function generateVideoToken(string $videoId, int|string $userId, string $lectureId, string $ipAddress = '', int $expiryHours = 4): string
     {
         $payload = [
             'v' => $videoId,
             'u' => (string) $userId,
             'l' => $lectureId,
+            'ip' => $ipAddress,
             'e' => now()->addHours($expiryHours)->timestamp,
         ];
 
@@ -61,6 +62,12 @@ class VideoTokenService
 
         // Check video ID matches
         if (($payload['v'] ?? '') !== $videoId) {
+            return null;
+        }
+
+        // Check IP address if it was bound to the token
+        $boundIp = $payload['ip'] ?? '';
+        if ($boundIp !== '' && $boundIp !== request()->ip()) {
             return null;
         }
 

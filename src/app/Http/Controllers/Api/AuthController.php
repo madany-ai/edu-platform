@@ -91,9 +91,17 @@ class AuthController extends Controller
     public function changePassword(\Illuminate\Http\Request $request): JsonResponse
     {
         $user = $request->user();
-        $validated = $request->validate([
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        
+        if (!$user->must_change_password) {
+            $validated = $request->validate([
+                'current_password' => 'required|current_password',
+                'password' => 'required|string|min:8|confirmed',
+            ]);
+        } else {
+            $validated = $request->validate([
+                'password' => 'required|string|min:8|confirmed',
+            ]);
+        }
 
         $user->password = \Illuminate\Support\Facades\Hash::make($validated['password']);
         $user->must_change_password = false;

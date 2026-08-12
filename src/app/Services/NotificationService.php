@@ -21,8 +21,6 @@ class NotificationService
         $this->dispatchWebhook([
             'event' => 'user_notification',
             'user_id' => $user->id,
-            'user_name' => $user->name,
-            'phone' => $user->phone,
             'title' => $title,
             'body' => $body,
         ]);
@@ -53,10 +51,6 @@ class NotificationService
         $this->dispatchWebhook([
             'event' => 'attendance_recorded',
             'student_code' => $student->student_code,
-            'student_name' => $student->full_name,
-            'phone' => $student->phone,
-            'father_phone' => $student->father_phone,
-            'mother_phone' => $student->mother_phone,
             'status' => $status,
             'topic' => $topic,
             'date' => $date,
@@ -84,9 +78,6 @@ class NotificationService
         $this->dispatchWebhook([
             'event' => 'grade_recorded',
             'student_code' => $student->student_code,
-            'student_name' => $student->full_name,
-            'phone' => $student->phone,
-            'father_phone' => $student->father_phone,
             'exam_name' => $examName,
             'score' => $score,
             'total_marks' => $totalMarks,

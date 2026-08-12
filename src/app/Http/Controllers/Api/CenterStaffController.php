@@ -407,7 +407,7 @@ class CenterStaffController extends Controller
 
         $students = $exam->group_id
             ? Student::where('group_id', $exam->group_id)->get()
-            : Student::all();
+            : Student::limit(200)->get();
 
         $gradesMap = CenterGrade::where('center_exam_id', $examId)
             ->get()

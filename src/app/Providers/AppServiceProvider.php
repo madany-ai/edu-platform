@@ -21,6 +21,12 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(\App\Models\CourseSection::class, \App\Policies\SectionPolicy::class);
         Gate::policy(\App\Models\Exam::class, \App\Policies\ExamPolicy::class);
         Gate::policy(\App\Models\ExamAttempt::class, \App\Policies\ExamAttemptPolicy::class);
+        Gate::policy(\App\Models\Student::class, \App\Policies\StudentPolicy::class);
+        Gate::policy(\App\Models\Order::class, \App\Policies\OrderPolicy::class);
+        Gate::policy(\App\Models\Group::class, \App\Policies\GroupPolicy::class);
+        Gate::policy(\App\Models\Attendance::class, \App\Policies\AttendancePolicy::class);
+        Gate::policy(\App\Models\CenterExam::class, \App\Policies\CenterExamPolicy::class);
+        Gate::policy(\App\Models\Product::class, \App\Policies\ProductPolicy::class);
         \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(\App\Models\PersonalAccessToken::class);
 
         \Illuminate\Support\Facades\RateLimiter::for('api', function (\Illuminate\Http\Request $request) {
