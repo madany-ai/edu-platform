@@ -44,7 +44,7 @@ export default function StudentCoursesPage() {
         />
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {enrollments.map((enrollment) => {
+          {enrollments.filter(e => e.course).map((enrollment) => {
             const course = enrollment.course;
             return (
               <div

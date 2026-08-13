@@ -523,6 +523,16 @@ class StudentResource extends Resource
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    \Filament\Actions\BulkAction::make('printBulkQrCodes')
+                        ->label('طباعة الكارنيهات (QR)')
+                        ->icon('heroicon-o-qr-code')
+                        ->color('primary')
+                        ->modalHeading('كارنيهات الطلاب المحددين - QR Codes')
+                        ->modalSubmitAction(false)
+                        ->modalCancelActionLabel('إغلاق')
+                        ->modalContent(fn (\Illuminate\Database\Eloquent\Collection $records) => view('filament.modals.bulk-student-qr-cards', [
+                            'students' => $records,
+                        ])),
                     DeleteBulkAction::make(),
                 ]),
             ]);

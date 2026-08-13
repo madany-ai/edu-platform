@@ -38,7 +38,7 @@ class ProcessVideoHLS implements ShouldQueue
 
         // If this is the initial run (no video ID yet)
         if (!$this->bunnyVideoId) {
-            if (!$lecture->video_path) {
+            if (!$lecture->video_path || filter_var($lecture->video_path, FILTER_VALIDATE_URL)) {
                 return;
             }
 
@@ -50,7 +50,7 @@ class ProcessVideoHLS implements ShouldQueue
 
             // Download source from MinIO to a temp file
             $tempFile = tempnam(sys_get_temp_dir(), 'video_');
-            $videoStream = \Illuminate\Support\Facades\Storage::disk('minio')->readStream($lecture->video_path);
+            $videoStream = \Illuminate\Support\Facades\Storage::disk('public')->readStream($lecture->video_path);
 
             if (!$videoStream) {
                 \App\Models\LectureVideo::updateOrCreate(
@@ -126,8 +126,8 @@ class ProcessVideoHLS implements ShouldQueue
                 Log::info("Bunny Stream: Video {$videoId} completed transcoding for Lecture {$lecture->id}");
 
                 // Clean up the original MinIO upload since it is transcoded on Bunny
-                if ($lecture->video_path && \Illuminate\Support\Facades\Storage::disk('minio')->exists($lecture->video_path)) {
-                    \Illuminate\Support\Facades\Storage::disk('minio')->delete($lecture->video_path);
+                if ($lecture->video_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($lecture->video_path)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($lecture->video_path);
                 }
                 return;
             }

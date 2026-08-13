@@ -124,7 +124,7 @@ class LectureResource extends Resource
 
                         FileUpload::make('video_path')
                             ->label('فيديو المحاضرة')
-                            ->disk('minio')
+                            ->disk('public')
                             ->directory('lectures')
                             ->visibility('private')
                             ->acceptedFileTypes(['video/mp4', 'video/webm', 'video/ogg'])
@@ -140,7 +140,7 @@ class LectureResource extends Resource
                                     ->required(),
                                 FileUpload::make('file_path')
                                     ->label('الملف')
-                                    ->disk('minio')
+                                    ->disk('public')
                                     ->directory('lecture-files')
                                     ->acceptedFileTypes(['application/pdf'])
                                     ->maxSize(20480) // 20 MB
@@ -196,7 +196,7 @@ class LectureResource extends Resource
 
                                         FileUpload::make('image_path')
                                             ->label('صورة للسؤال (اختياري)')
-                                            ->disk('minio')
+                                            ->disk('public')
                                             ->directory('questions')
                                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
                                             ->maxSize(2048) // 2 MB
@@ -281,7 +281,7 @@ class LectureResource extends Resource
 
                                         FileUpload::make('image_path')
                                             ->label('صورة للسؤال (اختياري)')
-                                            ->disk('minio')
+                                            ->disk('public')
                                             ->directory('questions')
                                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
                                             ->maxSize(2048) // 2 MB

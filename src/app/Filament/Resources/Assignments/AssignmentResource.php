@@ -81,7 +81,7 @@ class AssignmentResource extends Resource
 
                         FileUpload::make('image_path')
                             ->label('صورة للسؤال (اختياري)')
-                            ->disk('minio')
+                            ->disk('public')
                             ->directory('questions')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
                             ->maxSize(2048) // 2 MB

@@ -7,95 +7,67 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Users, Plus, Loader2, Calendar, Filter, GraduationCap, Clock, CheckCircle2 } from "lucide-react";
+import { GRADE_LEVELS } from "@/lib/constants";
 
-const ACADEMIC_YEARS = [
-  { id: "prep_1", name: "الصف الأول الإعدادي" },
-  { id: "prep_2", name: "الصف الثاني الإعدادي" },
-  { id: "prep_3", name: "الصف الثالث الإعدادي" },
-  { id: "sec_1", name: "الصف الأول الثانوي" },
-  { id: "sec_2", name: "الصف الثاني الثانوي" },
-  { id: "sec_3", name: "الصف الثالث الثانوي" },
-];
+import { toast } from "sonner";
+import { useCenterFilters } from "@/providers/center-filters-provider";
 
 export default function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
-  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Selected Hierarchical Filters
-  const [selectedYearId, setSelectedYearId] = useState<string>("");
-  const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>("");
 
   // Modal State
   const [showAddGroupModal, setShowAddGroupModal] = useState(false);
-  const [showAddYearModal, setShowAddYearModal] = useState(false);
 
   const [newGroupName, setNewGroupName] = useState("");
-  const [newGroupAcademicYear, setNewGroupAcademicYear] = useState("");
   const [newGroupCapacity, setNewGroupCapacity] = useState("40");
 
-  const [newYearName, setNewYearName] = useState("");
-  const [newYearStart, setNewYearStart] = useState("");
-  const [newYearEnd, setNewYearEnd] = useState("");
+  const { selectedYearId, selectedGrade, selectedTerm } = useCenterFilters();
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    setLoading(true);
+  const fetchGroups = async () => {
     try {
-      const [groupsData, yearsData] = await Promise.all([
-        centerService.getGroups(),
-        centerService.getAcademicYears(),
-      ]);
-      setGroups(groupsData);
-      setAcademicYears(yearsData);
-
-      if (yearsData.length > 0 && !selectedYearId) {
-        setSelectedYearId(yearsData[0].id);
-      }
-    } catch (e) {
-      console.error(e);
+      setLoading(true);
+      const data = await centerService.getGroups({
+        academic_year_id: selectedYearId,
+        academic_year: selectedGrade,
+        term: selectedTerm,
+      });
+      setGroups(data);
+    } catch (err) {
+      console.error(err);
+      toast.error("حدث خطأ أثناء جلب المجموعات.");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!selectedYearId) return;
+    fetchGroups();
+  }, [selectedYearId, selectedGrade, selectedTerm]);
+
+
 
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await centerService.createGroup({
         name: newGroupName,
-        academic_year: newGroupAcademicYear || ACADEMIC_YEARS[0].id,
-        academic_year_id: selectedYearId || academicYears[0]?.id,
+        academic_year_id: selectedYearId,
+        academic_year: selectedGrade,
+        term: selectedTerm,
         capacity: parseInt(newGroupCapacity) || 40,
         is_active: true,
       });
       setShowAddGroupModal(false);
       setNewGroupName("");
-      loadData();
+      fetchGroups();
     } catch (err) {
       alert("حدث خطأ أثناء إضافة المجموعة.");
     }
   };
 
-  const handleCreateYear = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await centerService.createAcademicYear({
-        name: newYearName,
-        start_date: newYearStart || undefined,
-        end_date: newYearEnd || undefined,
-        is_active: true,
-      });
-      setShowAddYearModal(false);
-      setNewYearName("");
-      loadData();
-    } catch (err) {
-      alert("حدث خطأ أثناء إضافة السنة الدراسية.");
-    }
-  };
+
 
   if (loading) {
     return (
@@ -106,15 +78,10 @@ export default function GroupsPage() {
     );
   }
 
-  // Filter groups hierarchically
-  const filteredGroups = groups.filter((g) => {
-    const matchesYear = !selectedYearId || !g.academic_year_id || g.academic_year_id === selectedYearId;
-    const matchesGrade = !selectedAcademicYear || g.academic_year === selectedAcademicYear;
-    return matchesYear && matchesGrade;
-  });
+  const filteredGroups = groups;
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
         <div className="flex items-center gap-3">
@@ -129,87 +96,13 @@ export default function GroupsPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button onClick={() => setShowAddGroupModal(true)} className="gap-2 font-bold shadow-md">
             <Plus className="h-4 w-4" /> إضافة مجموعة دراسية
           </Button>
-          <Button onClick={() => setShowAddYearModal(true)} variant="outline" className="gap-2 font-bold">
-            <Plus className="h-4 w-4" /> سنة دراسية جديدة
-          </Button>
         </div>
       </div>
 
-      {/* Step 1 & Step 2 Hierarchical Filter Bar */}
-      <div className="glass-card p-6 rounded-3xl border border-primary/20 bg-gradient-to-r from-primary/5 via-background to-secondary/5 space-y-6">
-        {/* Step 1: Academic Year Filter */}
-        <div className="space-y-3">
-          <Label className="text-xs font-bold text-primary flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            الخطوة 1: اختر العام الدراسي المسجل
-          </Label>
-
-          <div className="flex items-center gap-3 flex-wrap">
-            <button
-              onClick={() => setSelectedYearId("")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                !selectedYearId
-                  ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
-                  : "bg-background/60 text-muted-foreground border-border hover:border-primary/40"
-              }`}
-            >
-              جميع السنوات الدراسية
-            </button>
-            {academicYears.map((y) => (
-              <button
-                key={y.id}
-                onClick={() => setSelectedYearId(y.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
-                  selectedYearId === y.id
-                    ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
-                    : "bg-background/60 text-muted-foreground border-border hover:border-primary/40"
-                }`}
-              >
-                {y.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Step 2: Grade Level Filter */}
-        <div className="space-y-3 pt-4 border-t border-border/40">
-          <Label className="text-xs font-bold text-primary flex items-center gap-2">
-            <GraduationCap className="h-4 w-4" />
-            الخطوة 2: اختر الصف الدراسي
-          </Label>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setSelectedAcademicYear("")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all border ${
-                !selectedAcademicYear
-                  ? "bg-secondary text-secondary-foreground border-secondary shadow-sm"
-                  : "bg-background/60 text-muted-foreground border-border hover:border-secondary/40"
-              }`}
-            >
-              جميع الصفوف
-            </button>
-
-            {ACADEMIC_YEARS.map((gl) => (
-              <button
-                key={gl.id}
-                onClick={() => setSelectedAcademicYear(gl.id)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all border ${
-                  selectedAcademicYear === gl.id
-                    ? "bg-secondary text-secondary-foreground border-secondary shadow-sm"
-                    : "bg-background/60 text-muted-foreground border-border hover:border-secondary/40"
-                }`}
-              >
-                {gl.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* Filtered Groups Display Grid */}
       <div className="space-y-4">
@@ -238,7 +131,7 @@ export default function GroupsPage() {
                   <div>
                     <h4 className="text-base font-bold text-foreground">{g.name}</h4>
                     <p className="text-xs text-primary font-medium mt-0.5">
-                      {ACADEMIC_YEARS.find((y) => y.id === g.academic_year)?.name || "صف دراسي غير محدد"}
+                      {GRADE_LEVELS.find((y) => y.id === g.academic_year)?.name || "صف دراسي غير محدد"}
                     </p>
                   </div>
                   <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400">
@@ -287,21 +180,6 @@ export default function GroupsPage() {
               </div>
 
               <div>
-                <Label className="text-xs">الصف الدراسي:</Label>
-                <select
-                  value={newGroupAcademicYear}
-                  onChange={(e) => setNewGroupAcademicYear(e.target.value)}
-                  className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs"
-                >
-                  {ACADEMIC_YEARS.map((gl) => (
-                    <option key={gl.id} value={gl.id}>
-                      {gl.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
                 <Label className="text-xs">السعة الاستيعابية للطلاب:</Label>
                 <Input type="number" value={newGroupCapacity} onChange={(e) => setNewGroupCapacity(e.target.value)} required />
               </div>
@@ -319,44 +197,7 @@ export default function GroupsPage() {
         </div>
       )}
 
-      {/* Modal: Add Year */}
-      {showAddYearModal && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="glass-card w-full max-w-md p-6 rounded-2xl border border-border space-y-4 shadow-2xl">
-            <h3 className="text-base font-bold">إضافة سنة دراسية جديدة</h3>
-            <form onSubmit={handleCreateYear} className="space-y-3">
-              <div>
-                <Label className="text-xs">اسم السنة الدراسية:</Label>
-                <Input
-                  placeholder="مثال: العام الدراسي 2026 - 2027"
-                  value={newYearName}
-                  onChange={(e) => setNewYearName(e.target.value)}
-                  required
-                />
-              </div>
 
-              <div>
-                <Label className="text-xs">تاريخ البداية:</Label>
-                <Input type="date" value={newYearStart} onChange={(e) => setNewYearStart(e.target.value)} />
-              </div>
-
-              <div>
-                <Label className="text-xs">تاريخ النهاية:</Label>
-                <Input type="date" value={newYearEnd} onChange={(e) => setNewYearEnd(e.target.value)} />
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <Button type="submit" className="flex-1 font-bold">
-                  حفظ السنة الدراسية
-                </Button>
-                <Button type="button" variant="outline" onClick={() => setShowAddYearModal(false)}>
-                  إلغاء
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -12,7 +12,7 @@ import {
   Settings,
   LogOut,
   Bell,
-  Atom,
+  Calculator,
   MessageCircle,
   UserCheck,
   Award,
@@ -24,6 +24,7 @@ import {
   Users,
   Search,
 } from "lucide-react";
+import { CenterFiltersPanel } from "./center-filters-panel";
 
 const studentLinks = [
   { href: ROUTES.DASHBOARD, label: "لوحة التحكم", icon: LayoutDashboard },
@@ -62,7 +63,7 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "hidden h-screen w-64 shrink-0 glass border-y-0 border-r-0 border-l border-[#3b413c] lg:sticky lg:top-0 lg:block",
+        "hidden h-screen w-64 shrink-0 glass border-y-0 border-r-0 border-l border-[#3b413c] xl:sticky xl:top-0 xl:block",
         className
       )}
     >
@@ -70,7 +71,7 @@ export function Sidebar({ className }: SidebarProps) {
         <div className="space-y-6">
           <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 pb-4">
             <div className="flex items-center gap-2">
-              <Atom className="h-6 w-6 text-primary animate-spin" style={{ animationDuration: "6s" }} />
+              <Calculator className="h-6 w-6 text-primary" />
               <span className="font-bold text-foreground text-sm">مستر حفني 👨‍🏫</span>
             </div>
             {isStaff && (
@@ -79,6 +80,7 @@ export function Sidebar({ className }: SidebarProps) {
               </span>
             )}
           </div>
+          {isStaff && <CenterFiltersPanel />}
           <nav className="flex flex-col gap-1.5">
             {links.map((link) => {
               const Icon = link.icon;

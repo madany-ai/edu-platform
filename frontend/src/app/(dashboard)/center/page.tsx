@@ -84,7 +84,7 @@ export default function CenterDashboardPage() {
   const totalStudents = groups.reduce((acc, g) => acc + (g.students_count || 0), 0);
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-8">
       {/* Welcome Banner */}
       <div className="glass-card p-8 rounded-3xl border border-primary/20 bg-gradient-to-r from-primary/10 via-background to-secondary/10 relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">

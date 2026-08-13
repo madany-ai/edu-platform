@@ -5,7 +5,7 @@ import { centerService, AcademicSession, AttendanceRecord } from "@/services/cen
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RefreshCw, UserCheck, CheckCircle2, XCircle, Camera, CameraOff, QrCode, AlertCircle, Clock } from "lucide-react";
+import { RefreshCw, UserCheck, CheckCircle2, XCircle, Camera, CameraOff, QrCode, AlertCircle, Clock, FileSpreadsheet, Download, Loader2 } from "lucide-react";
 import { BrowserMultiFormatReader } from "@zxing/library";
 
 interface ScannerProps {
@@ -21,6 +21,11 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
   const [scanError, setScanError] = useState<string>("");
   const [recentScans, setRecentScans] = useState<any[]>([]);
   
+  // Sheet State
+  const [activeTab, setActiveTab] = useState<"scanner" | "sheet">("scanner");
+  const [attendanceSheet, setAttendanceSheet] = useState<AttendanceRecord[]>([]);
+  const [sheetLoading, setSheetLoading] = useState(false);
+  
   // Camera State
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -30,10 +35,62 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
   const lastScanTime = useRef<number>(0);
 
   useEffect(() => {
-    if (sessions.length > 0 && !selectedSessionId) {
-      setSelectedSessionId(sessions[0].id);
+    if (sessions.length > 0) {
+      if (!selectedSessionId || !sessions.find(s => s.id === selectedSessionId)) {
+        setSelectedSessionId(sessions[0].id);
+      }
+    } else {
+      setSelectedSessionId("");
+      setAttendanceSheet([]);
+      setScanResult(null);
     }
-  }, [sessions, selectedSessionId]);
+  }, [sessions]);
+
+  const fetchAttendanceSheet = async () => {
+    if (!selectedSessionId) return;
+    setSheetLoading(true);
+    try {
+      const res = await centerService.getSessionAttendance(selectedSessionId);
+      setAttendanceSheet(res.attendance || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSheetLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "sheet") {
+      fetchAttendanceSheet();
+    }
+  }, [activeTab, selectedSessionId]);
+
+  const downloadExcel = () => {
+    const csvRows = [];
+    csvRows.push(['كود الطالب', 'اسم الطالب', 'حالة الحضور', 'هاتف الطالب', 'هاتف ولي الأمر'].join(','));
+    
+    for (const record of attendanceSheet) {
+      const statusMap = { present: 'حاضر', absent: 'غائب', late: 'متأخر', guest: 'ضيف' };
+      const status = statusMap[record.status as keyof typeof statusMap] || record.status;
+      csvRows.push([
+        record.student_code,
+        record.full_name,
+        status,
+        record.phone || '-',
+        record.father_phone || '-'
+      ].join(','));
+    }
+
+    const csvString = '\uFEFF' + csvRows.join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `attendance_sheet_${selectedSessionId}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Audio Beep Effect using Web Audio API
   const playSound = (type: "success" | "error" | "guest") => {
@@ -251,7 +308,30 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Tabs */}
+      <div className="flex gap-2 p-1 bg-muted/50 rounded-xl w-fit">
+        <button
+          onClick={() => setActiveTab("scanner")}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+            activeTab === "scanner" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Camera className="h-4 w-4" />
+          المسح المباشر
+        </button>
+        <button
+          onClick={() => setActiveTab("sheet")}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+            activeTab === "sheet" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <FileSpreadsheet className="h-4 w-4" />
+          كشف الحضور الشامل
+        </button>
+      </div>
+
+      {activeTab === "scanner" ? (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Scanner & Code Input Box */}
         <div className="lg:col-span-6 space-y-6">
           {/* Live Camera Box */}
@@ -377,7 +457,7 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
               </div>
             ) : (
               <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-                {recentScans.map((s, idx) => (
+                {recentScans.slice(0, 3).map((s, idx) => (
                   <div
                     key={s.id + idx}
                     className="flex items-center justify-between p-3 rounded-xl bg-background/60 border border-border/50 text-xs hover:border-primary/30 transition-all"
@@ -403,6 +483,71 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
           </div>
         </div>
       </div>
+      ) : (
+        /* Attendance Sheet View */
+        <div className="glass-card rounded-2xl border border-border overflow-hidden">
+          <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
+            <h4 className="text-sm font-bold flex items-center gap-2">
+              <FileSpreadsheet className="h-5 w-5 text-primary" />
+              كشف غياب وحضور الحصة ({attendanceSheet.length} طالب)
+            </h4>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={fetchAttendanceSheet} className="gap-2 h-9 text-xs">
+                <RefreshCw className={`h-3 w-3 ${sheetLoading ? 'animate-spin' : ''}`} /> تحديث
+              </Button>
+              <Button size="sm" onClick={downloadExcel} className="gap-2 h-9 text-xs font-bold shadow-md">
+                <Download className="h-4 w-4" /> تصدير إكسيل
+              </Button>
+            </div>
+          </div>
+          
+          {sheetLoading ? (
+            <div className="py-16 text-center text-muted-foreground flex flex-col items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="text-xs">جاري تحميل الكشف...</span>
+            </div>
+          ) : attendanceSheet.length === 0 ? (
+            <div className="py-16 text-center text-muted-foreground text-xs">
+              لم يتم العثور على طلاب مسجلين في هذا الكشف.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-right text-sm border-collapse">
+                <thead>
+                  <tr className="bg-muted/50 border-b border-border text-xs font-bold text-muted-foreground">
+                    <th className="py-3 px-4">كود الطالب</th>
+                    <th className="py-3 px-4">اسم الطالب</th>
+                    <th className="py-3 px-4">حالة الحضور</th>
+                    <th className="py-3 px-4">هاتف الطالب</th>
+                    <th className="py-3 px-4">هاتف ولي الأمر</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  {attendanceSheet.map((st) => (
+                    <tr key={st.student_id} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-3 px-4 font-mono text-xs text-primary font-bold">{st.student_code}</td>
+                      <td className="py-3 px-4 font-bold text-foreground">{st.full_name}</td>
+                      <td className="py-3 px-4">
+                        {st.status === 'present' ? (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">حاضر 🟢</span>
+                        ) : st.status === 'guest' ? (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">ضيف 🔵</span>
+                        ) : st.status === 'late' ? (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">متأخر 🟡</span>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-destructive/10 text-destructive border border-destructive/20">غائب 🔴</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 font-mono text-xs text-muted-foreground">{st.phone || "-"}</td>
+                      <td className="py-3 px-4 font-mono text-xs text-muted-foreground">{st.father_phone || "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -175,6 +175,7 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
         Route::get('rankings', [\App\Http\Controllers\Api\CenterStaffController::class, 'rankings']);
         Route::get('students', [\App\Http\Controllers\Api\CenterStaffController::class, 'students']);
         Route::post('students', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeStudent']);
+        Route::put('students/bulk-group', [\App\Http\Controllers\Api\CenterStaffController::class, 'bulkUpdateStudentGroup']);
         Route::put('students/{id}/group', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateStudentGroup']);
         Route::get('students/{id}/report', [\App\Http\Controllers\Api\CenterStaffController::class, 'studentReport']);
     });

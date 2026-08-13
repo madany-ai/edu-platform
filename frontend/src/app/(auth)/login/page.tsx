@@ -7,7 +7,7 @@ import { useAuth } from "@/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Loader2, Atom, Phone, KeyRound } from "lucide-react";
+import { AlertCircle, Loader2, Phone, KeyRound, Calculator } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function LoginPage() {
@@ -49,7 +49,7 @@ export default function LoginPage() {
       const loggedInUser = await login({ email: identifier, password, "cf-turnstile-response": turnstileToken });
       const roles = loggedInUser?.roles || [];
       const isStaff = roles.some((r: any) => ["instructor", "assistant"].includes(typeof r === "string" ? r : r.name));
-      
+
       if (loggedInUser?.must_change_password) {
         router.push("/change-password");
         return;
@@ -77,13 +77,13 @@ export default function LoginPage() {
       <div className="glass-card w-full p-8 rounded-2xl">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10 text-primary mb-4 animate-pulse">
-            <Atom className="h-10 w-10 text-primary science-glow-text" />
+            <Calculator className="h-10 w-10 text-primary science-glow-text" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-gradient mb-1">
-            مختبر العلوم
+            أكاديمية الرياضيات
           </h2>
           <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-            عالم المعرفة والاستكشاف • مرحباً بك
+            منصتك المتكاملة للتعلم والتميز • مرحباً بك
           </p>
         </div>
 
@@ -96,11 +96,10 @@ export default function LoginPage() {
               setInputValue("");
               setError("");
             }}
-            className={`flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-md transition-all ${
-              activeTab === "code"
+            className={`flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-md transition-all ${activeTab === "code"
                 ? "bg-background text-primary shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             <KeyRound className="h-4 w-4" />
             <span>كود الطالب</span>
@@ -112,11 +111,10 @@ export default function LoginPage() {
               setInputValue("");
               setError("");
             }}
-            className={`flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-md transition-all ${
-              activeTab === "phone"
+            className={`flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-md transition-all ${activeTab === "phone"
                 ? "bg-background text-primary shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             <Phone className="h-4 w-4" />
             <span>الهاتف</span>
@@ -128,13 +126,12 @@ export default function LoginPage() {
               setInputValue("");
               setError("");
             }}
-            className={`flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-md transition-all ${
-              activeTab === "email"
+            className={`flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-md transition-all ${activeTab === "email"
                 ? "bg-background text-primary shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
             <span>البريد</span>
           </button>
         </div>
@@ -176,8 +173,8 @@ export default function LoginPage() {
               {activeTab === "code"
                 ? "أدخل الكود المستلم من الإدارة لبدء تصفح محاضراتك"
                 : activeTab === "phone"
-                ? "أدخل رقم الهاتف المسجل به حسابك لتسجيل الدخول"
-                : "أدخل البريد الإلكتروني المسجل به حسابك"}
+                  ? "أدخل رقم الهاتف المسجل به حسابك لتسجيل الدخول"
+                  : "أدخل البريد الإلكتروني المسجل به حسابك"}
             </p>
           </div>
 
@@ -219,7 +216,7 @@ export default function LoginPage() {
             disabled={loading}
           >
             {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-            <span>دخول المختبر 🧪</span>
+            <span>🗡️ دخول المعركة 💪🗡️</span>
           </Button>
 
           <p className="text-center text-sm text-muted-foreground pt-2">

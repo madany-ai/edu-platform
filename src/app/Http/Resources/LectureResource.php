@@ -76,7 +76,7 @@ class LectureResource extends JsonResource
                         $videoData['stream_type'] = 'application/x-mpegURL';
                     } else if ($videoPath && str_ends_with(strtolower($videoPath), '.mp4')) {
                         // Legacy MP4 files — direct MinIO temporary URL
-                        $url = \Illuminate\Support\Facades\Storage::disk('minio')
+                        $url = \Illuminate\Support\Facades\Storage::disk('public')
                             ->temporaryUrl($videoPath, now()->addHours(2));
                         $minioEndpoint = rtrim(config('filesystems.disks.minio.endpoint', 'http://minio:9000'), '/');
                         $publicUrl = config('filesystems.disks.minio.url', 'http://localhost:9000/lms-videos');

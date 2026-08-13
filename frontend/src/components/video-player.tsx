@@ -665,7 +665,7 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
     return () => document.removeEventListener("fullscreenchange", h);
   }, []);
 
-  const togglePlay = (e: React.MouseEvent) => { e.stopPropagation(); if (!playerRef.current) return; isPlaying ? playerRef.current.pauseVideo() : playerRef.current.playVideo(); };
+  const togglePlay = (e: React.MouseEvent) => { e.stopPropagation(); if (!playerRef.current || typeof playerRef.current.playVideo !== "function") return; isPlaying ? playerRef.current.pauseVideo() : playerRef.current.playVideo(); };
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => { const t = parseFloat(e.target.value); setCurrentTime(t); playerRef.current?.seekTo?.(t, true); };
   const toggleFullscreen = (e: React.MouseEvent) => { e.stopPropagation(); document.fullscreenElement ? document.exitFullscreen() : wrapperRef.current?.requestFullscreen(); };
   const formatTime = (s: number) => { if (isNaN(s)) return "0:00"; const m = Math.floor(s / 60); const sec = Math.floor(s % 60); return `${m}:${sec < 10 ? "0" : ""}${sec}`; };

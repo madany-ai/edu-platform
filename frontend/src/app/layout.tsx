@@ -20,6 +20,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  manifest: "/manifest.json",
   title: {
     default: APP_NAME,
     template: `%s | ${APP_NAME}`,

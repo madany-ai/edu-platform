@@ -19,26 +19,26 @@ class StudentPolicy
 
     public function create(User $user): bool
     {
-        return $user->hasRole('super_admin') || $user->hasRole('admin');
+        return $user->hasRole(['super_admin', 'admin', 'instructor', 'assistant']);
     }
 
     public function update(User $user, Student $student): bool
     {
-        return $user->hasRole('super_admin') || $user->hasRole('admin');
+        return $user->hasRole(['super_admin', 'admin', 'instructor', 'assistant']);
     }
 
     public function delete(User $user, Student $student): bool
     {
-        return $user->hasRole('super_admin') || $user->hasRole('admin');
+        return $user->hasRole(['super_admin', 'admin', 'instructor']);
     }
 
     public function restore(User $user, Student $student): bool
     {
-        return $user->hasRole('super_admin') || $user->hasRole('admin');
+        return $user->hasRole(['super_admin', 'admin', 'instructor']);
     }
 
     public function forceDelete(User $user, Student $student): bool
     {
-        return $user->hasRole('super_admin') || $user->hasRole('admin');
+        return $user->hasRole(['super_admin', 'admin']);
     }
 }

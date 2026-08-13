@@ -21,12 +21,16 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { useCenterFilters } from "@/providers/center-filters-provider";
+
 export default function SessionsPage() {
   const [sessions, setSessions] = useState<AcademicSession[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string>("");
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const { selectedYearId, selectedGrade, selectedTerm } = useCenterFilters();
   
   const [loading, setLoading] = useState<boolean>(true);
   const [attLoading, setAttLoading] = useState<boolean>(false);
@@ -42,19 +46,31 @@ export default function SessionsPage() {
 
   useEffect(() => {
     initData();
-  }, []);
+  }, [selectedYearId, selectedGrade, selectedTerm]);
 
   const initData = async () => {
     setLoading(true);
     try {
+      const filterParams = {
+        academic_year_id: selectedYearId,
+        academic_year: selectedGrade,
+        term: selectedTerm,
+      };
+      
       const [sessionsData, groupsData] = await Promise.all([
-        centerService.getSessions(),
-        centerService.getGroups(),
+        centerService.getSessions(filterParams),
+        centerService.getGroups(filterParams),
       ]);
       setSessions(sessionsData);
       setGroups(groupsData);
-      if (sessionsData.length > 0 && !selectedSessionId) {
-        setSelectedSessionId(sessionsData[0].id);
+      
+      if (sessionsData.length > 0) {
+        if (!selectedSessionId || !sessionsData.find(s => s.id === selectedSessionId)) {
+          setSelectedSessionId(sessionsData[0].id);
+        }
+      } else {
+        setSelectedSessionId("");
+        setAttendance([]);
       }
     } catch (e) {
       console.error(e);
@@ -117,6 +133,10 @@ export default function SessionsPage() {
 
   const handleCreateSession = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (groups.length === 0) {
+      alert("يرجى إضافة مجموعة دراسية واحدة على الأقل قبل إنشاء الحصص.");
+      return;
+    }
     try {
       const selectedG = groups.find((g) => g.id === (newGroupId || groups[0]?.id));
       const created = await centerService.createSession({
@@ -131,7 +151,7 @@ export default function SessionsPage() {
       await initData();
       if (created?.id) setSelectedSessionId(created.id);
     } catch (err) {
-      alert("حدث خطأ أثناء إضافة الحصة.");
+      alert("حدث خطأ أثناء إضافة الحصة. تأكد من إدخال البيانات بشكل صحيح.");
     }
   };
 
@@ -163,7 +183,7 @@ export default function SessionsPage() {
   const absentCount = attendance.filter((a) => a.status === "absent").length;
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
         <div className="flex items-center gap-3">
@@ -178,7 +198,7 @@ export default function SessionsPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button onClick={() => setShowScannerModal(true)} variant="secondary" className="gap-2 font-bold shadow-md">
             <QrCode className="h-4 w-4 text-primary" /> كاميرا الـ QR السريعة
           </Button>
@@ -191,18 +211,18 @@ export default function SessionsPage() {
       {/* Session Select & Live Stats Bar */}
       <div className="glass-card p-6 rounded-2xl border border-border space-y-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="w-full md:w-96">
+          <div className="w-full md:w-96 max-w-full">
             <Label className="text-xs font-bold mb-1 block">اختر الحصة والمجموعة الدراسية:</Label>
             <select
               value={selectedSessionId}
               onChange={(e) => setSelectedSessionId(e.target.value)}
-              className="w-full h-11 rounded-xl bg-background border border-border px-3 text-sm font-semibold focus:ring-2 focus:ring-primary"
+              className="w-full max-w-full h-11 rounded-xl bg-background border border-border px-3 text-sm font-semibold focus:ring-2 focus:ring-primary truncate"
             >
               {sessions.length === 0 ? (
                 <option value="">لا توجد حصص مضافة</option>
               ) : (
                 sessions.map((s) => (
-                  <option key={s.id} value={s.id}>
+                  <option key={s.id} value={s.id} className="truncate">
                     {s.group?.name} — {s.topic} ({s.date})
                   </option>
                 ))
@@ -291,7 +311,7 @@ export default function SessionsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-right text-sm border-collapse">
               <thead>
-                <tr className="bg-muted/50 border-b border-border text-xs font-bold text-muted-foreground">
+                <tr className="bg-muted/50 border-b border-border text-xs font-bold text-muted-foreground whitespace-nowrap">
                   <th className="py-3.5 px-4">#</th>
                   <th className="py-3.5 px-4">كود الطالب</th>
                   <th className="py-3.5 px-4">اسم الطالب</th>
@@ -302,7 +322,7 @@ export default function SessionsPage() {
               </thead>
               <tbody className="divide-y divide-border/40">
                 {filteredAttendance.map((att, idx) => (
-                  <tr key={att.student_id} className="hover:bg-muted/30 transition-colors">
+                  <tr key={att.student_id} className="hover:bg-muted/30 transition-colors whitespace-nowrap">
                     <td className="py-3 px-4 font-mono text-xs text-muted-foreground">{idx + 1}</td>
                     <td className="py-3 px-4 font-mono text-xs text-primary font-bold">{att.student_code}</td>
                     <td className="py-3 px-4 font-bold text-foreground">
@@ -391,7 +411,11 @@ export default function SessionsPage() {
                   value={newGroupId}
                   onChange={(e) => setNewGroupId(e.target.value)}
                   className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs"
+                  required
                 >
+                  <option value="" disabled>
+                    {groups.length === 0 ? "لا توجد مجموعات مضافة (أضف من صفحة المجموعات)" : "اختر المجموعة الدراسية"}
+                  </option>
                   {groups.map((g) => (
                     <option key={g.id} value={g.id}>
                       {g.name}

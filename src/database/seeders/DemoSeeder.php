@@ -140,7 +140,7 @@ class DemoSeeder extends Seeder
                 'birth_date' => '2008-' . str_pad(mt_rand(1, 12), 2, '0', STR_PAD_LEFT) . '-' . str_pad(mt_rand(1, 28), 2, '0', STR_PAD_LEFT),
                 'is_verified' => true,
                 'governorate_id' => $dbGovs[array_rand($dbGovs)]->id,
-                'grade_level_id' => $prep3Grade->id,
+                'academic_year' => 'prep_3',
             ]);
         }
 

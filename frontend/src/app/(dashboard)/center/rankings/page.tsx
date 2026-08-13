@@ -5,18 +5,26 @@ import { centerService, Group } from "@/services/center.service";
 import { CenterRankingsCard } from "@/components/center/center-rankings-card";
 import { Trophy, Loader2 } from "lucide-react";
 
+import { useCenterFilters } from "@/providers/center-filters-provider";
+
 export default function RankingsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const { selectedYearId, selectedGrade, selectedTerm } = useCenterFilters();
+
   useEffect(() => {
     loadGroups();
-  }, []);
+  }, [selectedYearId, selectedGrade, selectedTerm]);
 
   const loadGroups = async () => {
     setLoading(true);
     try {
-      const groupsData = await centerService.getGroups();
+      const groupsData = await centerService.getGroups({
+        academic_year_id: selectedYearId,
+        academic_year: selectedGrade,
+        term: selectedTerm,
+      });
       setGroups(groupsData);
     } catch (e) {
       console.error(e);
@@ -35,7 +43,7 @@ export default function RankingsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center gap-3 border-b border-border pb-4">
         <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-500">
           <Trophy className="h-6 w-6" />

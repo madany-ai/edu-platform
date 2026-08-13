@@ -22,10 +22,16 @@ export function CenterGradeMatrix({ exams, onGradesSaved }: GradeMatrixProps) {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
-    if (exams.length > 0 && !selectedExamId) {
-      setSelectedExamId(exams[0].id);
+    if (exams.length > 0) {
+      if (!selectedExamId || !exams.find(e => e.id === selectedExamId)) {
+        setSelectedExamId(exams[0].id);
+      }
+    } else {
+      setSelectedExamId("");
+      setExam(null);
+      setGrades([]);
     }
-  }, [exams, selectedExamId]);
+  }, [exams]);
 
   useEffect(() => {
     if (selectedExamId) {
@@ -49,7 +55,12 @@ export function CenterGradeMatrix({ exams, onGradesSaved }: GradeMatrixProps) {
   };
 
   const handleScoreChange = (studentId: string, val: string) => {
-    const score = parseFloat(val) || 0;
+    let score = parseFloat(val) || 0;
+    const maxM = exam?.total_marks || 1;
+    
+    if (score > maxM) score = maxM;
+    if (score < 0) score = 0;
+
     setGrades((prev) =>
       prev.map((g) => (g.student_id === studentId ? { ...g, score } : g))
     );

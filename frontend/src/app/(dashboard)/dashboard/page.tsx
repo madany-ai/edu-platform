@@ -130,12 +130,12 @@ export default function StudentDashboardPage() {
                   </Link>
                 </div>
               ) : (
-                enrollments.slice(0, 3).map((enrollment) => (
+                enrollments.filter((e) => e.course).slice(0, 3).map((enrollment) => (
                   <div key={enrollment.id} className="rounded-xl border border-white/5 bg-background/30 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:bg-background/50">
                     <div className="space-y-1">
-                      <p className="font-bold text-foreground text-base">{enrollment.course.title}</p>
+                      <p className="font-bold text-foreground text-base">{enrollment.course?.title || 'دورة غير متوفرة'}</p>
                       <p className="text-xs text-muted-foreground">
-                        إشراف الأستاذ: {enrollment.course.instructor?.name || "معلم المادة"}
+                        إشراف الأستاذ: {enrollment.course?.instructor?.name || "معلم المادة"}
                       </p>
                     </div>
                     <div className="flex items-center gap-4 justify-between md:justify-end">
@@ -149,11 +149,12 @@ export default function StudentDashboardPage() {
                             : ""}
                         </p>
                       </div>
-                      <Link href={`/courses/${enrollment.course.id}/play`}>
+                      <Link href={`/courses/${enrollment.course?.id || ''}/play`}>
                         <Button size="sm" className="bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold">
                           متابعة التعلم
                         </Button>
                       </Link>
+
                     </div>
                   </div>
                 ))

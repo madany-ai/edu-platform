@@ -35,7 +35,7 @@ import {
   Phone,
 } from "lucide-react";
 
-const ACADEMIC_YEARS = [
+const GRADE_LEVELS = [
   { id: "prep_1", name: "الصف الأول الإعدادي" },
   { id: "prep_2", name: "الصف الثاني الإعدادي" },
   { id: "prep_3", name: "الصف الثالث الإعدادي" },
@@ -160,7 +160,7 @@ export default function GroupWorkspacePage({ params }: { params: Promise<{ id: s
     }
   };
 
-  if (authLoading || loading || !data) {
+  if (authLoading || !data) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center gap-3">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -172,7 +172,7 @@ export default function GroupWorkspacePage({ params }: { params: Promise<{ id: s
   const { group, students, sessions, exams, rankings } = data;
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* Back Link & Header Banner */}
       <div className="space-y-4">
         <Link href="/center/groups" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary font-semibold">
@@ -184,7 +184,7 @@ export default function GroupWorkspacePage({ params }: { params: Promise<{ id: s
             <div className="space-y-2">
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-primary/20 text-primary border border-primary/30">
-                  {ACADEMIC_YEARS.find(y => y.id === group.academic_year)?.name || "صف دراسي"}
+                  {GRADE_LEVELS.find(y => y.id === group.academic_year)?.name || "صف دراسي"}
                 </span>
                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   سعة المجموعة: {group.capacity} طالب (مسجل {students.length})

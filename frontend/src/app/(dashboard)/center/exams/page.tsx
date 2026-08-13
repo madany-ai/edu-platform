@@ -8,10 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileSpreadsheet, Plus, Loader2 } from "lucide-react";
 
+import { useCenterFilters } from "@/providers/center-filters-provider";
+
 export default function ExamsPage() {
   const [exams, setExams] = useState<CenterExam[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { selectedYearId, selectedGrade, selectedTerm } = useCenterFilters();
 
   // Modal State
   const [showAddModal, setShowAddModal] = useState(false);
@@ -22,14 +26,19 @@ export default function ExamsPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [selectedYearId, selectedGrade, selectedTerm]);
 
   const loadData = async () => {
     setLoading(true);
     try {
+      const filterParams = {
+        academic_year_id: selectedYearId,
+        academic_year: selectedGrade,
+        term: selectedTerm,
+      };
       const [examsData, groupsData] = await Promise.all([
-        centerService.getExams(),
-        centerService.getGroups(),
+        centerService.getExams(filterParams),
+        centerService.getGroups(filterParams),
       ]);
       setExams(examsData);
       setGroups(groupsData);
@@ -67,7 +76,7 @@ export default function ExamsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
         <div className="flex items-center gap-3">
@@ -111,7 +120,11 @@ export default function ExamsPage() {
                   value={newGroupId}
                   onChange={(e) => setNewGroupId(e.target.value)}
                   className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs"
+                  required
                 >
+                  <option value="" disabled>
+                    {groups.length === 0 ? "لا توجد مجموعات مضافة (أضف من صفحة المجموعات)" : "اختر المجموعة الدراسية"}
+                  </option>
                   {groups.map((g) => (
                     <option key={g.id} value={g.id}>
                       {g.name}

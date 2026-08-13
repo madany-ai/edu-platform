@@ -26,3 +26,5 @@ yarn-error.log*
 .DS_Store
 .vscode/
 .idea/
+src/test_*.php
+src/query_db.php

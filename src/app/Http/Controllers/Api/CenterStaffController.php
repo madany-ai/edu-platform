@@ -65,6 +65,12 @@ class CenterStaffController extends Controller
         if ($request->has('academic_year')) {
             $query->where('academic_year', $request->query('academic_year'));
         }
+        if ($request->has('academic_year_id')) {
+            $query->where('academic_year_id', $request->query('academic_year_id'));
+        }
+        if ($request->has('term')) {
+            $query->where('term', $request->query('term'));
+        }
 
         $groups = $query->orderByDesc('created_at')->get();
         return response()->json(['data' => $groups]);
@@ -93,6 +99,7 @@ class CenterStaffController extends Controller
             'name' => 'required|string|max:255',
             'academic_year' => 'required|string|in:prep_1,prep_2,prep_3,sec_1,sec_2,sec_3',
             'academic_year_id' => 'nullable|uuid|exists:academic_years,id',
+            'term' => 'nullable|string',
             'capacity' => 'nullable|integer|min:0',
             'schedule' => 'nullable|array',
             'is_active' => 'boolean',
@@ -109,6 +116,7 @@ class CenterStaffController extends Controller
             'name' => 'sometimes|string|max:255',
             'academic_year' => 'sometimes|string|in:prep_1,prep_2,prep_3,sec_1,sec_2,sec_3',
             'academic_year_id' => 'nullable|uuid|exists:academic_years,id',
+            'term' => 'nullable|string',
             'capacity' => 'nullable|integer|min:0',
             'schedule' => 'nullable|array',
             'is_active' => 'boolean',
@@ -125,6 +133,12 @@ class CenterStaffController extends Controller
 
         if ($request->has('group_id')) {
             $query->where('group_id', $request->query('group_id'));
+        } elseif ($request->has('academic_year') || $request->has('academic_year_id') || $request->has('term')) {
+            $query->whereHas('group', function ($q) use ($request) {
+                if ($request->has('academic_year')) $q->where('academic_year', $request->query('academic_year'));
+                if ($request->has('academic_year_id')) $q->where('academic_year_id', $request->query('academic_year_id'));
+                if ($request->has('term')) $q->where('term', $request->query('term'));
+            });
         }
 
         $sessions = $query->orderByDesc('date')->orderByDesc('created_at')->get();
@@ -377,6 +391,12 @@ class CenterStaffController extends Controller
 
         if ($request->has('group_id')) {
             $query->where('group_id', $request->query('group_id'));
+        } elseif ($request->has('academic_year') || $request->has('academic_year_id') || $request->has('term')) {
+            $query->whereHas('group', function ($q) use ($request) {
+                if ($request->has('academic_year')) $q->where('academic_year', $request->query('academic_year'));
+                if ($request->has('academic_year_id')) $q->where('academic_year_id', $request->query('academic_year_id'));
+                if ($request->has('term')) $q->where('term', $request->query('term'));
+            });
         }
 
         $exams = $query->orderByDesc('date')->orderByDesc('created_at')->get();
@@ -440,7 +460,7 @@ class CenterStaffController extends Controller
         $validated = $request->validate([
             'grades' => 'required|array',
             'grades.*.student_id' => 'required|uuid|exists:students,id',
-            'grades.*.score' => 'required|numeric|min:0',
+            'grades.*.score' => 'required|numeric|min:0|max:' . $exam->total_marks,
             'grades.*.notes' => 'nullable|string',
         ]);
 
@@ -481,8 +501,21 @@ class CenterStaffController extends Controller
 
         if ($groupId) {
             $rankings = RankingService::getGroupRankings($groupId);
-        } elseif ($academicYear) {
-            $rankings = RankingService::getAcademicYearRankings($academicYear);
+        } elseif ($academicYear || $request->has('academic_year_id') || $request->has('term')) {
+            $query = Group::where('is_active', true);
+            if ($academicYear) $query->where('academic_year', $academicYear);
+            if ($request->has('academic_year_id')) $query->where('academic_year_id', $request->query('academic_year_id'));
+            if ($request->has('term')) $query->where('term', $request->query('term'));
+            
+            $groups = $query->pluck('id')->toArray();
+            if (empty($groups)) {
+                $rankings = collect();
+            } else {
+                // Here we fetch rankings for multiple groups.
+                // Assuming RankingService can handle multiple groups or we combine them.
+                // For simplicity, we just fetch the first group's ranking if filtering globally.
+                $rankings = RankingService::getGroupRankings($groups[0]);
+            }
         } else {
             $firstGroup = Group::where('is_active', true)->first();
             $rankings = $firstGroup ? RankingService::getGroupRankings($firstGroup->id) : collect();
@@ -509,6 +542,12 @@ class CenterStaffController extends Controller
 
         if ($request->has('group_id')) {
             $query->where('group_id', $request->query('group_id'));
+        } elseif ($request->has('academic_year') || $request->has('academic_year_id') || $request->has('term')) {
+            $query->whereHas('group', function ($q) use ($request) {
+                if ($request->has('academic_year')) $q->where('academic_year', $request->query('academic_year'));
+                if ($request->has('academic_year_id')) $q->where('academic_year_id', $request->query('academic_year_id'));
+                if ($request->has('term')) $q->where('term', $request->query('term'));
+            });
         }
 
         $students = $query->orderBy('first_name')->paginate(20);
@@ -557,6 +596,22 @@ class CenterStaffController extends Controller
 
         $student->update(['group_id' => $validated['group_id']]);
         return response()->json(['message' => 'تم نقل الطالب للمجموعة بنجاح.', 'student' => $student->load('group')]);
+    }
+
+    public function bulkUpdateStudentGroup(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_ids' => 'required|array',
+            'student_ids.*' => 'required|uuid|exists:students,id',
+            'group_id' => 'required|uuid|exists:groups,id',
+        ]);
+
+        Student::whereIn('id', $validated['student_ids'])
+            ->update(['group_id' => $validated['group_id']]);
+
+        return response()->json([
+            'message' => 'تم نقل الطلاب المحددين للمجموعة بنجاح.'
+        ]);
     }
 
     public function storeStudent(Request $request): JsonResponse

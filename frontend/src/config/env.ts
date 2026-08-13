@@ -1,5 +1,12 @@
+const getApiUrl = () => {
+  if (typeof window !== "undefined") {
+    return "/api";
+  }
+  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+};
+
 const env = {
-  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
+  NEXT_PUBLIC_API_URL: getApiUrl(),
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || "مستر حفني | معلم رياضيات",
   NEXT_PUBLIC_BUNNY_CDN_HOSTNAME: process.env.NEXT_PUBLIC_BUNNY_CDN_HOSTNAME || "",
   NEXT_PUBLIC_BUNNY_LIBRARY_ID: process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID || "",

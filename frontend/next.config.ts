@@ -1,16 +1,21 @@
 import type { NextConfig } from "next";
 
-import withPWAInit from "@ducanh2912/next-pwa";
-
-const withPWA = withPWAInit({
-  dest: "public",
-  disable: process.env.NODE_ENV === "development",
-});
-
 const nextConfig: NextConfig = {
-  output: "standalone",
+  allowedDevOrigins: ["updated-movement-locator-sons.trycloudflare.com"],
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "/api",
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:8000/api/:path*', // Proxy to backend
+      },
+      {
+        source: '/sanctum/:path*',
+        destination: 'http://localhost:8000/sanctum/:path*', // Proxy to backend
+      },
+    ];
   },
   async headers() {
     return [
@@ -28,4 +33,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA(nextConfig);
+export default nextConfig;

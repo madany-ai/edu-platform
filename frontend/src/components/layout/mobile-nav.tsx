@@ -60,7 +60,7 @@ export function MobileNav() {
   const links = isStaff ? staffLinks : studentLinks;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-[#141a15]/90 backdrop-blur-md border-t border-[#3b413c] flex items-center overflow-x-auto overflow-y-hidden px-2 lg:hidden no-scrollbar" style={{ scrollbarWidth: "none" }}>
+    <div className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-[#141a15]/90 backdrop-blur-md border-t border-[#3b413c] flex items-center overflow-x-auto overflow-y-hidden px-2 xl:hidden no-scrollbar" style={{ scrollbarWidth: "none" }}>
       {links.map((link) => {
         const Icon = link.icon;
         const isActive = link.href === ROUTES.DASHBOARD || link.href === "/center"

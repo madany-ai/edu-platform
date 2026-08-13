@@ -255,7 +255,7 @@ class CourseController extends Controller
             return response()->json(['message' => 'نوع الملف غير مسموح بتحميله.'], 403);
         }
 
-        $disk = \Illuminate\Support\Facades\Storage::disk('minio');
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
 
         if (!$disk->exists($storagePath)) {
             return response()->json(['message' => 'الملف غير موجود على السيرفر.'], 404);

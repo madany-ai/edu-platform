@@ -47,7 +47,7 @@ export default function MyCenterReportPage() {
   const grades = data?.grades || [];
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-8">
       {/* Banner */}
       <div className="glass-card p-8 rounded-3xl border border-primary/20 bg-gradient-to-r from-primary/10 via-background to-secondary/10 relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-start justify-between gap-6">

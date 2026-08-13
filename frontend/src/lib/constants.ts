@@ -30,6 +30,21 @@ export const COURSE_STATUS = {
   ARCHIVED: "archived",
 } as const;
 
+export const SUBSCRIPTION_STATUS = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+  CANCELLED: 'cancelled',
+} as const;
+
+export const GRADE_LEVELS = [
+  { id: "prep_1", name: "الصف الأول الإعدادي" },
+  { id: "prep_2", name: "الصف الثاني الإعدادي" },
+  { id: "prep_3", name: "الصف الثالث الإعدادي" },
+  { id: "sec_1", name: "الصف الأول الثانوي" },
+  { id: "sec_2", name: "الصف الثاني الثانوي" },
+  { id: "sec_3", name: "الصف الثالث الثانوي" },
+];
+
 export const ENROLLMENT_STATUS = {
   ACTIVE: "active",
   EXPIRED: "expired",

@@ -6,16 +6,11 @@ import { StudentReportModal } from "@/components/center/student-report-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Eye, Loader2, User, Plus, ArrowRightLeft, CheckCircle2 } from "lucide-react";
+import { Search, Eye, Loader2, User, Plus, ArrowRightLeft, CheckCircle2, Printer } from "lucide-react";
 
-const ACADEMIC_YEARS = [
-  { id: "prep_1", name: "الصف الأول الإعدادي" },
-  { id: "prep_2", name: "الصف الثاني الإعدادي" },
-  { id: "prep_3", name: "الصف الثالث الإعدادي" },
-  { id: "sec_1", name: "الصف الأول الثانوي" },
-  { id: "sec_2", name: "الصف الثاني الثانوي" },
-  { id: "sec_3", name: "الصف الثالث الثانوي" },
-];
+import { GRADE_LEVELS } from "@/lib/constants";
+import { useCenterFilters } from "@/providers/center-filters-provider";
+import { toast } from "sonner";
 
 export default function StudentsDirectoryPage() {
   const [students, setStudents] = useState<any[]>([]);
@@ -23,6 +18,9 @@ export default function StudentsDirectoryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [selectedStudents, setSelectedStudents] = useState<any[]>([]);
+
+  const { selectedYearId, selectedGrade, selectedTerm } = useCenterFilters();
 
   // Modals
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
@@ -36,23 +34,34 @@ export default function StudentsDirectoryPage() {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [fatherPhone, setFatherPhone] = useState("");
-  const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
+  const [selectedGradeLevel, setSelectedGradeLevel] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState("");
+
+
 
   useEffect(() => {
     initData();
-  }, []);
+  }, [selectedYearId, selectedGrade, selectedTerm]);
 
   const initData = async () => {
     setLoading(true);
     try {
       const [studentsRes, groupsData] = await Promise.all([
-        centerService.getStudents({ search: searchQuery }),
-        centerService.getGroups(),
+        centerService.getStudents({
+          search: searchQuery,
+          academic_year_id: selectedYearId,
+          academic_year: selectedGrade,
+          term: selectedTerm,
+        }),
+        centerService.getGroups({
+          academic_year_id: selectedYearId,
+          academic_year: selectedGrade,
+          term: selectedTerm,
+        }),
       ]);
       setStudents(studentsRes.data || []);
       setGroups(groupsData);
-      setSelectedAcademicYear(ACADEMIC_YEARS[0].id);
+      setSelectedGradeLevel(selectedGrade || GRADE_LEVELS[0].id);
       if (groupsData.length > 0) setSelectedGroupId(groupsData[0].id);
     } catch (e) {
       console.error(e);
@@ -64,7 +73,12 @@ export default function StudentsDirectoryPage() {
   const handleSearch = async () => {
     setLoading(true);
     try {
-      const res = await centerService.getStudents({ search: searchQuery });
+      const res = await centerService.getStudents({
+        search: searchQuery,
+        academic_year_id: selectedYearId,
+        academic_year: selectedGrade,
+        term: selectedTerm,
+      });
       setStudents(res.data || []);
     } catch (e) {
     } finally {
@@ -82,7 +96,7 @@ export default function StudentsDirectoryPage() {
         last_name: lastName,
         phone,
         father_phone: fatherPhone,
-        academic_year: selectedAcademicYear,
+        academic_year: selectedGradeLevel,
         group_id: selectedGroupId,
       });
       setMsg(res.message);
@@ -97,21 +111,47 @@ export default function StudentsDirectoryPage() {
     }
   };
 
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      const newSelections = students.filter(s => !selectedStudents.some(sel => sel.id === s.id));
+      setSelectedStudents([...selectedStudents, ...newSelections]);
+    } else {
+      setSelectedStudents(selectedStudents.filter(sel => !students.some(s => s.id === sel.id)));
+    }
+  };
+
+  const handleSelectStudent = (student: any) => {
+    setSelectedStudents(prev => 
+      prev.some(s => s.id === student.id) 
+        ? prev.filter(s => s.id !== student.id) 
+        : [...prev, student]
+    );
+  };
+
+  const [showBulkTransferModal, setShowBulkTransferModal] = useState(false);
+
   const handleTransferGroup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!transferStudent || !targetGroupId) return;
+    if (!targetGroupId) return;
     try {
-      const res = await centerService.updateStudentGroup(transferStudent.id, targetGroupId);
-      setMsg(`تم نقل الطالب ${transferStudent.first_name} إلى المجموعة الجديدة بنجاح! 🟢`);
-      setTransferStudent(null);
+      if (transferStudent) {
+        await centerService.updateStudentGroup(transferStudent.id, targetGroupId);
+        setMsg(`تم نقل الطالب ${transferStudent.first_name} إلى المجموعة الجديدة بنجاح! 🟢`);
+        setTransferStudent(null);
+      } else if (showBulkTransferModal && selectedStudents.length > 0) {
+        await centerService.bulkUpdateStudentGroup(selectedStudents.map(s => s.id), targetGroupId);
+        setMsg(`تم نقل ${selectedStudents.length} طلاب إلى المجموعة الجديدة بنجاح! 🟢`);
+        setShowBulkTransferModal(false);
+        setSelectedStudents([]);
+      }
       initData();
     } catch (err) {
-      alert("حدث خطأ أثناء نقل الطالب.");
+      alert("حدث خطأ أثناء نقل الطلاب.");
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
         <div className="flex items-center gap-3">
@@ -126,9 +166,32 @@ export default function StudentsDirectoryPage() {
           </div>
         </div>
 
-        <Button onClick={() => setShowAddStudentModal(true)} className="gap-2 font-bold shadow-md">
-          <Plus className="h-4 w-4" /> إضافة طالب جديد
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button 
+            variant="secondary" 
+            onClick={() => window.print()} 
+            disabled={selectedStudents.length === 0}
+            className="gap-2 font-bold shadow-md bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Printer className="h-4 w-4" /> 
+            {selectedStudents.length > 0 ? `طباعة الكارنيهات (${selectedStudents.length})` : 'طباعة الكارنيهات'}
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setTargetGroupId(groups[0]?.id || "");
+              setShowBulkTransferModal(true);
+            }} 
+            disabled={selectedStudents.length === 0}
+            className="gap-2 font-bold shadow-md text-primary border-primary/20 hover:bg-primary/5 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ArrowRightLeft className="h-4 w-4" /> 
+            نقل مجموعة
+          </Button>
+          <Button onClick={() => setShowAddStudentModal(true)} className="gap-2 font-bold shadow-md">
+            <Plus className="h-4 w-4" /> إضافة طالب جديد
+          </Button>
+        </div>
       </div>
 
       {msg && (
@@ -167,7 +230,15 @@ export default function StudentsDirectoryPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-right text-sm border-collapse">
               <thead>
-                <tr className="bg-muted/50 border-b border-border text-xs font-bold text-muted-foreground">
+                <tr className="bg-muted/50 border-b border-border text-xs font-bold text-muted-foreground whitespace-nowrap">
+                  <th className="py-3.5 px-4 w-12 text-center">
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                      checked={students.length > 0 && students.every(s => selectedStudents.some(sel => sel.id === s.id))}
+                      onChange={handleSelectAll}
+                    />
+                  </th>
                   <th className="py-3.5 px-4">كود الطالب</th>
                   <th className="py-3.5 px-4">اسم الطالب</th>
                   <th className="py-3.5 px-4">المجموعة الدراسية</th>
@@ -179,14 +250,22 @@ export default function StudentsDirectoryPage() {
               </thead>
               <tbody className="divide-y divide-border/40">
                 {students.map((st) => (
-                  <tr key={st.id} className="hover:bg-muted/30 transition-colors">
+                  <tr key={st.id} className="hover:bg-muted/30 transition-colors whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-center">
+                      <input 
+                        type="checkbox" 
+                        className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                        checked={selectedStudents.some(sel => sel.id === st.id)}
+                        onChange={() => handleSelectStudent(st)}
+                      />
+                    </td>
                     <td className="py-3.5 px-4 font-mono text-xs text-primary font-bold">{st.student_code}</td>
                     <td className="py-3.5 px-4 font-bold text-foreground">
                       {st.first_name} {st.second_name} {st.last_name}
                     </td>
                     <td className="py-3.5 px-4 text-xs font-semibold">{st.group?.name || "غير محدد"}</td>
                     <td className="py-3.5 px-4 text-xs text-muted-foreground">
-                      {ACADEMIC_YEARS.find((y) => y.id === (st.academic_year || st.group?.academic_year))?.name || "غير محدد"}
+                      {GRADE_LEVELS.find((y) => y.id === (st.academic_year || st.group?.academic_year))?.name || "غير محدد"}
                     </td>
                     <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">{st.phone || "-"}</td>
                     <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">{st.father_phone || "-"}</td>
@@ -257,11 +336,11 @@ export default function StudentsDirectoryPage() {
               <div>
                 <Label className="text-xs">الصف الدراسي:</Label>
                 <select
-                  value={selectedAcademicYear}
-                  onChange={(e) => setSelectedAcademicYear(e.target.value)}
+                  value={selectedGradeLevel}
+                  onChange={(e) => setSelectedGradeLevel(e.target.value)}
                   className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs"
                 >
-                  {ACADEMIC_YEARS.map((gl) => (
+                  {GRADE_LEVELS.map((gl) => (
                     <option key={gl.id} value={gl.id}>
                       {gl.name}
                     </option>
@@ -298,11 +377,14 @@ export default function StudentsDirectoryPage() {
       )}
 
       {/* Modal: Transfer Student Group */}
-      {transferStudent && (
+      {(transferStudent || showBulkTransferModal) && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="glass-card w-full max-w-md p-6 rounded-2xl border border-border space-y-4 shadow-2xl">
             <h3 className="text-base font-bold">
-              نقل الطالب ({transferStudent.first_name} {transferStudent.last_name}) لمجموعة جديدة
+              {transferStudent 
+                ? `نقل الطالب (${transferStudent.first_name} ${transferStudent.last_name}) لمجموعة جديدة`
+                : `نقل ${selectedStudents.length} طلاب إلى مجموعة جديدة`
+              }
             </h3>
             <form onSubmit={handleTransferGroup} className="space-y-4">
               <div>
@@ -314,7 +396,7 @@ export default function StudentsDirectoryPage() {
                 >
                   {groups.map((g) => (
                     <option key={g.id} value={g.id}>
-                      {g.name} ({ACADEMIC_YEARS.find((y) => y.id === g.academic_year)?.name})
+                      {g.name} ({GRADE_LEVELS.find((y) => y.id === g.academic_year)?.name})
                     </option>
                   ))}
                 </select>
@@ -322,9 +404,12 @@ export default function StudentsDirectoryPage() {
 
               <div className="flex gap-2 pt-2">
                 <Button type="submit" className="flex-1 font-bold">
-                  تأكيد نقل الطالب
+                  تأكيد النقل
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setTransferStudent(null)}>
+                <Button type="button" variant="outline" onClick={() => {
+                  setTransferStudent(null);
+                  setShowBulkTransferModal(false);
+                }}>
                   إلغاء
                 </Button>
               </div>
@@ -337,6 +422,90 @@ export default function StudentsDirectoryPage() {
       {selectedStudentId && (
         <StudentReportModal studentId={selectedStudentId} onClose={() => setSelectedStudentId(null)} />
       )}
+
+      {/* Printable Area */}
+      <div id="printable-bulk-cards" className="hidden print:block">
+        <style>{`
+          @page {
+              size: A4 portrait;
+              margin: 10mm;
+          }
+          @media print {
+              body * { visibility: hidden; }
+              #printable-bulk-cards, #printable-bulk-cards * { visibility: visible; }
+              #printable-bulk-cards {
+                  position: absolute;
+                  left: 0;
+                  top: 0;
+                  width: 100%;
+                  display: block !important;
+              }
+              .print-page {
+                  page-break-after: always;
+                  display: grid !important;
+                  grid-template-columns: repeat(2, 85mm) !important;
+                  justify-content: space-between !important;
+                  gap: 8mm 5mm !important;
+                  width: 100% !important;
+                  padding-left: 15mm !important;
+                  padding-right: 5mm !important;
+                  margin: 0 !important;
+                  box-sizing: border-box !important;
+              }
+              .print-page:last-child {
+                  page-break-after: auto;
+              }
+              .bulk-card-item {
+                  width: 85mm !important;
+                  min-height: 54mm !important;
+                  margin: 0 auto !important;
+                  page-break-inside: avoid !important;
+                  break-inside: avoid !important;
+                  border: 2px solid #000 !important;
+                  border-radius: 10px !important;
+                  padding: 15px !important;
+                  box-sizing: border-box !important;
+                  background: #fff !important;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  text-align: center;
+              }
+              .bulk-card-item * {
+                  color: #000 !important;
+              }
+          }
+        `}</style>
+        
+        {Array.from({ length: Math.ceil(selectedStudents.length / 8) }).map((_, pageIndex) => {
+          const pageStudents = selectedStudents.slice(pageIndex * 8, (pageIndex + 1) * 8);
+          
+          return (
+            <div key={pageIndex} className="print-page">
+              {pageStudents.map(student => (
+                <div key={student.id} className="bulk-card-item">
+                  <div className="mb-2 bg-white flex-shrink-0">
+                    <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(student.student_code || student.id)}`}
+                        alt="QR Code"
+                        className="w-28 h-28 object-contain mx-auto"
+                    />
+                  </div>
+                  <div className="space-y-1.5 w-full border-t-2 border-gray-200 pt-3 mt-1">
+                      <div className="text-sm font-mono font-bold tracking-widest text-gray-900">
+                          {student.student_code || 'بدون كود'}
+                      </div>
+                      <div className="font-bold text-base text-gray-900 leading-snug line-clamp-1">
+                          {student.first_name} {student.second_name} {student.third_name}
+                      </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

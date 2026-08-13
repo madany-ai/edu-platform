@@ -62,7 +62,7 @@ class CourseResource extends Resource
                     ->label('صورة مصغرة للكورس (اختياري)')
                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
                     ->maxSize(5120) // 5 MB
-                    ->disk('minio')
+                    ->disk('public')
                     ->directory('courses/thumbnails')
                     ->columnSpanFull(),
 
@@ -176,6 +176,7 @@ class CourseResource extends Resource
     {
         return [
             \App\Filament\Resources\Courses\RelationManagers\AssistantsRelationManager::class,
+            \App\Filament\Resources\Courses\RelationManagers\EnrollmentsRelationManager::class,
         ];
     }
 

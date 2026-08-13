@@ -5,7 +5,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Protected paths regex or checks
-  const isProtectedRoute = pathname.startsWith('/player') || pathname.startsWith('/dashboard');
+  const isProtectedRoute = pathname.startsWith('/player') || pathname.startsWith('/dashboard') || pathname.startsWith('/center');
 
   if (isProtectedRoute) {
     // Check if session cookie or xsrf-token exists
@@ -24,5 +24,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/player/:path*', '/dashboard/:path*'],
+  matcher: ['/player/:path*', '/dashboard/:path*', '/center/:path*'],
 };

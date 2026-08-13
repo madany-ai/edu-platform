@@ -9,6 +9,8 @@ import { useAuth } from "@/providers/auth-provider";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
+import { CenterFiltersPanel } from "./center-filters-panel";
+
 const navLinks = [
   { href: ROUTES.COURSES, label: "الدورات" },
 ];
@@ -18,25 +20,25 @@ export function Navbar() {
   const { user, isAuthenticated, logout, isInstructor, isAssistant } = useAuth();
   const pathname = usePathname();
 
-  const isStaff = isInstructor || isAssistant;
+  const isStaff = isInstructor || isAssistant || user?.roles?.some((r: any) => ["instructor", "assistant"].includes(typeof r === "string" ? r : r.name));
   const dashboardHref = isStaff ? "/center" : ROUTES.DASHBOARD;
   const dashboardLabel = isStaff ? "إدارة السنتر" : "حساب الطالب";
   const isDashboardActive = isStaff ? pathname.startsWith("/center") : pathname.startsWith("/dashboard");
 
   return (
     <header className="sticky top-0 z-50 w-full glass border-b border-[#3b413c] shadow-sm">
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
+      <nav className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 xl:px-8">
         <Link
           href={ROUTES.HOME}
           className={cn(
             "flex items-center gap-2",
-            pathname.startsWith("/dashboard") && "lg:hidden"
+            pathname.startsWith("/dashboard") && "xl:hidden"
           )}
         >
           <span className="text-lg font-bold text-primary">مستر حفني | معلم رياضيات</span>
         </Link>
  
-        <div className="hidden items-center gap-8 md:flex">
+        <div className="hidden items-center gap-8 xl:flex">
           {isAuthenticated && (
             <Link
               href={dashboardHref}
@@ -64,7 +66,7 @@ export function Navbar() {
           ))}
         </div>
  
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-3 xl:flex">
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">{user?.name}</span>
@@ -89,14 +91,19 @@ export function Navbar() {
           )}
         </div>
  
-        <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        <button className="xl:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
+          {mobileOpen ? <X className="h-6 w-6 text-foreground" /> : <Menu className="h-6 w-6 text-foreground" />}
         </button>
       </nav>
  
       {mobileOpen && (
-        <div className="glass border-t border-white/20 px-4 pb-4 pt-2 md:hidden">
+        <div className="glass border-t border-white/20 px-4 pb-4 pt-2 xl:hidden overflow-y-auto max-h-[85vh]">
           <div className="flex flex-col gap-2">
+            {isStaff && (
+              <div className="mb-4 mt-2">
+                <CenterFiltersPanel onClose={() => setMobileOpen(false)} />
+              </div>
+            )}
             {isAuthenticated && (
               <Link
                 href={dashboardHref}
@@ -151,6 +158,14 @@ export function Navbar() {
                 </Link>
               </>
             )}
+
+            <Button 
+              variant="secondary" 
+              className="mt-4 w-full gap-2 font-bold"
+              onClick={() => setMobileOpen(false)}
+            >
+              <X className="h-4 w-4" /> إغلاق القائمة
+            </Button>
           </div>
         </div>
       )}

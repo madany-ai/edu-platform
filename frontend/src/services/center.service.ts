@@ -16,6 +16,9 @@ export interface Group {
   capacity: number;
   schedule?: Array<{ day: string; time: string }>;
   is_active: boolean;
+  created_at: string;
+  term?: string;
+  students?: any[];
   students_count?: number;
   academic_year_session?: { id: string; name: string };
 }
@@ -116,10 +119,8 @@ export const centerService = {
   },
 
   // Groups
-  getGroups: async (academicYear?: string): Promise<Group[]> => {
-    const { data } = await api.get<{ data: Group[] }>("/center/staff/groups", {
-      params: { academic_year: academicYear },
-    });
+  getGroups: async (params?: { academic_year_id?: string; academic_year?: string; term?: string }): Promise<Group[]> => {
+    const { data } = await api.get<{ data: Group[] }>("/center/staff/groups", { params });
     return data.data;
   },
 
@@ -145,10 +146,8 @@ export const centerService = {
   },
 
   // Sessions & Attendance
-  getSessions: async (groupId?: string): Promise<AcademicSession[]> => {
-    const { data } = await api.get<{ data: AcademicSession[] }>("/center/staff/sessions", {
-      params: { group_id: groupId },
-    });
+  getSessions: async (params?: { group_id?: string; academic_year_id?: string; academic_year?: string; term?: string }): Promise<AcademicSession[]> => {
+    const { data } = await api.get<{ data: AcademicSession[] }>("/center/staff/sessions", { params });
     return data.data;
   },
 
@@ -177,16 +176,19 @@ export const centerService = {
     return data;
   },
 
-  // Exams & Grades
-  getExams: async (groupId?: string): Promise<CenterExam[]> => {
-    const { data } = await api.get<{ data: CenterExam[] }>("/center/staff/exams", {
-      params: { group_id: groupId },
-    });
+  // Exams
+  getExams: async (params?: { group_id?: string; academic_year_id?: string; academic_year?: string; term?: string }): Promise<CenterExam[]> => {
+    const { data } = await api.get<{ data: CenterExam[] }>("/center/staff/exams", { params });
     return data.data;
   },
 
   createExam: async (payload: Partial<CenterExam>): Promise<CenterExam> => {
     const { data } = await api.post<{ data: CenterExam }>("/center/staff/exams", payload);
+    return data.data;
+  },
+
+  updateExam: async (id: string, payload: Partial<CenterExam>): Promise<CenterExam> => {
+    const { data } = await api.put<{ data: CenterExam }>(`/center/staff/exams/${id}`, payload);
     return data.data;
   },
 
@@ -202,13 +204,13 @@ export const centerService = {
   },
 
   // Rankings
-  getRankings: async (params?: { group_id?: string; academic_year?: string }): Promise<RankingItem[]> => {
+  getRankings: async (params?: { group_id?: string; academic_year_id?: string; academic_year?: string; term?: string }): Promise<RankingItem[]> => {
     const { data } = await api.get<{ data: RankingItem[] }>("/center/staff/rankings", { params });
     return data.data;
   },
 
   // Students & Student Report Card
-  getStudents: async (params?: { search?: string; group_id?: string; page?: number }): Promise<any> => {
+  getStudents: async (params?: { search?: string; group_id?: string; academic_year_id?: string; academic_year?: string; term?: string; page?: number }): Promise<any> => {
     const { data } = await api.get("/center/staff/students", { params });
     return data;
   },
@@ -220,6 +222,11 @@ export const centerService = {
 
   updateStudentGroup: async (studentId: string, groupId: string): Promise<any> => {
     const { data } = await api.put(`/center/staff/students/${studentId}/group`, { group_id: groupId });
+    return data;
+  },
+
+  bulkUpdateStudentGroup: async (studentIds: string[], groupId: string): Promise<any> => {
+    const { data } = await api.put(`/center/staff/students/bulk-group`, { student_ids: studentIds, group_id: groupId });
     return data;
   },
 
