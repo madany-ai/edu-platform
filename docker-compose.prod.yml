@@ -1,0 +1,125 @@
+name: mr-hifni-muhammad
+
+services:
+  # Nginx Proxy Manager for easy SSL and domain mapping
+  proxy:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: lms_proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81" # Nginx Proxy Manager Admin UI
+    volumes:
+      - ./data/nginx:/data
+      - ./data/letsencrypt:/etc/letsencrypt
+    networks:
+      - lms_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lms_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./src:/var/www/html
+      - storage_data:/var/www/html/storage/app/public
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - lms_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: lms_frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=https://api.${DOMAIN}
+    networks:
+      - lms_network
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: lms_nginx
+    restart: unless-stopped
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - storage_data:/var/www/html/storage/app/public
+    depends_on:
+      - app
+    networks:
+      - lms_network
+
+  postgres:
+    image: postgres:18-alpine
+    container_name: lms_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-lms}
+      POSTGRES_USER: ${DB_USERNAME:-lms_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks:
+      - lms_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: lms_redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - lms_network
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lms_queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: php artisan.php queue:work --sleep=3 --tries=3 --max-time=3600 --timeout=900
+    volumes:
+      - ./src:/var/www/html
+      - storage_data:/var/www/html/storage/app/public
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - lms_network
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lms_scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    entrypoint: ["sh", "-c", "while true; do php artisan.php schedule:run --verbose --no-interaction; sleep 60; done"]
+    volumes:
+      - ./src:/var/www/html
+      - storage_data:/var/www/html/storage/app/public
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - lms_network
+
+networks:
+  lms_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  storage_data:

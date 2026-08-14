@@ -110,7 +110,7 @@ class RealDataSeeder extends Seeder
             ['name' => 'تالتة إعدادي - مجموعة الأحد والأربعاء (4:00 عصراً)'],
             [
                 'academic_year_id' => $academicYear->id,
-                'grade_level_id' => $gradeModels['الصف الثالث الإعدادي']->id,
+                'academic_year' => 'prep_3',
                 'capacity' => 45,
                 'schedule' => [
                     ['day' => 'الأحد', 'time' => '16:00'],
@@ -124,7 +124,7 @@ class RealDataSeeder extends Seeder
             ['name' => 'أولى ثانوي - مجموعة السبت والثلاثاء (5:30 مساءً)'],
             [
                 'academic_year_id' => $academicYear->id,
-                'grade_level_id' => $gradeModels['الصف الأول الثانوي']->id,
+                'academic_year' => 'sec_1',
                 'capacity' => 50,
                 'schedule' => [
                     ['day' => 'السبت', 'time' => '17:30'],
@@ -138,7 +138,7 @@ class RealDataSeeder extends Seeder
             ['name' => 'تالتة ثانوي - مجموعة الاثنين والخميس (6:00 مساءً)'],
             [
                 'academic_year_id' => $academicYear->id,
-                'grade_level_id' => $gradeModels['الصف الثالث الثانوي']->id,
+                'academic_year' => 'sec_3',
                 'capacity' => 60,
                 'schedule' => [
                     ['day' => 'الاثنين', 'time' => '18:00'],
@@ -154,51 +154,51 @@ class RealDataSeeder extends Seeder
             [
                 'first_name' => 'عمر', 'second_name' => 'خالد', 'third_name' => 'إبراهيم', 'last_name' => 'السيد',
                 'email' => 'omar.khaled@student.local', 'phone' => '01012345671', 'father_phone' => '01212345671', 'mother_phone' => '01112345671',
-                'group' => $group3Prep, 'grade' => $gradeModels['الصف الثالث الإعدادي'], 'code' => 'ST2026101',
+                'group' => $group3Prep, 'academic_year' => 'prep_3', 'code' => 'ST2026101',
             ],
             [
                 'first_name' => 'مريم', 'second_name' => 'أحمد', 'third_name' => 'محمود', 'last_name' => 'حسن',
                 'email' => 'maryam.ahmed@student.local', 'phone' => '01012345672', 'father_phone' => '01212345672', 'mother_phone' => '01112345672',
-                'group' => $group3Prep, 'grade' => $gradeModels['الصف الثالث الإعدادي'], 'code' => 'ST2026102',
+                'group' => $group3Prep, 'academic_year' => 'prep_3', 'code' => 'ST2026102',
             ],
             [
                 'first_name' => 'يوسف', 'second_name' => 'مصطفى', 'third_name' => 'عادل', 'last_name' => 'كمال',
                 'email' => 'youssef.mostafa@student.local', 'phone' => '01012345673', 'father_phone' => '01212345673', 'mother_phone' => '01112345673',
-                'group' => $group3Prep, 'grade' => $gradeModels['الصف الثالث الإعدادي'], 'code' => 'ST2026103',
+                'group' => $group3Prep, 'academic_year' => 'prep_3', 'code' => 'ST2026103',
             ],
             [
                 'first_name' => 'فاطمة', 'second_name' => 'علي', 'third_name' => 'حسن', 'last_name' => 'منصور',
                 'email' => 'fatma.ali@student.local', 'phone' => '01012345674', 'father_phone' => '01212345674', 'mother_phone' => '01112345674',
-                'group' => $group3Prep, 'grade' => $gradeModels['الصف الثالث الإعدادي'], 'code' => 'ST2026104',
+                'group' => $group3Prep, 'academic_year' => 'prep_3', 'code' => 'ST2026104',
             ],
             [
                 'first_name' => 'كريم', 'second_name' => 'سامح', 'third_name' => 'فاروق', 'last_name' => 'فؤاد',
                 'email' => 'karim.sameh@student.local', 'phone' => '01012345675', 'father_phone' => '01212345675', 'mother_phone' => '01112345675', 'code' => 'ST2026105',
-                'group' => $group3Prep, 'grade' => $gradeModels['الصف الثالث الإعدادي'],
+                'group' => $group3Prep, 'academic_year' => 'prep_3',
             ],
 
             // أولى ثانوي
             [
                 'first_name' => 'زياد', 'second_name' => 'طارق', 'third_name' => 'عبدالعزيز', 'last_name' => 'الشريف',
                 'email' => 'zeyad.tarek@student.local', 'phone' => '01012345676', 'father_phone' => '01212345676', 'mother_phone' => '01112345676', 'code' => 'ST2026106',
-                'group' => $group1Sec, 'grade' => $gradeModels['الصف الأول الثانوي'],
+                'group' => $group1Sec, 'academic_year' => 'sec_1',
             ],
             [
                 'first_name' => 'سارة', 'second_name' => 'حسام', 'third_name' => 'جمال', 'last_name' => 'الدين',
                 'email' => 'sara.hossam@student.local', 'phone' => '01012345677', 'father_phone' => '01212345677', 'mother_phone' => '01112345677', 'code' => 'ST2026107',
-                'group' => $group1Sec, 'grade' => $gradeModels['الصف الأول الثانوي'],
+                'group' => $group1Sec, 'academic_year' => 'sec_1',
             ],
 
             // تالتة ثانوي
             [
                 'first_name' => 'محمد', 'second_name' => 'عبدالرحمن', 'third_name' => 'سليمان', 'last_name' => 'راضي',
                 'email' => 'mohamed.abdo@student.local', 'phone' => '01012345678', 'father_phone' => '01212345678', 'mother_phone' => '01112345678', 'code' => 'ST2026108',
-                'group' => $group3Sec, 'grade' => $gradeModels['الصف الثالث الثانوي'], 'track' => $trackSci,
+                'group' => $group3Sec, 'academic_year' => 'sec_3', 'track' => $trackSci,
             ],
             [
                 'first_name' => 'نور', 'second_name' => 'شريف', 'third_name' => 'عصام', 'last_name' => 'مظهر',
                 'email' => 'nour.sherif@student.local', 'phone' => '01012345679', 'father_phone' => '01212345679', 'mother_phone' => '01112345679', 'code' => 'ST2026109',
-                'group' => $group3Sec, 'grade' => $gradeModels['الصف الثالث الثانوي'], 'track' => $trackMath,
+                'group' => $group3Sec, 'academic_year' => 'sec_3', 'track' => $trackMath,
             ],
         ];
 
@@ -229,8 +229,7 @@ class RealDataSeeder extends Seeder
                     'guardian_job' => 'موظف',
                     'governorate_id' => $gov->id,
                     'city_id' => $city->id,
-                    'grade_level_id' => $s['grade']->id,
-                    'academic_track_id' => isset($s['track']) ? $s['track']->id : null,
+                    'academic_year' => $s['academic_year'],
                     'group_id' => $s['group']->id,
                     'gender' => 'male',
                     'birth_date' => '2008-01-01',
@@ -315,7 +314,7 @@ class RealDataSeeder extends Seeder
             'total_marks' => 30.00,
             'date' => now()->subWeeks(2)->format('Y-m-d'),
             'semester_id' => $semester1->id,
-            'academic_year_id' => $academicYear->id,
+            'academic_year' => 'prep_3',
             'group_id' => $group3Prep->id,
             'created_by' => $instructor->id,
         ]);
