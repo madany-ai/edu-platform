@@ -88,7 +88,7 @@ services:
     container_name: lms_queue
     restart: unless-stopped
     working_dir: /var/www/html
-    command: php artisan.php queue:work --sleep=3 --tries=3 --max-time=3600 --timeout=900
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600 --timeout=900
     volumes:
       - ./src:/var/www/html
       - storage_data:/var/www/html/storage/app/public
@@ -105,7 +105,7 @@ services:
     container_name: lms_scheduler
     restart: unless-stopped
     working_dir: /var/www/html
-    entrypoint: ["sh", "-c", "while true; do php artisan.php schedule:run --verbose --no-interaction; sleep 60; done"]
+    entrypoint: ["sh", "-c", "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"]
     volumes:
       - ./src:/var/www/html
       - storage_data:/var/www/html/storage/app/public
