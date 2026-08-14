@@ -28,7 +28,7 @@ jobs:
             git pull origin main
             
             # Create frontend/.env.production to bake Next.js variables during build
-            echo "NEXT_PUBLIC_API_URL=https://api.mrhifnimuhammad.tech" > frontend/.env.production
+            echo "NEXT_PUBLIC_API_URL=https://api.mrhifnimuhammad.tech/api" > frontend/.env.production
             if grep -q "NEXT_PUBLIC_TURNSTILE_SITE_KEY" src/.env; then
                 grep "NEXT_PUBLIC_TURNSTILE_SITE_KEY" src/.env >> frontend/.env.production
             fi
