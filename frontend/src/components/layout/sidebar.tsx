@@ -72,8 +72,8 @@ export function Sidebar({ className }: SidebarProps) {
         <div className="space-y-6">
           <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 pb-4">
             <div className="flex items-center gap-2">
-              <Image src="/logo.jpg" alt="حفني محمد" width={32} height={32} className="rounded-full object-cover border border-primary/20 shadow-sm" />
-              <span className="font-bold text-foreground text-sm">حفني محمد</span>
+              <Image src="/logo.jpg" alt="Mr Hefni Muhammad" width={32} height={32} className="rounded-full object-cover border border-primary/20 shadow-sm" />
+              <span className="font-bold text-foreground text-sm">Mr Hefni Muhammad</span>
             </div>
             {isStaff && (
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary border border-primary/30">

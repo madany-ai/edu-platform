@@ -38,7 +38,7 @@ export default function Home() {
                 className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold text-primary shadow-[0_0_15px_rgba(var(--primary),0.2)] cosmic-border-glow"
               >
                 <Calculator className="h-4 w-4 text-primary animate-bounce" />
-                <span>➗ Mr Hefni Muhammad | حفني محمد</span>
+                <span>➗ Mr Hefni Muhammad</span>
               </motion.div>
               
               <motion.h1 
@@ -49,7 +49,7 @@ export default function Home() {
               >
                 التفوق في الرياضيات أصبح مضموناً
                 <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-l from-primary via-secondary to-primary bg-[length:200%_auto] animate-gradient science-glow-text relative inline-block after:content-[''] after:absolute after:-bottom-2 after:right-0 after:w-1/2 after:h-1 after:bg-primary after:rounded-full after:transition-all after:duration-300 hover:after:w-full">مع حفني محمد</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-l from-primary via-secondary to-primary bg-[length:200%_auto] animate-gradient science-glow-text relative inline-block after:content-[''] after:absolute after:-bottom-2 after:right-0 after:w-1/2 after:h-1 after:bg-primary after:rounded-full after:transition-all after:duration-300 hover:after:w-full">مع Mr Hefni Muhammad</span>
               </motion.h1>
               
               <motion.p 
@@ -105,7 +105,7 @@ export default function Home() {
               >
                 <Image 
                   src="/logo.jpg" 
-                  alt="حفني محمد" 
+                  alt="Mr Hefni Muhammad" 
                   fill
                   priority
                   className="object-cover object-top group-hover:scale-110 transition-transform duration-700 ease-out"

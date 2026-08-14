@@ -9,7 +9,7 @@ const writtenReviews = [
   {
     name: "أحمد عبد الله",
     role: "طالب بالصف الثالث الإعدادي",
-    content: "شكراً يا مستر حفني، الشرح ممتاز جداً ومبسط. حضرتك بتفهمنا الرياضيات صح وبنهتم بكل تفصيلة، وفعلاً حضرتك من أعظم المدرسين.",
+    content: "شكراً يا Mr Hefni Muhammad، الشرح ممتاز جداً ومبسط. حضرتك بتفهمنا الرياضيات صح وبنهتم بكل تفصيلة، وفعلاً حضرتك من أعظم المدرسين.",
   },
   {
     name: "محمود حسن",
@@ -43,7 +43,7 @@ export function TestimonialsSection() {
         <div className="max-w-3xl mx-auto">
           <h3 className="text-xl font-bold text-foreground mb-8 text-center flex items-center justify-center gap-2">
             <MessageSquareQuote className="h-5 w-5 text-primary" />
-            ماذا يقولون عن تجربة التعلم مع مستر حفني؟
+            ماذا يقولون عن تجربة التعلم مع Mr Hefni Muhammad؟
           </h3>
           <div className="relative">
             <Card className="border border-white/5 bg-surface-tonal-a10/40 backdrop-blur-md shadow-xl rounded-3xl">

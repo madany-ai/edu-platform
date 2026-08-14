@@ -1,4 +1,4 @@
-export const APP_NAME = "حفني محمد";
+export const APP_NAME = "Mr Hefni Muhammad";
 export const APP_DESCRIPTION = "منصة تعليمية شاملة للطلاب والمعلمين";
 
 export const ROUTES = {

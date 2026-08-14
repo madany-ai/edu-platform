@@ -28,7 +28,7 @@ export function FeaturesSection() {
     <section className="py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-2">لماذا تختار مستر حفني محمد؟</h2>
+          <h2 className="text-3xl font-bold mb-2">لماذا تختار Mr Hefni Muhammad؟</h2>
           <p className="text-muted-foreground">مميزات تجعل رحلتك مع الرياضيات أكثر متعة ونجاحاً</p>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

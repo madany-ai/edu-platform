@@ -37,8 +37,8 @@ export function Navbar() {
           )}
         >
           <div className="flex items-center gap-2">
-            <Image src="/logo.jpg" alt="حفني محمد" width={32} height={32} className="rounded-full object-cover border border-primary/20 shadow-sm" />
-            <span className="text-lg font-bold text-primary">حفني محمد</span>
+            <Image src="/logo.jpg" alt="Mr Hefni Muhammad" width={32} height={32} className="rounded-full object-cover border border-primary/20 shadow-sm" />
+            <span className="text-lg font-bold text-primary">Mr Hefni Muhammad</span>
           </div>
         </Link>
  
