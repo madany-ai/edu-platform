@@ -15,7 +15,7 @@ import {
   Award,
   TrendingUp,
   ChevronLeft,
-  Atom,
+  Calculator,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -85,10 +85,10 @@ export default function StudentDashboardPage() {
     <div className="p-6 lg:p-10 space-y-8 max-w-7xl mx-auto">
       <div className="p-6 rounded-2xl bg-linear-to-r from-primary/10 via-secondary/5 to-transparent border border-white/5">
         <h1 className="text-3xl font-extrabold text-gradient mb-2">
-          مرحباً بعودتك إلى المختبر، {user?.name} 🧪
+          مرحباً بعودتك، {user?.name} 🧮
         </h1>
         <p className="text-sm text-muted-foreground">
-          شفرة النجاح تبدأ بالتجربة والمشاهدة الحية. واصل رحلتك العلمية اليوم.
+          طريق التفوق يبدأ بالتدريب وحل المسائل. واصل رحلتك التعليمية اليوم.
         </p>
       </div>
 
@@ -121,11 +121,11 @@ export default function StudentDashboardPage() {
             <div className="space-y-4">
               {enrollments.length === 0 ? (
                 <div className="py-12 text-center text-muted-foreground">
-                  <Atom className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3 animate-spin" />
-                  <p className="text-sm">لم تسجل في أي دورة علمية بعد</p>
+                  <Calculator className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3 animate-pulse" />
+                  <p className="text-sm">لم تسجل في أي كورس أو دورة تدريبية بعد</p>
                   <Link href={ROUTES.COURSES}>
                     <Button variant="outline" className="mt-4 border-primary/30 hover:bg-primary/10 hover:text-primary">
-                      تصفح الدورات الكونية
+                      تصفح الدورات التدريبية
                     </Button>
                   </Link>
                 </div>
@@ -197,9 +197,9 @@ export default function StudentDashboardPage() {
 
           <div className="pt-2">
             <div className="p-4 rounded-xl bg-gradient-to-br from-secondary/5 to-accent/5 border border-white/5">
-              <p className="text-xs font-semibold text-foreground mb-1">💡 نصيحة علمية اليوم:</p>
+              <p className="text-xs font-semibold text-foreground mb-1">💡 نصيحة رياضية اليوم:</p>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                التكرار والمشاهدة بتركيز يساعدان في ترسيخ المعادلات الفيزيائية والتفاعلات الكيميائية في الذاكرة طويلة المدى.
+                التدريب المستمر وحل الكثير من المسائل يساعدان في ترسيخ القواعد والنظريات الرياضية في الذاكرة طويلة المدى.
               </p>
             </div>
           </div>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Loader2, Atom, Mail, CheckCircle2 } from "lucide-react";
+import { AlertCircle, Loader2, Calculator, Mail, CheckCircle2 } from "lucide-react";
 import { authService } from "@/services/auth.service";
 import { Turnstile } from "@marsidev/react-turnstile";
 import env from "@/config/env";
@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
       <div className="glass-card w-full p-8 rounded-2xl">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10 text-primary mb-4">
-            <Atom className="h-10 w-10 text-primary science-glow-text" />
+            <Calculator className="h-10 w-10 text-primary science-glow-text" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-gradient mb-1">
             نسيت كلمة المرور؟

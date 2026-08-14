@@ -1,5 +1,5 @@
 export const APP_NAME = "Mr Hefni Muhammad";
-export const APP_DESCRIPTION = "منصة تعليمية شاملة للطلاب والمعلمين";
+export const APP_DESCRIPTION = "منصة مستر حفني محمد التعليمية لشرح وتدريس مادة الرياضيات للمرحلتين الإعدادية والثانوية بأحدث طرق التعليم وحل المسائل.";
 
 export const ROUTES = {
   HOME: "/",

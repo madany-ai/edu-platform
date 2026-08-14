@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Loader2, Atom, CheckCircle2, Lock } from "lucide-react";
+import { AlertCircle, Loader2, Calculator, CheckCircle2, Lock } from "lucide-react";
 import { authService } from "@/services/auth.service";
 
 export default function ResetPasswordPage() {

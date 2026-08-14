@@ -29,7 +29,7 @@ export default function StudentCoursesPage() {
     <div className="p-6 lg:p-10 space-y-8 max-w-7xl mx-auto">
       <PageHeader
         title="دوراتي التدريبية"
-        description="واصل تعلمك وتصفح جميع المواد العلمية التي سجلت بها"
+        description="واصل تعلمك وتصفح جميع المواد الدراسية التي سجلت بها"
       />
 
       {enrollments.length === 0 ? (

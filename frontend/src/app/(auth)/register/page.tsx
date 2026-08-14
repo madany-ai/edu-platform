@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertCircle, CheckCircle2, Loader2, Atom } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, Calculator } from "lucide-react";
 import { miscService, type GovernorateInfo, type GradeLevelInfo } from "@/services/misc.service";
 import { Turnstile } from "@marsidev/react-turnstile";
 import env from "@/config/env";
@@ -200,7 +200,7 @@ export default function RegisterPage() {
           </p>
           <div className="rounded-xl bg-muted/30 border border-border/40 p-5 text-right text-sm text-muted-foreground mb-6">
             <p className="mb-3 font-semibold text-foreground flex items-center gap-2">
-              <Atom className="h-4 w-4 text-primary" />
+              <Calculator className="h-4 w-4 text-primary" />
               <span>خطواتك التالية:</span>
             </p>
             <ol className="space-y-2 list-decimal list-inside pr-1">
@@ -224,7 +224,7 @@ export default function RegisterPage() {
       <div className="glass-card w-full p-8 rounded-2xl">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10 text-primary mb-3">
-            <Atom className="h-8 w-8 text-primary science-glow-text animate-pulse" />
+            <Calculator className="h-8 w-8 text-primary science-glow-text animate-pulse" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-gradient mb-1">
             إنشاء حساب طالب جديد
