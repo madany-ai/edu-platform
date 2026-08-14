@@ -20,19 +20,18 @@ jobs:
           script: |
             echo "Starting Deployment..."
             
-            # Navigate to the source folder and pull latest changes
-            cd /var/www/lms/src
+            # Navigate to the root folder
+            cd /var/www/lms
+            
+            # Pull latest changes
             git reset --hard HEAD
             git pull origin main
             
-            # Navigate to the docker compose folder
-            cd /var/www/lms
+            # Rebuild and start any changed containers (Frontend & Backend)
+            docker compose -f docker-compose.prod.yml up -d --build
             
-            # Clear caches and run migrations
+            # Clear caches and run migrations for Laravel
             docker exec lms_app php artisan.php optimize:clear
             docker exec lms_app php artisan.php migrate --force
-            
-            # Restart Laravel containers to apply changes
-            docker compose restart app queue scheduler
             
             echo "Deployment Completed Successfully!"
