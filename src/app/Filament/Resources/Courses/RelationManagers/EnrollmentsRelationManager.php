@@ -119,15 +119,15 @@ class EnrollmentsRelationManager extends RelationManager
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\CreateAction::make()->label('تسجيل طالب جديد'),
+                \Filament\Actions\CreateAction::make()->label('تسجيل طالب جديد'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                \Filament\Actions\EditAction::make(),
+                \Filament\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
