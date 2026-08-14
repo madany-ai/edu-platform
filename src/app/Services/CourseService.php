@@ -36,7 +36,7 @@ class CourseService
 
         $cacheKey = 'published_courses_page_' . $page;
 
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addHours(2), function () {
+        return \Illuminate\Support\Facades\Cache::tags(['courses'])->remember($cacheKey, now()->addHours(2), function () {
             return Course::with(['instructor'])
                 ->withCount(['sections', 'enrollments'])
                 ->where('status', 'published')

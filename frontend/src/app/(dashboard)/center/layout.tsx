@@ -17,7 +17,7 @@ export default function CenterLayout({ children }: { children: ReactNode }) {
       return;
     }
 
-    const isStaff = isInstructor || isAssistant || user?.roles?.some((r: any) => ["instructor", "assistant"].includes(typeof r === "string" ? r : r.name));
+    const isStaff = isInstructor || isAssistant || user?.roles?.some((r: any) => ["instructor", "assistant", "super_admin", "admin"].includes(typeof r === "string" ? r : r.name));
 
     if (!isStaff) {
       // If student tries to access center, redirect them to dashboard
@@ -31,7 +31,7 @@ export default function CenterLayout({ children }: { children: ReactNode }) {
   }
 
   // Double check before rendering
-  const isStaff = isInstructor || isAssistant || user?.roles?.some((r: any) => ["instructor", "assistant"].includes(typeof r === "string" ? r : r.name));
+  const isStaff = isInstructor || isAssistant || user?.roles?.some((r: any) => ["instructor", "assistant", "super_admin", "admin"].includes(typeof r === "string" ? r : r.name));
 
   if (!isStaff) {
     return <PageLoading />; // Will redirect in useEffect

@@ -17,8 +17,14 @@ api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiError>) => {
     if (error.response?.status === 401) {
-      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-        window.location.href = "/login";
+      if (typeof window !== "undefined") {
+        // Clear stale cookies
+        document.cookie = "laravel_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
       }
     }
     return Promise.reject(error);

@@ -1,7 +1,18 @@
 import type { NextConfig } from "next";
+import withSerwistInit from "@serwist/next";
+
+const withSerwist = withSerwistInit({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  // Disable in dev: SW causes infinite request loops with webpack HMR
+  disable: process.env.NODE_ENV === "development",
+});
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["updated-movement-locator-sons.trycloudflare.com"],
+  allowedDevOrigins: [
+    "alpine-cindy-drives-proposals.trycloudflare.com",
+    "links-husband-alabama-others.trycloudflare.com",
+  ],
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "/api",
   },
@@ -9,11 +20,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:8000/api/:path*', // Proxy to backend
+        destination: 'http://localhost:8000/api/:path*',
       },
       {
         source: '/sanctum/:path*',
-        destination: 'http://localhost:8000/sanctum/:path*', // Proxy to backend
+        destination: 'http://localhost:8000/sanctum/:path*',
       },
     ];
   },
@@ -26,11 +37,11 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=()" },
-          { key: "Content-Security-Policy", value: "default-src 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://www.youtube.com https://s.ytimg.com; style-src 'self' 'unsafe-inline' https:; connect-src 'self' http://localhost:8000 https:; frame-src 'self' https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com https://*.bunny.net https://iframe.mediadelivery.net; media-src 'self' blob: https:;" },
+          { key: "Content-Security-Policy", value: `default-src 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' blob: ${process.env.NODE_ENV !== 'production' ? "'unsafe-eval'" : ''} https://challenges.cloudflare.com https://www.youtube.com https://s.ytimg.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https:; connect-src 'self' http://localhost:8000 https:; frame-src 'self' https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com https://*.bunny.net https://iframe.mediadelivery.net; media-src 'self' blob: https:;` },
         ],
       },
     ];
   },
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);

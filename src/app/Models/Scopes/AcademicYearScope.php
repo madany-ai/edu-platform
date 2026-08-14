@@ -10,6 +10,10 @@ class AcademicYearScope implements Scope
 {
     public function apply(Builder $builder, Model $model): void
     {
+        if (app()->runningInConsole()) {
+            return;
+        }
+
         $user = auth('sanctum')->user() ?? auth('web')->user();
         if ($user && $user->hasRole('student')) {
             $student = $user->student;

@@ -479,9 +479,9 @@ class CenterStaffController extends Controller
                 ]
             );
 
-            // Notify parent
+            // Notify parent asynchronously
             try {
-                $this->notificationService->notifyCenterGrade(
+                \App\Jobs\NotifyParentJob::dispatch(
                     $student,
                     $exam->name,
                     (float) $item['score'],
@@ -627,7 +627,9 @@ class CenterStaffController extends Controller
             'group_id' => 'nullable|uuid|exists:groups,id',
         ]);
 
-        $studentCode = 'ST' . date('Y') . rand(1000, 9999);
+        do {
+            $studentCode = 'ST' . date('Y') . rand(10000, 99999);
+        } while (\App\Models\Student::where('student_code', $studentCode)->exists());
 
         $user = \App\Models\User::create([
             'name' => "{$validated['first_name']} {$validated['last_name']}",

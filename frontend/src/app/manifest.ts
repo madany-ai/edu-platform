@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'مستر حفني | معلم رياضيات',
-    short_name: 'مستر حفني',
+    name: 'حفني محمد',
+    short_name: 'حفني محمد',
     description: 'منصة تعليمية شاملة للطلاب والمعلمين',
     start_url: '/',
     display: 'standalone',

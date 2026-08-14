@@ -56,7 +56,7 @@ export function MobileNav() {
     return null;
   }
 
-  const isStaff = isInstructor || isAssistant || user?.roles?.some((r: any) => ["instructor", "assistant"].includes(typeof r === "string" ? r : r.name));
+  const isStaff = isInstructor || isAssistant || user?.roles?.some((r: any) => ["instructor", "assistant", "super_admin", "admin"].includes(typeof r === "string" ? r : r.name));
   const links = isStaff ? staffLinks : studentLinks;
 
   return (

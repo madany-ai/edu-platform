@@ -77,9 +77,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAuthenticated = !!user;
-  const isInstructor = user?.roles?.some((r) => r === "instructor") ?? false;
-  const isAssistant = user?.roles?.some((r) => r === "assistant") ?? false;
-  const isStudent = user?.roles?.includes("student") ?? false;
+  const isInstructor = user?.roles?.some((r: any) => (typeof r === "string" ? r : r.name) === "instructor") ?? false;
+  const isAssistant = user?.roles?.some((r: any) => (typeof r === "string" ? r : r.name) === "assistant") ?? false;
+  const isStudent = user?.roles?.some((r: any) => (typeof r === "string" ? r : r.name) === "student") ?? false;
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout, isAuthenticated, isInstructor, isAssistant, isStudent }}>

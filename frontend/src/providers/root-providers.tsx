@@ -5,14 +5,12 @@ import { Toaster } from "sonner";
 import QueryProvider from "./query-provider";
 import ThemeProvider from "./theme-provider";
 import { AuthProvider } from "./auth-provider";
-import { PWARegister } from "@/components/pwa-register";
 
 export default function RootProviders({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
       <QueryProvider>
         <AuthProvider>
-          <PWARegister />
           {children}
           <Toaster
             position="top-center"

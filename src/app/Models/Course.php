@@ -65,9 +65,7 @@ class Course extends Model
 
     public static function clearPublishedCache(): void
     {
-        for ($i = 1; $i <= 10; $i++) {
-            \Illuminate\Support\Facades\Cache::forget('published_courses_page_' . $i);
-        }
+        \Illuminate\Support\Facades\Cache::tags(['courses'])->flush();
     }
 
     public function instructor(): BelongsTo

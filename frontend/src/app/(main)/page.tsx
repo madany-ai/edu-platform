@@ -11,7 +11,8 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, isInstructor, isAssistant } = useAuth();
+  const isStaff = isInstructor || isAssistant || user?.roles?.some((r: any) => ["instructor", "assistant", "super_admin", "admin"].includes(typeof r === "string" ? r : r.name));
 
   return (
     <>
@@ -37,7 +38,7 @@ export default function Home() {
                 className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold text-primary shadow-[0_0_15px_rgba(var(--primary),0.2)] cosmic-border-glow"
               >
                 <Calculator className="h-4 w-4 text-primary animate-bounce" />
-                <span>➗ Mr Hefni Muhammad | مستر حفني محمد</span>
+                <span>➗ Mr Hefni Muhammad | حفني محمد</span>
               </motion.div>
               
               <motion.h1 
@@ -48,7 +49,7 @@ export default function Home() {
               >
                 التفوق في الرياضيات أصبح مضموناً
                 <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-l from-primary via-secondary to-primary bg-[length:200%_auto] animate-gradient science-glow-text relative inline-block after:content-[''] after:absolute after:-bottom-2 after:right-0 after:w-1/2 after:h-1 after:bg-primary after:rounded-full after:transition-all after:duration-300 hover:after:w-full">مع مستر حفني محمد</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-l from-primary via-secondary to-primary bg-[length:200%_auto] animate-gradient science-glow-text relative inline-block after:content-[''] after:absolute after:-bottom-2 after:right-0 after:w-1/2 after:h-1 after:bg-primary after:rounded-full after:transition-all after:duration-300 hover:after:w-full">مع حفني محمد</span>
               </motion.h1>
               
               <motion.p 
@@ -73,9 +74,9 @@ export default function Home() {
                   </Button>
                 </Link>
                 {isAuthenticated ? (
-                  <Link href="/dashboard">
+                  <Link href={isStaff ? "/center" : "/dashboard"}>
                     <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-muted text-foreground">
-                      حساب الطالب الخاص بي
+                      {isStaff ? "إدارة السنتر" : "حساب الطالب الخاص بي"}
                     </Button>
                   </Link>
                 ) : (
@@ -103,8 +104,8 @@ export default function Home() {
                 className="relative w-[280px] h-[280px] sm:w-[340px] sm:h-[340px] rounded-full overflow-hidden border-[6px] border-primary/30 shadow-2xl shadow-primary/20 transition-transform duration-500 hover:scale-[1.05] cosmic-border-glow hover:border-primary/50"
               >
                 <Image 
-                  src="/hefni-profile-new.jpg" 
-                  alt="مستر حفني محمد" 
+                  src="/logo.jpg" 
+                  alt="حفني محمد" 
                   fill
                   priority
                   className="object-cover object-top group-hover:scale-110 transition-transform duration-700 ease-out"

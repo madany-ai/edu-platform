@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X, LogOut } from "lucide-react";
@@ -20,7 +21,7 @@ export function Navbar() {
   const { user, isAuthenticated, logout, isInstructor, isAssistant } = useAuth();
   const pathname = usePathname();
 
-  const isStaff = isInstructor || isAssistant || user?.roles?.some((r: any) => ["instructor", "assistant"].includes(typeof r === "string" ? r : r.name));
+  const isStaff = isInstructor || isAssistant || user?.roles?.some((r: any) => ["instructor", "assistant", "super_admin", "admin"].includes(typeof r === "string" ? r : r.name));
   const dashboardHref = isStaff ? "/center" : ROUTES.DASHBOARD;
   const dashboardLabel = isStaff ? "إدارة السنتر" : "حساب الطالب";
   const isDashboardActive = isStaff ? pathname.startsWith("/center") : pathname.startsWith("/dashboard");
@@ -35,7 +36,10 @@ export function Navbar() {
             pathname.startsWith("/dashboard") && "xl:hidden"
           )}
         >
-          <span className="text-lg font-bold text-primary">مستر حفني | معلم رياضيات</span>
+          <div className="flex items-center gap-2">
+            <Image src="/logo.jpg" alt="حفني محمد" width={32} height={32} className="rounded-full object-cover border border-primary/20 shadow-sm" />
+            <span className="text-lg font-bold text-primary">حفني محمد</span>
+          </div>
         </Link>
  
         <div className="hidden items-center gap-8 xl:flex">
@@ -99,7 +103,7 @@ export function Navbar() {
       {mobileOpen && (
         <div className="glass border-t border-white/20 px-4 pb-4 pt-2 xl:hidden overflow-y-auto max-h-[85vh]">
           <div className="flex flex-col gap-2">
-            {isStaff && (
+            {isStaff && pathname.startsWith("/center") && (
               <div className="mb-4 mt-2">
                 <CenterFiltersPanel onClose={() => setMobileOpen(false)} />
               </div>

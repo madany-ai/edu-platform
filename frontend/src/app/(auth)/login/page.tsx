@@ -48,7 +48,7 @@ export default function LoginPage() {
     try {
       const loggedInUser = await login({ email: identifier, password, "cf-turnstile-response": turnstileToken });
       const roles = loggedInUser?.roles || [];
-      const isStaff = roles.some((r: any) => ["instructor", "assistant"].includes(typeof r === "string" ? r : r.name));
+      const isStaff = roles.some((r: any) => ["instructor", "assistant", "super_admin", "admin"].includes(typeof r === "string" ? r : r.name));
 
       if (loggedInUser?.must_change_password) {
         router.push("/change-password");

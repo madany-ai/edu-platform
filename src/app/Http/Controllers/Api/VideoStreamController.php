@@ -31,6 +31,11 @@ class VideoStreamController extends Controller
             return response()->json(['error' => 'رابط الفيديو غير صالح أو منتهي الصلاحية'], 401);
         }
 
+        $user = \App\Models\User::find($payload['u']);
+        if (!$user || $user->status !== \App\Enums\UserStatus::Active) {
+            return response()->json(['error' => 'غير مصرح'], 401);
+        }
+
         $cdnHostname = config('services.bunny_stream.cdn_hostname');
         $m3u8Url = "https://{$cdnHostname}/{$videoId}/playlist.m3u8";
 
@@ -81,6 +86,11 @@ class VideoStreamController extends Controller
             return response()->json(['error' => 'غير مصرح'], 401);
         }
 
+        $user = \App\Models\User::find($payload['u']);
+        if (!$user || $user->status !== \App\Enums\UserStatus::Active) {
+            return response()->json(['error' => 'غير مصرح'], 401);
+        }
+
         // Sanitise: strip directory traversal
         $file = ltrim(preg_replace('/\.{2,}/', '', $file), '/');
         if (!preg_match('/^[a-zA-Z0-9_\-\/\.]+$/', $file)) {
@@ -110,15 +120,22 @@ class VideoStreamController extends Controller
             }
 
             // Video/audio segment: proxy and stream back
-            $response = Http::timeout(60)->withOptions(['stream' => false])->get($fileUrl);
-
-            if ($response->failed()) {
-                return response()->json(['error' => 'القطعة غير موجودة'], 404);
+            // DO NOT use Http::get() body as it loads the entire segment into RAM
+            // We'll use fopen to pipe the stream
+            
+            // Check headers to get content type (lightweight HEAD request or just default)
+            $contentType = 'video/mp2t';
+            if (str_ends_with($file, '.aac')) {
+                $contentType = 'audio/aac';
             }
 
-            $contentType = $response->header('Content-Type') ?: 'video/mp2t';
-
-            return response($response->body(), 200, [
+            return response()->stream(function () use ($fileUrl) {
+                $stream = @fopen($fileUrl, 'r');
+                if ($stream) {
+                    fpassthru($stream);
+                    fclose($stream);
+                }
+            }, 200, [
                 'Content-Type'                => $contentType,
                 'Cache-Control'               => 'private, max-age=3600',
                 'Access-Control-Allow-Origin' => config('app.url'),
@@ -148,7 +165,7 @@ class VideoStreamController extends Controller
      */
     private function rewritePlaylistUrls(string $content, string $videoId, string $token, string $baseDir): string
     {
-        $segmentBase = url("/api/video/{$videoId}/segment") . '?token=' . urlencode($token) . '&file=';
+        $segmentBase = "/api/video/{$videoId}/segment" . '?token=' . urlencode($token) . '&file=';
 
         return preg_replace_callback(
             '/^([^\s#].+\.(m3u8|ts|aac|mp4|vtt))(\?.*)?$/m',

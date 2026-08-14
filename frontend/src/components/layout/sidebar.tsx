@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/providers/auth-provider";
@@ -25,6 +26,7 @@ import {
   Search,
 } from "lucide-react";
 import { CenterFiltersPanel } from "./center-filters-panel";
+import { PwaManager } from "@/components/pwa-manager";
 
 const studentLinks = [
   { href: ROUTES.DASHBOARD, label: "لوحة التحكم", icon: LayoutDashboard },
@@ -57,7 +59,7 @@ export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const { logout, isInstructor, isAssistant, user } = useAuth();
   
-  const isStaff = isInstructor || isAssistant || user?.roles?.some((r: any) => ["instructor", "assistant"].includes(typeof r === "string" ? r : r.name));
+  const isStaff = isInstructor || isAssistant || user?.roles?.some((r: any) => ["instructor", "assistant", "super_admin", "admin"].includes(typeof r === "string" ? r : r.name));
   const links = isStaff ? staffLinks : studentLinks;
 
   return (
@@ -71,8 +73,8 @@ export function Sidebar({ className }: SidebarProps) {
         <div className="space-y-6">
           <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 pb-4">
             <div className="flex items-center gap-2">
-              <Calculator className="h-6 w-6 text-primary" />
-              <span className="font-bold text-foreground text-sm">مستر حفني 👨‍🏫</span>
+              <Image src="/logo.jpg" alt="حفني محمد" width={32} height={32} className="rounded-full object-cover border border-primary/20 shadow-sm" />
+              <span className="font-bold text-foreground text-sm">حفني محمد</span>
             </div>
             {isStaff && (
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary border border-primary/30">
@@ -112,8 +114,10 @@ export function Sidebar({ className }: SidebarProps) {
           className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
         >
           <LogOut className="h-5 w-5" />
-          تسجيل الخروج
+          <span className="font-medium text-sm">تسجيل خروج</span>
         </button>
+
+        <PwaManager />
       </div>
     </aside>
   );
