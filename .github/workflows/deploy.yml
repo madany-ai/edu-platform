@@ -30,6 +30,9 @@ jobs:
             # Rebuild and start any changed containers (Frontend & Backend)
             docker compose -f docker-compose.prod.yml up -d --build
             
+            # Restart Nginx and Proxy to clear DNS cache and prevent 502 errors
+            docker compose -f docker-compose.prod.yml restart nginx proxy
+            
             # Clear caches and run migrations for Laravel
             docker exec lms_app php artisan.php optimize:clear
             docker exec lms_app php artisan.php migrate --force
