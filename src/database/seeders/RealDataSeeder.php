@@ -20,7 +20,7 @@ class RealDataSeeder extends Seeder
         $instructor = User::firstOrCreate(
             ['email' => 'admin@mrhifnimuhammad.tech'],
             [
-                'name' => 'الأستاذ محمد حفني',
+                'name' => 'الأستاذ حفني محمد',
                 'password' => Hash::make('admin2026@'),
                 'status' => 'active',
             ]

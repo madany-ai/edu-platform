@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!cancelled) {
         setLoading(false);
         if (u?.must_change_password && !window.location.pathname.includes('/change-password') && !window.location.pathname.includes('/logout')) {
-          router.push('/change-password');
+          window.location.href = '/change-password';
         }
       }
     };
@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authService.login(payload);
     const u = await fetchUser();
     if (u?.must_change_password) {
-      router.push('/change-password');
+      window.location.href = '/change-password';
     } else {
       // Assuming redirect logic is handled where login is called, but we can do it here or let the caller handle it.
       // We will let the caller handle success, but we force push if must_change_password is true.

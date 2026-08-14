@@ -52,7 +52,7 @@ export default function LoginPage() {
       const isStaff = roles.some((r: any) => ["instructor", "assistant", "super_admin", "admin"].includes(typeof r === "string" ? r : r.name));
 
       if (loggedInUser?.must_change_password || identifier.trim().toLowerCase() === password.trim().toLowerCase()) {
-        router.push("/change-password");
+        window.location.href = "/change-password";
         return;
       }
 
