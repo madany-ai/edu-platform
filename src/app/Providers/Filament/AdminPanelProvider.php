@@ -27,6 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(\App\Filament\Pages\Auth\Login::class)
+            ->profile()
             ->brandName(fn () => config('app.name', 'Mr Hefni Muhammad'))
             ->renderHook(
                 \Filament\View\PanelsRenderHook::HEAD_END,
