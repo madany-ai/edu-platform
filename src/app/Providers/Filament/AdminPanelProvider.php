@@ -27,7 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(\App\Filament\Pages\Auth\Login::class)
-            ->brandName('اسم المنصة')
+            ->brandName(fn () => config('app.name', 'مستر حفني محمد'))
             ->renderHook(
                 \Filament\View\PanelsRenderHook::HEAD_END,
                 fn (): string => \Illuminate\Support\Facades\View::make('filament.hooks.head')->render(),
