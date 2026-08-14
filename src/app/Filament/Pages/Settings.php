@@ -100,6 +100,21 @@ class Settings extends Page implements HasForms
                             ->revealable(),
                     ])
                     ->columns(2),
+                Section::make('Cloudflare Turnstile (حماية الكابتشا)')
+                    ->description('إعدادات كابتشا حماية التسجيل وتسجيل الدخول')
+                    ->schema([
+                        TextInput::make('turnstile_site_key')
+                            ->label('Site Key')
+                            ->helperText('المفتاح العام (Site Key)')
+                            ->columnSpanFull(),
+                        TextInput::make('turnstile_secret_key')
+                            ->label('Secret Key')
+                            ->helperText('المفتاح السري (Secret Key)')
+                            ->password()
+                            ->revealable()
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
                 Section::make('معلومات الحساب')
                     ->description('تفاصيل حسابك')
                     ->schema([
