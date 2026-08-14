@@ -23,6 +23,7 @@ import {
 import { AlertCircle, CheckCircle2, Loader2, Atom } from "lucide-react";
 import { miscService, type GovernorateInfo, type GradeLevelInfo } from "@/services/misc.service";
 import { Turnstile } from "@marsidev/react-turnstile";
+import env from "@/config/env";
 
 interface FieldError {
   field: string;
@@ -534,7 +535,7 @@ export default function RegisterPage() {
               
               <div className="flex justify-center my-4">
                 <Turnstile
-                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
+                  siteKey={env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
                   onSuccess={(token) => setTurnstileToken(token)}
                   onError={() => setErrors([{ field: "general", message: "حدث خطأ في التحقق. يرجى إعادة تحميل الصفحة." }])}
                   options={{ theme: "dark" }}

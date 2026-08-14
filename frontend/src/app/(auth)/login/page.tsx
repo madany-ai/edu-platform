@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2, Phone, KeyRound, Calculator } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
+import env from "@/config/env";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -203,7 +204,7 @@ export default function LoginPage() {
 
           <div className="flex justify-center my-4">
             <Turnstile
-              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
+              siteKey={env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
               onSuccess={(token) => setTurnstileToken(token)}
               onError={() => setError("حدث خطأ في التحقق. يرجى إعادة تحميل الصفحة.")}
               options={{ theme: "dark" }}
