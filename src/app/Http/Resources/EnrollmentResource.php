@@ -12,7 +12,7 @@ class EnrollmentResource extends JsonResource
         return [
             'id' => $this->id,
             'course_id' => $this->course_id,
-            'course' => $this->whenLoaded('course', fn () => [
+            'course' => $this->whenLoaded('course', fn () => $this->course ? [
                 'id' => $this->course->id,
                 'title' => $this->course->title,
                 'price' => (float) $this->course->price,
@@ -21,7 +21,7 @@ class EnrollmentResource extends JsonResource
                     'id' => $this->course->instructor->id,
                     'name' => $this->course->instructor->name,
                 ] : null,
-            ]),
+            ] : null),
             'student' => $this->whenLoaded('student', fn () => [
                 'id' => $this->student->id,
                 'user' => $this->student->user ? [

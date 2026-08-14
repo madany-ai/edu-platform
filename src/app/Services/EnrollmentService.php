@@ -78,12 +78,10 @@ class EnrollmentService
             return collect();
         }
 
-        $enrollments = Enrollment::with(['course.instructor', 'course.sections'])
-            ->where('student_id', $student->id)
-            ->latest()
-            ->get();
 
-        return Enrollment::with(['course.instructor', 'course.sections'])
+        return Enrollment::with(['course' => function ($query) {
+            $query->withoutGlobalScope(\App\Models\Scopes\AcademicYearScope::class)->with(['instructor', 'sections']);
+        }])
             ->where('student_id', $student->id)
             ->latest()
             ->get();
