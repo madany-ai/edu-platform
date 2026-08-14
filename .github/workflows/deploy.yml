@@ -27,8 +27,15 @@ jobs:
             git reset --hard HEAD
             git pull origin main
             
+            # Create frontend/.env.production to bake Next.js variables during build
+            echo "NEXT_PUBLIC_API_URL=https://api.mrhifnimuhammad.tech" > frontend/.env.production
+            if grep -q "NEXT_PUBLIC_TURNSTILE_SITE_KEY" src/.env; then
+                grep "NEXT_PUBLIC_TURNSTILE_SITE_KEY" src/.env >> frontend/.env.production
+            fi
+            
             # Rebuild and start any changed containers (Frontend & Backend)
-            docker compose -f docker-compose.prod.yml up -d --build
+            docker compose -f docker-compose.prod.yml build frontend
+            docker compose -f docker-compose.prod.yml up -d
             
             # Restart Nginx and Proxy to clear DNS cache and prevent 502 errors
             docker compose -f docker-compose.prod.yml restart nginx proxy
