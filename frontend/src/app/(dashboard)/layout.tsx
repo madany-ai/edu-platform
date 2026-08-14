@@ -8,11 +8,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <AuthGuard requireAuth>
       <CenterFiltersProvider>
-        <div className="min-h-screen bg-background flex flex-col">
+        <div className="min-h-screen w-full bg-background flex flex-col overflow-x-hidden">
           <Navbar />
-          <div className="flex flex-1 flex-col xl:flex-row pb-16 xl:pb-0">
-            <Sidebar />
-            <main className="flex-1 min-w-0">{children}</main>
+          <div className="grid grid-cols-1 xl:grid-cols-[16rem_1fr] w-full pb-16 xl:pb-0">
+            <Sidebar className="xl:col-start-1" />
+            <main className="min-w-0 w-full xl:col-start-2 overflow-x-hidden">{children}</main>
             <MobileNav />
           </div>
         </div>

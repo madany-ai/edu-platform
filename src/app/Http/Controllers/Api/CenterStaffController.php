@@ -563,19 +563,29 @@ class CenterStaffController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        $grades = CenterGrade::with('exam')
+        $grades = CenterGrade::with('centerExam')
             ->where('student_id', $studentId)
             ->orderByDesc('created_at')
             ->get();
 
         $totalScore = $grades->sum('score');
-        $maxScore = $grades->sum(fn ($g) => $g->exam ? $g->exam->total_marks : 0);
+        $maxScore = $grades->sum(fn ($g) => $g->centerExam ? $g->centerExam->total_marks : 0);
         $percentage = $maxScore > 0 ? round(($totalScore / $maxScore) * 100, 1) : 0;
 
         return response()->json([
             'student' => $student,
             'attendances' => $attendances,
-            'grades' => $grades,
+            'grades' => $grades->map(fn ($g) => [
+                'id' => $g->id,
+                'score' => (float) $g->score,
+                'notes' => $g->notes,
+                'created_at' => $g->created_at,
+                'exam' => $g->centerExam ? [
+                    'id' => $g->centerExam->id,
+                    'name' => $g->centerExam->name,
+                    'total_marks' => (float) $g->centerExam->total_marks,
+                ] : null,
+            ]),
             'stats' => [
                 'total_sessions' => $attendances->count(),
                 'present_count' => $attendances->where('status', 'present')->count(),

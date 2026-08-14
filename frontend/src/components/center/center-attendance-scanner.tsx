@@ -309,23 +309,23 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-muted/50 rounded-xl w-fit">
+      <div className="flex flex-wrap gap-2 p-1 bg-muted/50 rounded-xl w-fit max-w-full">
         <button
           onClick={() => setActiveTab("scanner")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${
             activeTab === "scanner" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          <Camera className="h-4 w-4" />
+          <Camera className="h-4 w-4 shrink-0" />
           المسح المباشر
         </button>
         <button
           onClick={() => setActiveTab("sheet")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${
             activeTab === "sheet" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          <FileSpreadsheet className="h-4 w-4" />
+          <FileSpreadsheet className="h-4 w-4 shrink-0" />
           كشف الحضور الشامل
         </button>
       </div>
@@ -460,7 +460,7 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
                 {recentScans.slice(0, 3).map((s, idx) => (
                   <div
                     key={s.id + idx}
-                    className="flex items-center justify-between p-3 rounded-xl bg-background/60 border border-border/50 text-xs hover:border-primary/30 transition-all"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-background/60 border border-border/50 text-xs hover:border-primary/30 transition-all"
                   >
                     <div>
                       <p className="font-bold text-foreground">{s.name}</p>
@@ -468,12 +468,12 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
                     </div>
                     <div className="flex items-center gap-2">
                       {s.is_guest && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400">
+                        <span className="whitespace-nowrap px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400">
                           ضيف من {s.original_group || "مجموعة أخرى"}
                         </span>
                       )}
-                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3" /> تم التسجيل
+                      <span className="whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3 shrink-0" /> تم التسجيل
                       </span>
                     </div>
                   </div>
@@ -486,16 +486,16 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
       ) : (
         /* Attendance Sheet View */
         <div className="glass-card rounded-2xl border border-border overflow-hidden">
-          <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
+          <div className="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/30">
             <h4 className="text-sm font-bold flex items-center gap-2">
               <FileSpreadsheet className="h-5 w-5 text-primary" />
               كشف غياب وحضور الحصة ({attendanceSheet.length} طالب)
             </h4>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={fetchAttendanceSheet} className="gap-2 h-9 text-xs">
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={fetchAttendanceSheet} className="gap-2 h-9 text-xs flex-1 sm:flex-none">
                 <RefreshCw className={`h-3 w-3 ${sheetLoading ? 'animate-spin' : ''}`} /> تحديث
               </Button>
-              <Button size="sm" onClick={downloadExcel} className="gap-2 h-9 text-xs font-bold shadow-md">
+              <Button size="sm" onClick={downloadExcel} className="gap-2 h-9 text-xs font-bold shadow-md flex-1 sm:flex-none">
                 <Download className="h-4 w-4" /> تصدير إكسيل
               </Button>
             </div>
@@ -529,13 +529,13 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
                       <td className="py-3 px-4 font-bold text-foreground">{st.full_name}</td>
                       <td className="py-3 px-4">
                         {st.status === 'present' ? (
-                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">حاضر 🟢</span>
+                          <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">حاضر 🟢</span>
                         ) : st.status === 'guest' ? (
-                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">ضيف 🔵</span>
+                          <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">ضيف 🔵</span>
                         ) : st.status === 'late' ? (
-                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">متأخر 🟡</span>
+                          <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">متأخر 🟡</span>
                         ) : (
-                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-destructive/10 text-destructive border border-destructive/20">غائب 🔴</span>
+                          <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-bold bg-destructive/10 text-destructive border border-destructive/20">غائب 🔴</span>
                         )}
                       </td>
                       <td className="py-3 px-4 font-mono text-xs text-muted-foreground">{st.phone || "-"}</td>

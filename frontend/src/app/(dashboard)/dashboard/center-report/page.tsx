@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/providers/auth-provider";
 import api from "@/services/api.client";
 import { PageLoading } from "@/components/shared/loading-spinner";
+import { ErrorState } from "@/components/shared/error-state";
 import QRCode from "react-qr-code";
 import {
   Award,
@@ -22,6 +23,7 @@ export default function MyCenterReportPage() {
   const { user } = useAuth();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadMyCenterReport();
@@ -29,17 +31,23 @@ export default function MyCenterReportPage() {
 
   const loadMyCenterReport = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await api.get("/center/my-report");
-      setData(res.data);
-    } catch (e) {
-      console.error(e);
+      if (res.data && res.data.status === "success") {
+        setData(res.data.data);
+      } else {
+        setError("فشل تحميل التقرير");
+      }
+    } catch (e: any) {
+      setError(e.response?.data?.message || "عفواً، حدث خطأ أثناء تحميل التقرير. يرجى المحاولة لاحقاً.");
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) return <PageLoading />;
+  if (error) return <ErrorState message={error} />;
 
   const stats = data?.stats || { total_sessions: 0, present_count: 0, absent_count: 0, late_count: 0, percentage: 0 };
   const student = data?.student;

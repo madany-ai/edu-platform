@@ -27,7 +27,7 @@ export function StudentReportModal({ studentId, onClose }: StudentReportModalPro
       const data = await centerService.getStudentReport(id);
       setReport(data);
     } catch (e) {
-      console.error("Failed to load student report", e);
+      console.warn("Failed to load student report", e);
     } finally {
       setLoading(false);
     }

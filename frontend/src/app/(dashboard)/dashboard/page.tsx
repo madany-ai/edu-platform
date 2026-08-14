@@ -92,7 +92,7 @@ export default function StudentDashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {statCards.map((s) => (
           <div key={s.label} className="glass-card p-6 rounded-2xl flex items-center gap-4 transition-all hover:translate-y-[-4px]">
             <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${s.color}`}>
@@ -106,8 +106,8 @@ export default function StudentDashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="glass-card p-6 rounded-2xl lg:col-span-2 border border-white/5 flex flex-col justify-between">
+      <div className="grid gap-6 xl:grid-cols-3">
+        <div className="glass-card p-6 rounded-2xl xl:col-span-2 border border-white/5 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-gradient">الدورات المسجل فيها</h3>

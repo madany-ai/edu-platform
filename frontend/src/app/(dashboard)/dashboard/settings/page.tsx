@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/providers/auth-provider";
 import { User, Phone, Shield, Lock } from "lucide-react";
+import { PwaManager } from "@/components/pwa-manager";
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -89,6 +90,11 @@ export default function SettingsPage() {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* إعدادات التطبيق والإشعارات */}
+        <div className="glass-card p-6 rounded-2xl border border-white/5 space-y-4 md:col-span-2">
+          <PwaManager />
         </div>
       </div>
     </div>

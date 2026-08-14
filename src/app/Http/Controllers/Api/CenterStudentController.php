@@ -145,19 +145,31 @@ class CenterStudentController extends Controller
                     'grade_level' => $student->gradeLevel?->name,
                     'group' => $student->group?->name,
                 ],
-                'attendance_summary' => [
+                'stats' => [
                     'total_sessions' => $attendancesCount,
-                    'present' => $presentCount,
-                    'absent' => $student->attendances->where('status', 'absent')->count(),
-                    'late' => $student->attendances->where('status', 'late')->count(),
-                    'percentage' => $attendancePercentage,
-                ],
-                'academic_summary' => [
-                    'exams_count' => $student->centerGrades->count(),
-                    'total_score' => (float) $totalScore,
-                    'max_score' => (float) $maxScore,
+                    'present_count' => $presentCount,
+                    'absent_count' => $student->attendances->where('status', 'absent')->count(),
+                    'late_count' => $student->attendances->where('status', 'late')->count(),
                     'percentage' => $gradePercentage,
                 ],
+                'attendances' => $student->attendances->map(fn ($a) => [
+                    'id' => $a->id,
+                    'status' => $a->status,
+                    'created_at' => $a->created_at,
+                    'session' => [
+                        'topic' => $a->session?->topic,
+                        'date' => $a->session?->date?->format('Y-m-d'),
+                    ]
+                ]),
+                'grades' => $student->centerGrades->map(fn ($g) => [
+                    'id' => $g->id,
+                    'score' => (float) $g->score,
+                    'notes' => $g->notes,
+                    'exam' => [
+                        'name' => $g->centerExam?->name,
+                        'total_marks' => (float) ($g->centerExam?->total_marks ?? 0),
+                    ]
+                ]),
             ],
         ]);
     }

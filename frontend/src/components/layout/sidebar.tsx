@@ -26,7 +26,6 @@ import {
   Search,
 } from "lucide-react";
 import { CenterFiltersPanel } from "./center-filters-panel";
-import { PwaManager } from "@/components/pwa-manager";
 
 const studentLinks = [
   { href: ROUTES.DASHBOARD, label: "لوحة التحكم", icon: LayoutDashboard },
@@ -65,11 +64,11 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "hidden h-screen w-64 shrink-0 glass border-y-0 border-r-0 border-l border-[#3b413c] xl:sticky xl:top-0 xl:block",
+        "hidden h-[calc(100vh-4rem)] w-64 shrink-0 glass border-y-0 border-r-0 border-l border-[#3b413c] xl:sticky xl:top-16 xl:block overflow-y-auto overflow-x-hidden",
         className
       )}
     >
-      <div className="flex h-full flex-col justify-between p-4">
+      <div className="flex min-h-full flex-col justify-between p-4">
         <div className="space-y-6">
           <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 pb-4">
             <div className="flex items-center gap-2">
@@ -116,8 +115,6 @@ export function Sidebar({ className }: SidebarProps) {
           <LogOut className="h-5 w-5" />
           <span className="font-medium text-sm">تسجيل خروج</span>
         </button>
-
-        <PwaManager />
       </div>
     </aside>
   );

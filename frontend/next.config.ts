@@ -10,8 +10,8 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: [
-    "alpine-cindy-drives-proposals.trycloudflare.com",
-    "links-husband-alabama-others.trycloudflare.com",
+    "*.trycloudflare.com",
+    "*.loca.lt",
   ],
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "/api",
