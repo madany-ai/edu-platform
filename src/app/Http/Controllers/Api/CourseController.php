@@ -32,8 +32,10 @@ class CourseController extends Controller
         return CourseResource::collection($courses);
     }
 
-    public function show(Course $course): CourseResource
+    public function show(string $course): CourseResource
     {
+        $course = Course::withoutGlobalScope(\App\Models\Scopes\AcademicYearScope::class)->findOrFail($course);
+        
         $user = auth('sanctum')->user();
         $isPublished = $course->status === \App\Enums\CourseStatus::Published || $course->status === 'published';
 
