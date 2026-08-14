@@ -38,6 +38,8 @@ class Settings extends Page implements HasForms
     {
         $this->form->fill([
             'instance_name' => config('app.name'),
+            'turnstile_site_key' => config('services.turnstile.site_key') ?? env('NEXT_PUBLIC_TURNSTILE_SITE_KEY', ''),
+            'turnstile_secret_key' => config('services.turnstile.secret_key') ?? env('TURNSTILE_SECRET_KEY', ''),
             'bunny_stream_api_key' => config('services.bunny_stream.api_key'),
             'bunny_stream_library_id' => config('services.bunny_stream.library_id'),
             'bunny_stream_cdn_hostname' => config('services.bunny_stream.cdn_hostname'),
@@ -131,6 +133,8 @@ class Settings extends Page implements HasForms
             'BUNNY_STREAM_SIGNING_KEY' => $data['bunny_stream_signing_key'] ?? '',
             'PAYMOB_API_KEY' => $data['paymob_api_key'] ?? '',
             'PAYMOB_HMAC' => $data['paymob_hmac'] ?? '',
+            'NEXT_PUBLIC_TURNSTILE_SITE_KEY' => $data['turnstile_site_key'] ?? '',
+            'TURNSTILE_SECRET_KEY' => $data['turnstile_secret_key'] ?? '',
         ];
 
         $envContent = file_get_contents($envFile);
