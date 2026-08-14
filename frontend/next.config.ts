@@ -18,6 +18,9 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "/api",
   },
   async rewrites() {
+    if (process.env.NODE_ENV === 'production') {
+      return [];
+    }
     return [
       {
         source: '/api/:path*',
