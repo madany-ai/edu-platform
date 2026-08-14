@@ -39,12 +39,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
-      args:
-        NEXT_PUBLIC_API_URL: https://api.mrhifnimuhammad.tech
     container_name: lms_frontend
     restart: unless-stopped
-    environment:
-      - NEXT_PUBLIC_API_URL=https://api.mrhifnimuhammad.tech
     networks:
       - lms_network
 
