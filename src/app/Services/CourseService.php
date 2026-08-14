@@ -34,15 +34,11 @@ class CourseService
                 ->paginate(12);
         }
 
-        $cacheKey = 'published_courses_page_' . $page;
-
-        return \Illuminate\Support\Facades\Cache::tags(['courses'])->remember($cacheKey, now()->addHours(2), function () {
-            return Course::with(['instructor'])
-                ->withCount(['sections', 'enrollments'])
-                ->where('status', 'published')
-                ->latest()
-                ->paginate(12);
-        });
+        return Course::with(['instructor'])
+            ->withCount(['sections', 'enrollments'])
+            ->where('status', 'published')
+            ->latest()
+            ->paginate(12);
     }
 
     public function findById(int $id): Course

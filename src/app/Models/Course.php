@@ -45,22 +45,6 @@ class Course extends Model
                 $course->course_code = app(CodeGeneratorService::class)->generateCourseCode();
             }
         });
-
-        static::created(function (Course $course) {
-            if ($course->status === \App\Enums\CourseStatus::Published || $course->status === 'published') {
-                static::clearPublishedCache();
-            }
-        });
-
-        static::updated(function (Course $course) {
-            if ($course->wasChanged('status')) {
-                static::clearPublishedCache();
-            }
-        });
-
-        static::deleted(function () {
-            static::clearPublishedCache();
-        });
     }
 
     public static function clearPublishedCache(): void
