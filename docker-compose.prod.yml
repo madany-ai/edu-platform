@@ -44,7 +44,7 @@ services:
     container_name: lms_frontend
     restart: unless-stopped
     environment:
-      - NEXT_PUBLIC_API_URL=https://api.${DOMAIN}
+      - NEXT_PUBLIC_API_URL=https://api.mrhifnimuhammad.tech
     networks:
       - lms_network
 
