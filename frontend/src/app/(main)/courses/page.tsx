@@ -261,7 +261,7 @@ function CoursesContent() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <PageHeader
-        title="المتجر الأكاديمي 🧪"
+        title="المتجر الأكاديمي"
         description="تصفح واشترك في الدورات الكاملة، المحاضرات الفردية، أو باقات العروض مباشرة."
       />
 
