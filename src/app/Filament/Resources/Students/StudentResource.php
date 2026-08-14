@@ -124,16 +124,9 @@ class StudentResource extends Resource
                     ->required(),
                 Select::make('governorate_id')
                     ->label('المحافظة')
+                    ->options(\App\Models\Governorate::pluck('name', 'id'))
                     ->searchable()
-                    ->getSearchResultsUsing(function (string $search): array {
-                        $normalized = str_replace(['أ', 'إ', 'آ', 'ة', 'ى'], ['ا', 'ا', 'ا', 'ه', 'ي'], $search);
-                        return \App\Models\Governorate::query()
-                            ->whereRaw("translate(name, 'أإآةى', 'ااايه') ilike ?", ["%{$normalized}%"])
-                            ->limit(50)
-                            ->pluck('name', 'id')
-                            ->toArray();
-                    })
-                    ->getOptionLabelUsing(fn ($value): ?string => \App\Models\Governorate::find($value)?->name),
+                    ->preload(),
                 TextInput::make('school_name')
                     ->label('المدرسة')
                     ->maxLength(255),
@@ -159,16 +152,9 @@ class StudentResource extends Resource
                     }),
                 Select::make('academic_track_id')
                     ->label('الشعبة')
+                    ->options(\App\Models\AcademicTrack::pluck('name', 'id'))
                     ->searchable()
-                    ->getSearchResultsUsing(function (string $search): array {
-                        $normalized = str_replace(['أ', 'إ', 'آ', 'ة', 'ى'], ['ا', 'ا', 'ا', 'ه', 'ي'], $search);
-                        return \App\Models\AcademicTrack::query()
-                            ->whereRaw("translate(name, 'أإآةى', 'ااايه') ilike ?", ["%{$normalized}%"])
-                            ->limit(50)
-                            ->pluck('name', 'id')
-                            ->toArray();
-                    })
-                    ->getOptionLabelUsing(fn ($value): ?string => \App\Models\AcademicTrack::find($value)?->name)
+                    ->preload()
                     ->visible(function (callable $get) {
                         $academicYear = $get('academic_year');
                         if (!$academicYear) {
