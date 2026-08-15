@@ -596,22 +596,24 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
                   <button className="text-xs font-bold px-2 py-1 rounded border border-white/30 hover:border-white/60 transition-colors">
                     {selectedQuality === -1 ? "تلقائي" : `${qualityLevels.find(q => q.level === selectedQuality)?.height || "HD"}p`}
                   </button>
-                  <div className="absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-sm rounded-lg overflow-hidden opacity-0 group-hover/q:opacity-100 pointer-events-none group-hover/q:pointer-events-auto transition-opacity">
-                    <button
-                      onClick={() => setQuality(-1)}
-                      className={`block w-full px-4 py-2 text-xs text-right whitespace-nowrap hover:bg-white/10 ${selectedQuality === -1 ? "text-red-400 font-bold" : ""}`}
-                    >
-                      تلقائي
-                    </button>
-                    {qualityLevels.map((q) => (
+                  <div className="absolute bottom-full right-0 pb-2 opacity-0 group-hover/q:opacity-100 pointer-events-none group-hover/q:pointer-events-auto transition-opacity">
+                    <div className="bg-black/90 backdrop-blur-sm rounded-lg overflow-hidden flex flex-col max-h-[200px] overflow-y-auto">
                       <button
-                        key={q.level}
-                        onClick={() => setQuality(q.level)}
-                        className={`block w-full px-4 py-2 text-xs text-right whitespace-nowrap hover:bg-white/10 ${selectedQuality === q.level ? "text-red-400 font-bold" : ""}`}
+                        onClick={() => setQuality(-1)}
+                        className={`block w-full px-4 py-2 text-xs text-right whitespace-nowrap hover:bg-white/10 ${selectedQuality === -1 ? "text-red-400 font-bold" : ""}`}
                       >
-                        {q.height}p
+                        تلقائي
                       </button>
-                    ))}
+                      {qualityLevels.map((q) => (
+                        <button
+                          key={q.level}
+                          onClick={() => setQuality(q.level)}
+                          className={`block w-full px-4 py-2 text-xs text-right whitespace-nowrap hover:bg-white/10 ${selectedQuality === q.level ? "text-red-400 font-bold" : ""}`}
+                        >
+                          {q.height}p
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -937,12 +939,14 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
                 <button className="text-xs font-bold px-2 py-1 rounded border border-white/30 hover:border-white/60 transition-colors">
                   {playbackRate}x
                 </button>
-                <div className="absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-sm rounded-lg overflow-hidden opacity-0 group-hover/speed:opacity-100 pointer-events-none group-hover/speed:pointer-events-auto transition-opacity pb-1">
-                  {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
-                    <button key={rate} onClick={() => setSpeed(rate)} className={`block w-full px-4 py-2 text-xs text-right hover:bg-white/10 ${playbackRate === rate ? "text-red-400 font-bold" : ""}`}>
-                      {rate}x
-                    </button>
-                  ))}
+                <div className="absolute bottom-full right-0 pb-2 opacity-0 group-hover/speed:opacity-100 pointer-events-none group-hover/speed:pointer-events-auto transition-opacity">
+                  <div className="bg-black/90 backdrop-blur-sm rounded-lg overflow-hidden">
+                    {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                      <button key={rate} onClick={() => setSpeed(rate)} className={`block w-full px-4 py-2 text-xs text-right hover:bg-white/10 ${playbackRate === rate ? "text-red-400 font-bold" : ""}`}>
+                        {rate}x
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -952,12 +956,14 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
                   <button className="text-xs font-bold px-2 py-1 rounded border border-white/30 hover:border-white/60 transition-colors">
                     {mapQualityLabel(selectedQuality)}
                   </button>
-                  <div className="absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-sm rounded-lg overflow-hidden opacity-0 group-hover/q:opacity-100 pointer-events-none group-hover/q:pointer-events-auto transition-opacity max-h-[200px] overflow-y-auto pb-1">
-                    {qualityLevels.map((q) => (
-                      <button key={q} onClick={() => setQuality(q)} className={`block w-full px-4 py-2 text-xs text-right whitespace-nowrap hover:bg-white/10 ${selectedQuality === q ? "text-red-400 font-bold" : ""}`}>
-                        {mapQualityLabel(q)}
-                      </button>
-                    ))}
+                  <div className="absolute bottom-full right-0 pb-2 opacity-0 group-hover/q:opacity-100 pointer-events-none group-hover/q:pointer-events-auto transition-opacity">
+                    <div className="bg-black/90 backdrop-blur-sm rounded-lg overflow-hidden max-h-[200px] overflow-y-auto">
+                      {qualityLevels.map((q) => (
+                        <button key={q} onClick={() => setQuality(q)} className={`block w-full px-4 py-2 text-xs text-right whitespace-nowrap hover:bg-white/10 ${selectedQuality === q ? "text-red-400 font-bold" : ""}`}>
+                          {mapQualityLabel(q)}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
