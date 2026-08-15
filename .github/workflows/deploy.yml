@@ -34,8 +34,8 @@ jobs:
             fi
             
             # Rebuild and start any changed containers (Frontend & Backend)
-            docker compose -f docker-compose.prod.yml build frontend
-            docker compose -f docker-compose.prod.yml up -d
+            docker compose -f docker-compose.prod.yml build
+            docker compose -f docker-compose.prod.yml up -d --build
             
             # Restart Nginx and Proxy to clear DNS cache and prevent 502 errors
             docker compose -f docker-compose.prod.yml restart nginx proxy
