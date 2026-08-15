@@ -567,11 +567,22 @@ class CenterStaffController extends Controller
 
         if ($request->has('group_id')) {
             $query->where('group_id', $request->query('group_id'));
-        } elseif ($request->has('academic_year') || $request->has('academic_year_id') || $request->has('term')) {
-            $query->whereHas('group', function ($q) use ($request) {
-                if ($request->has('academic_year')) $q->where('academic_year', $request->query('academic_year'));
-                if ($request->has('academic_year_id')) $q->where('academic_year_id', $request->query('academic_year_id'));
-                if ($request->has('term')) $q->where('term', $request->query('term'));
+        } else {
+            $query->where(function ($q) use ($request) {
+                // 1. الطلاب الذين لم يتم إضافتهم لأي مجموعة بعد (يجب ظهورهم ليتم إضافتهم)
+                $q->where(function ($subQ) use ($request) {
+                    $subQ->whereNull('group_id');
+                    if ($request->has('academic_year')) {
+                        $subQ->where('academic_year', $request->query('academic_year'));
+                    }
+                });
+                
+                // 2. أو الطلاب الموجودين بالفعل في مجموعات تطابق جميع الفلاتر (العام والترم والصف)
+                $q->orWhereHas('group', function ($gq) use ($request) {
+                    if ($request->has('academic_year')) $gq->where('academic_year', $request->query('academic_year'));
+                    if ($request->has('academic_year_id')) $gq->where('academic_year_id', $request->query('academic_year_id'));
+                    if ($request->has('term')) $gq->where('term', $request->query('term'));
+                });
             });
         }
 
