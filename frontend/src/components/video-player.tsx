@@ -642,10 +642,24 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  
   const [isApiReady, setIsApiReady] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [bufferedFraction, setBufferedFraction] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  
+  const [qualityLevels, setQualityLevels] = useState<string[]>([]);
+  const [selectedQuality, setSelectedQuality] = useState<string>("auto");
+  const [playbackRate, setPlaybackRate] = useState(1);
+  
+  const hideControlsTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // ── Load YouTube API ──
   useEffect(() => {
     if (!window.YT) {
       const tag = document.createElement("script");
@@ -660,22 +674,84 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
     }
   }, []);
 
+  // ── Init Player ──
   useEffect(() => {
     if (isApiReady && videoId && containerRef.current && !playerRef.current) {
       playerRef.current = new window.YT.Player(containerRef.current, {
         videoId,
-        playerVars: { controls: 1, disablekb: 0, rel: 0, modestbranding: 1, iv_load_policy: 3, fs: 1, playsinline: 1 },
+        playerVars: { 
+          controls: 0, // إخفاء أزرار يوتيوب الافتراضية بالكامل لتركيب الأزرار الخاصة بنا!
+          disablekb: 1, 
+          rel: 0, 
+          modestbranding: 1, 
+          iv_load_policy: 3, 
+          fs: 0, 
+          playsinline: 1 
+        },
         events: {
-          onStateChange: (e: any) => {
-            if (e.data === window.YT.PlayerState.PLAYING) { setIsPlaying(true); }
-            else if (e.data === window.YT.PlayerState.PAUSED || e.data === window.YT.PlayerState.ENDED) setIsPlaying(false);
+          onReady: (e: any) => {
+            setDuration(e.target.getDuration());
+            if (e.target.getAvailableQualityLevels) {
+              setQualityLevels(e.target.getAvailableQualityLevels());
+            }
           },
+          onStateChange: (e: any) => {
+            if (e.data === window.YT.PlayerState.PLAYING) { 
+              setIsPlaying(true); 
+              setDuration(e.target.getDuration()); 
+              if (e.target.getPlaybackQuality) {
+                setSelectedQuality(e.target.getPlaybackQuality());
+              }
+            }
+            else if (e.data === window.YT.PlayerState.PAUSED || e.data === window.YT.PlayerState.ENDED) {
+              setIsPlaying(false);
+            }
+          },
+          onPlaybackQualityChange: (e: any) => {
+            setSelectedQuality(e.data);
+          },
+          onPlaybackRateChange: (e: any) => {
+            setPlaybackRate(e.data);
+          }
         },
       });
     }
     return () => { if (playerRef.current) { playerRef.current.destroy(); playerRef.current = null; } };
   }, [isApiReady, videoId]);
 
+  // ── Progress Loop ──
+  useEffect(() => {
+    let i: NodeJS.Timeout;
+    if (isPlaying && playerRef.current?.getCurrentTime) {
+      i = setInterval(() => {
+        setCurrentTime(playerRef.current.getCurrentTime());
+        if (playerRef.current.getVideoLoadedFraction) {
+          setBufferedFraction(playerRef.current.getVideoLoadedFraction());
+        }
+      }, 500);
+    }
+    return () => clearInterval(i);
+  }, [isPlaying]);
+
+  // ── Auto-hide controls ──
+  const resetHideTimer = useCallback(() => {
+    setShowControls(true);
+    if (hideControlsTimerRef.current) clearTimeout(hideControlsTimerRef.current);
+    if (isPlaying) {
+      hideControlsTimerRef.current = setTimeout(() => setShowControls(false), 3000);
+    }
+  }, [isPlaying]);
+
+  useEffect(() => {
+    if (!isPlaying) {
+      setShowControls(true);
+      if (hideControlsTimerRef.current) clearTimeout(hideControlsTimerRef.current);
+    } else {
+      resetHideTimer();
+    }
+  }, [isPlaying, resetHideTimer]);
+
+  // ── Fullscreen lock (يضمن العرض العرضي للموبايل) ──
   useEffect(() => {
     const h = () => {
       const isFs = !!document.fullscreenElement;
@@ -695,41 +771,197 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
     return () => document.removeEventListener("fullscreenchange", h);
   }, []);
 
+  // ── Control Actions ──
   const togglePlay = () => {
     if (!playerRef.current || typeof playerRef.current.playVideo !== "function") return;
     isPlaying ? playerRef.current.pauseVideo() : playerRef.current.playVideo();
   };
 
+  const toggleMute = () => {
+    if (!playerRef.current) return;
+    if (isMuted) {
+      playerRef.current.unMute();
+      setIsMuted(false);
+      if (volume === 0) {
+        setVolume(1);
+        playerRef.current.setVolume(100);
+      }
+    } else {
+      playerRef.current.mute();
+      setIsMuted(true);
+    }
+  };
+
+  const handleVolume = (val: number) => {
+    if (!playerRef.current) return;
+    setVolume(val);
+    playerRef.current.setVolume(val * 100);
+    if (val === 0) { 
+      playerRef.current.mute(); setIsMuted(true); 
+    } else if (isMuted) { 
+      playerRef.current.unMute(); setIsMuted(false); 
+    }
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!playerRef.current) return;
+    const time = parseFloat(e.target.value);
+    playerRef.current.seekTo(time, true);
+    setCurrentTime(time);
+  };
+
+  const toggleFullscreen = () => {
+    if (!wrapperRef.current) return;
+    document.fullscreenElement ? document.exitFullscreen() : wrapperRef.current.requestFullscreen();
+  };
+
+  const setQuality = (q: string) => {
+    if (playerRef.current && playerRef.current.setPlaybackQuality) {
+      playerRef.current.setPlaybackQuality(q);
+      setSelectedQuality(q);
+    }
+  };
+
+  const setSpeed = (rate: number) => {
+    if (playerRef.current && playerRef.current.setPlaybackRate) {
+      playerRef.current.setPlaybackRate(rate);
+      setPlaybackRate(rate);
+    }
+  };
+
+  const formatTime = (s: number) => {
+    if (isNaN(s)) return "0:00";
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = Math.floor(s % 60);
+    if (h > 0) return `${h}:${m < 10 ? "0" : ""}${m}:${sec < 10 ? "0" : ""}${sec}`;
+    return `${m}:${sec < 10 ? "0" : ""}${sec}`;
+  };
+
+  const mapQualityLabel = (q: string) => {
+    const map: Record<string, string> = {
+      highres: "1080p+",
+      hd1080: "1080p",
+      hd720: "720p",
+      large: "480p",
+      medium: "360p",
+      small: "240p",
+      tiny: "144p",
+      auto: "تلقائي"
+    };
+    return map[q] || q;
+  };
+
   if (!videoId) return <div className="w-full h-full flex items-center justify-center bg-black text-white text-sm">رابط الفيديو غير صالح</div>;
 
   return (
-    <div ref={wrapperRef} className="w-full h-full relative rounded-lg overflow-hidden bg-black group flex flex-col">
+    <div
+      ref={wrapperRef}
+      className="relative w-full h-full bg-black rounded-lg overflow-hidden select-none group flex flex-col"
+      onMouseMove={resetHideTimer}
+      onTouchStart={resetHideTimer}
+      onContextMenu={(e) => e.preventDefault()}
+    >
       <div className="flex-1 relative w-full h-full">
+        {/* حاوية المشغل الأصلي ليوتيوب */}
         <div className="absolute inset-0">
-          <div ref={containerRef} className="w-full h-full" />
+          <div ref={containerRef} className="w-full h-full pointer-events-none" />
         </div>
         
-        {/* 1. الطبقة العلوية: تقوم بتغطية عنوان الفيديو وزر المشاركة بالكامل */}
+        {/* طبقة حماية كاملة بنسبة 100% تغطي كل مشغل يوتيوب. 
+            تمنع النقر على الشعار أو الروابط لأن المشغل الآن لا يحتوي على أي أزرار أصلية بفضل controls: 0 */}
         <div 
-          className="absolute top-0 left-0 right-0 h-[80px] bg-transparent z-10" 
+          className="absolute inset-0 z-10 cursor-pointer" 
+          onClick={togglePlay}
+          onDoubleClick={toggleFullscreen}
           onContextMenu={(e) => e.preventDefault()} 
         />
-        
-        {/* 2. طبقة المنتصف: تمنع النقر على الفيديوهات المقترحة عند الإيقاف.
-               ملاحظة هامة: تركنا مسافة 300px من اليمين مفتوحة لكي تتمكن قائمة "الجودة والسرعة" من الظهور للاعلى بدون أن تُحجب! */}
-        <div 
-          className="absolute top-[80px] left-0 right-[300px] bottom-[60px] bg-transparent z-10 cursor-pointer" 
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); togglePlay(); }}
-          onContextMenu={(e) => e.preventDefault()} 
-        />
+      </div>
 
-        {/* 3. طبقة الشعار: لتغطية علامة يوتيوب المائية التي تظهر في أسفل اليمين فوق شريط التحكم */}
-        <div 
-          className="absolute bottom-[60px] right-[10px] w-[120px] h-[60px] bg-transparent z-10" 
-          onContextMenu={(e) => e.preventDefault()} 
-        />
-        
-        {/* شريط التحكم السفلي (60px) متروك بالكامل للتحكم بالصوت وملء الشاشة */}
+      {/* زر التشغيل الكبير في المنتصف عند الإيقاف */}
+      {!isPlaying && (
+        <button
+          onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+          className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
+        >
+          <div className="w-16 h-16 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center hover:bg-white/25 transition-all active:scale-90 pointer-events-auto cursor-pointer">
+            <Play className="h-7 w-7 text-white fill-white ml-1" />
+          </div>
+        </button>
+      )}
+
+      {/* شريط التحكم المخصص الخاص بنا (يعمل تماماً مثل شريط HLSPlayer) */}
+      <div
+        className={`absolute bottom-0 left-0 right-0 z-30 transition-opacity duration-300 ${
+          showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
+        <div className="relative px-4 pb-4 pt-10 space-y-2">
+          {/* شريط التقدم (Seek bar) */}
+          <div className="relative h-1 group/seek hover:h-2 transition-all cursor-pointer">
+            <div className="absolute top-0 left-0 h-full bg-white/20 rounded-full" style={{ width: `${bufferedFraction * 100}%` }} />
+            <div className="absolute top-0 left-0 h-full bg-red-500 rounded-full" style={{ width: duration ? `${(currentTime / duration) * 100}%` : "0%" }} />
+            <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-red-500 rounded-full opacity-0 group-hover/seek:opacity-100 transition-opacity" style={{ left: duration ? `calc(${(currentTime / duration) * 100}% - 6px)` : "0" }} />
+            <input type="range" min={0} max={duration || 100} value={currentTime} onChange={handleSeek} className="absolute inset-0 w-full opacity-0 cursor-pointer" />
+          </div>
+
+          <div className="flex items-center justify-between text-white">
+            <div className="flex items-center gap-3">
+              <button onClick={togglePlay} className="hover:text-red-400 transition-colors">
+                {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
+              </button>
+              
+              <div className="flex items-center gap-1 group/vol hidden sm:flex">
+                <button onClick={toggleMute} className="hover:text-red-400 transition-colors">
+                  {isMuted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                </button>
+                <input type="range" min={0} max={1} step={0.05} value={isMuted ? 0 : volume} onChange={(e) => handleVolume(parseFloat(e.target.value))} className="w-0 group-hover/vol:w-20 transition-all opacity-0 group-hover/vol:opacity-100 accent-red-500 cursor-pointer" />
+              </div>
+              
+              <span className="text-xs font-medium tabular-nums text-left direction-ltr" style={{ direction: 'ltr' }}>
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* قائمة السرعة */}
+              <div className="relative group/speed">
+                <button className="text-xs font-bold px-2 py-1 rounded border border-white/30 hover:border-white/60 transition-colors">
+                  {playbackRate}x
+                </button>
+                <div className="absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-sm rounded-lg overflow-hidden opacity-0 group-hover/speed:opacity-100 pointer-events-none group-hover/speed:pointer-events-auto transition-opacity pb-1">
+                  {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                    <button key={rate} onClick={() => setSpeed(rate)} className={`block w-full px-4 py-2 text-xs text-right hover:bg-white/10 ${playbackRate === rate ? "text-red-400 font-bold" : ""}`}>
+                      {rate}x
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* قائمة الجودة */}
+              {qualityLevels.length > 0 && (
+                <div className="relative group/q">
+                  <button className="text-xs font-bold px-2 py-1 rounded border border-white/30 hover:border-white/60 transition-colors">
+                    {mapQualityLabel(selectedQuality)}
+                  </button>
+                  <div className="absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-sm rounded-lg overflow-hidden opacity-0 group-hover/q:opacity-100 pointer-events-none group-hover/q:pointer-events-auto transition-opacity max-h-[200px] overflow-y-auto pb-1">
+                    {qualityLevels.map((q) => (
+                      <button key={q} onClick={() => setQuality(q)} className={`block w-full px-4 py-2 text-xs text-right whitespace-nowrap hover:bg-white/10 ${selectedQuality === q ? "text-red-400 font-bold" : ""}`}>
+                        {mapQualityLabel(q)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ملء الشاشة (المسؤول عن التكبير العرضي) */}
+              <button onClick={toggleFullscreen} className="hover:text-red-400 transition-colors">
+                {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
