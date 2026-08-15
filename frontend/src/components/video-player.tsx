@@ -61,6 +61,25 @@ function BunnyEmbedPlayer({ embedUrl }: { embedUrl: string }) {
     }
   }, []);
 
+  // ── Fullscreen orientation lock ──
+  useEffect(() => {
+    const onChange = () => {
+      const isFs = !!document.fullscreenElement;
+      const orientation = (screen as any).orientation;
+      if (isFs) {
+        if (orientation && orientation.lock) {
+          orientation.lock("landscape").catch(() => {});
+        }
+      } else {
+        if (orientation && orientation.unlock) {
+          orientation.unlock();
+        }
+      }
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
   // Move watermark to random position every 30s
   useEffect(() => {
     const rotate = () => {
