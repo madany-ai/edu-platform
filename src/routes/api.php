@@ -161,6 +161,7 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
         Route::get('groups/{id}', [\App\Http\Controllers\Api\CenterStaffController::class, 'showGroup']);
         Route::post('groups', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeGroup']);
         Route::put('groups/{id}', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateGroup']);
+        Route::delete('groups/{id}', [\App\Http\Controllers\Api\CenterStaffController::class, 'destroyGroup']);
 
         Route::get('sessions', [\App\Http\Controllers\Api\CenterStaffController::class, 'sessions']);
         Route::post('sessions', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeSession']);

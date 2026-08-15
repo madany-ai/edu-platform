@@ -6,7 +6,7 @@ import { centerService, Group, AcademicYear } from "@/services/center.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, Plus, Loader2, Calendar, Filter, GraduationCap, Clock, CheckCircle2 } from "lucide-react";
+import { Users, Plus, Loader2, Calendar, Filter, GraduationCap, Clock, CheckCircle2, Trash2 } from "lucide-react";
 import { GRADE_LEVELS } from "@/lib/constants";
 
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ export default function GroupsPage() {
 
   // Modal State
   const [showAddGroupModal, setShowAddGroupModal] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<Group | null>(null);
 
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCapacity, setNewGroupCapacity] = useState("40");
@@ -62,8 +63,25 @@ export default function GroupsPage() {
       setShowAddGroupModal(false);
       setNewGroupName("");
       fetchGroups();
+      toast.success("تم إضافة المجموعة بنجاح.");
     } catch (err) {
-      alert("حدث خطأ أثناء إضافة المجموعة.");
+      toast.error("حدث خطأ أثناء إضافة المجموعة.");
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!groupToDelete) return;
+    try {
+      await centerService.deleteGroup(groupToDelete.id);
+      toast.success("تم حذف المجموعة بنجاح.");
+      setGroupToDelete(null);
+      fetchGroups();
+    } catch (err: any) {
+      if (err.response?.status === 422) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error("حدث خطأ أثناء حذف المجموعة.");
+      }
     }
   };
 
@@ -134,9 +152,18 @@ export default function GroupsPage() {
                       {GRADE_LEVELS.find((y) => y.id === g.academic_year)?.name || "صف دراسي غير محدد"}
                     </p>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400">
-                    نشطة 🟢
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400">
+                      نشطة 🟢
+                    </span>
+                    <button 
+                      onClick={() => setGroupToDelete(g)}
+                      className="text-red-400/50 hover:text-red-400 hover:bg-red-400/10 p-1.5 rounded-md transition-colors"
+                      title="حذف المجموعة"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border/40">
@@ -193,6 +220,32 @@ export default function GroupsPage() {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Delete Group Confirmation */}
+      {groupToDelete && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="glass-card w-full max-w-md p-6 rounded-2xl border border-red-500/20 space-y-4 shadow-2xl">
+            <div className="flex items-center gap-3 text-red-500">
+              <Trash2 className="h-6 w-6" />
+              <h3 className="text-base font-bold">تأكيد حذف المجموعة</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              هل أنت متأكد من حذف المجموعة <strong className="text-foreground">{groupToDelete.name}</strong>؟<br />
+              <span className="text-xs text-red-400/80 mt-2 block">
+                ملاحظة: سيتم رفض الحذف إذا كانت المجموعة تحتوي على حصص مسجلة، وذلك لمنع ضياع غياب وحضور الطلاب.
+              </span>
+            </p>
+            <div className="flex gap-2 pt-2">
+              <Button onClick={handleDeleteGroup} variant="destructive" className="flex-1 font-bold">
+                نعم، احذف المجموعة
+              </Button>
+              <Button variant="outline" onClick={() => setGroupToDelete(null)}>
+                إلغاء
+              </Button>
+            </div>
           </div>
         </div>
       )}

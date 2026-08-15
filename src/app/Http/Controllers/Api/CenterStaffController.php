@@ -151,7 +151,22 @@ class CenterStaffController extends Controller
         return response()->json(['message' => 'تم تحديث المجموعة بنجاح.', 'data' => $group]);
     }
 
-    // ─── Academic Sessions ───
+    public function destroyGroup(string $id): JsonResponse
+    {
+        $group = Group::findOrFail($id);
+
+        if ($group->sessions()->exists()) {
+            return response()->json([
+                'message' => 'لا يمكن حذف هذه المجموعة لوجود حصص دراسية وسجلات حضور مرتبطة بها. قم بحذف الحصص أولاً.'
+            ], 422);
+        }
+
+        $group->delete();
+
+        return response()->json(['message' => 'تم حذف المجموعة بنجاح.']);
+    }
+
+    // ─── Sessions ───
     public function sessions(Request $request): JsonResponse
     {
         $query = AcademicSession::with('group');

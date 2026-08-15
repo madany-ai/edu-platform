@@ -146,9 +146,13 @@ export const centerService = {
     return data.data;
   },
 
-  updateGroup: async (id: string, payload: Partial<Group>): Promise<Group> => {
-    const { data } = await api.put<{ data: Group }>(`/center/staff/groups/${id}`, payload);
-    return data.data;
+  updateGroup: async (groupId: string, data: Partial<Group>): Promise<Group> => {
+    const res = await api.put<{ data: Group }>(`/center/staff/groups/${groupId}`, data);
+    return res.data.data;
+  },
+
+  deleteGroup: async (groupId: string): Promise<void> => {
+    await api.delete(`/center/staff/groups/${groupId}`);
   },
 
   // Sessions & Attendance
