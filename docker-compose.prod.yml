@@ -25,6 +25,8 @@ services:
     working_dir: /var/www/html
     volumes:
       - storage_data:/var/www/html/storage/app/public
+    env_file:
+      - ./src/.env
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
@@ -94,6 +96,8 @@ services:
     command: php artisan.php queue:work --sleep=3 --tries=3 --max-time=3600 --timeout=900
     volumes:
       - storage_data:/var/www/html/storage/app/public
+    env_file:
+      - ./src/.env
     depends_on:
       - postgres
       - redis
@@ -110,6 +114,8 @@ services:
     entrypoint: ["sh", "-c", "while true; do php artisan.php schedule:run --verbose --no-interaction; sleep 60; done"]
     volumes:
       - storage_data:/var/www/html/storage/app/public
+    env_file:
+      - ./src/.env
     depends_on:
       - postgres
       - redis
