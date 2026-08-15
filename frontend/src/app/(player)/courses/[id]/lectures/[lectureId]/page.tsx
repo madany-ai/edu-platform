@@ -407,7 +407,15 @@ export default function LectureViewPage() {
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement("a");
                               a.href = url;
-                              a.download = `lecture-file-${file.id}`;
+                              let filename = `lecture-file-${file.id}.pdf`;
+                              const contentDisposition = res.headers["content-disposition"];
+                              if (contentDisposition) {
+                                const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                                if (match && match[1]) {
+                                  filename = match[1];
+                                }
+                              }
+                              a.download = filename;
                               document.body.appendChild(a);
                               a.click();
                               a.remove();
