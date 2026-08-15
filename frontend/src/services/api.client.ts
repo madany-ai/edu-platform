@@ -22,7 +22,7 @@ api.interceptors.response.use(
         document.cookie = "laravel_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         
-        if (window.location.pathname !== "/login") {
+        if (window.location.pathname !== "/login" && error.config?.url !== "/auth/me") {
           window.location.href = "/login";
         }
       }
