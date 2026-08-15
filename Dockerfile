@@ -47,6 +47,7 @@ RUN { \
     echo 'max_execution_time=120'; \
     echo 'opcache.enable=1'; \
     echo 'opcache.validate_timestamps=1'; \
+    echo 'zend.exception_ignore_args=Off'; \
     } > /usr/local/etc/php/conf.d/lms-settings.ini
 
 COPY src/composer.json src/composer.lock* ./
