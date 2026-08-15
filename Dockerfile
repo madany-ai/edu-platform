@@ -55,9 +55,18 @@ RUN if [ -f composer.json ]; then composer install --no-dev --no-scripts --no-au
 COPY src/ .
 
 RUN if [ -f composer.json ]; then \
-    composer dump-autoload --optimize \
-    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true; \
+    composer dump-autoload --optimize; \
     fi
+
+RUN mkdir -p /var/www/html/storage/framework/cache/data \
+    /var/www/html/storage/framework/sessions \
+    /var/www/html/storage/framework/testing \
+    /var/www/html/storage/framework/views \
+    /var/www/html/storage/logs \
+    /var/www/html/storage/app/public \
+    /var/www/html/bootstrap/cache
+
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
 
 USER www-data
 EXPOSE 9000
