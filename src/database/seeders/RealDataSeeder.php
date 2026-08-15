@@ -38,5 +38,8 @@ class RealDataSeeder extends Seeder
             ]
         );
         $instructor->assignRole('instructor');
+
+        // 4. Seed Governorates
+        $this->call(EgyptGovernoratesSeeder::class);
     }
 }
