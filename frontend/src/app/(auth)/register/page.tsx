@@ -102,6 +102,18 @@ export default function RegisterPage() {
         return;
       }
     }
+    setStep((s) => s + 1);
+  };
+
+  const handleBack = () => {
+    setErrors([]);
+    setStep((s) => s - 1);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors([]);
+
     // Step 2 validation before submitting
     const newErrors: FieldError[] = [];
     if (!firstName) newErrors.push({ field: "first_name", message: "الاسم الأول مطلوب" });
