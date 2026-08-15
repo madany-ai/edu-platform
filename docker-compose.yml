@@ -23,7 +23,7 @@ services:
 
   # Nginx — serves the app and proxies PHP requests to the app container
   nginx:
-    image: nginx:1.27-alpine
+    image: nginx:1.30-alpine
     container_name: lms_nginx
     restart: unless-stopped
     ports:
@@ -59,7 +59,7 @@ services:
 
   # Redis — cache, sessions, and queue driver
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: lms_redis
     restart: unless-stopped
     ports:
