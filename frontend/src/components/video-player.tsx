@@ -702,6 +702,9 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
   const [showControls, setShowControls] = useState(true);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [qualityLevels, setQualityLevels] = useState<string[]>([]);
+  const [selectedQuality, setSelectedQuality] = useState<string>("auto");
+  const [showQualityMenu, setShowQualityMenu] = useState(false);
   
   const hideControlsTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -737,15 +740,29 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
         events: {
           onReady: (e: any) => {
             setDuration(e.target.getDuration());
+            if (e.target.getAvailableQualityLevels) {
+              const levels = e.target.getAvailableQualityLevels();
+              if (levels && levels.length > 0) setQualityLevels(levels);
+            }
           },
           onStateChange: (e: any) => {
             if (e.data === window.YT.PlayerState.PLAYING) { 
               setIsPlaying(true); 
               setDuration(e.target.getDuration()); 
+              if (e.target.getPlaybackQuality) {
+                setSelectedQuality(e.target.getPlaybackQuality());
+              }
+              if (e.target.getAvailableQualityLevels) {
+                const levels = e.target.getAvailableQualityLevels();
+                if (levels && levels.length > 0) setQualityLevels(levels);
+              }
             }
             else if (e.data === window.YT.PlayerState.PAUSED || e.data === window.YT.PlayerState.ENDED) {
               setIsPlaying(false);
             }
+          },
+          onPlaybackQualityChange: (e: any) => {
+            setSelectedQuality(e.data);
           },
           onPlaybackRateChange: (e: any) => {
             setPlaybackRate(e.data);
@@ -852,6 +869,13 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
     document.fullscreenElement ? document.exitFullscreen() : wrapperRef.current.requestFullscreen();
   };
 
+  const setQuality = (q: string) => {
+    if (playerRef.current && playerRef.current.setPlaybackQuality) {
+      playerRef.current.setPlaybackQuality(q);
+      setSelectedQuality(q);
+    }
+  };
+
   const setSpeed = (rate: number) => {
     if (playerRef.current && playerRef.current.setPlaybackRate) {
       playerRef.current.setPlaybackRate(rate);
@@ -866,6 +890,20 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
     const sec = Math.floor(s % 60);
     if (h > 0) return `${h}:${m < 10 ? "0" : ""}${m}:${sec < 10 ? "0" : ""}${sec}`;
     return `${m}:${sec < 10 ? "0" : ""}${sec}`;
+  };
+
+  const mapQualityLabel = (q: string) => {
+    const map: Record<string, string> = {
+      highres: "1080p+",
+      hd1080: "1080p",
+      hd720: "720p",
+      large: "480p",
+      medium: "360p",
+      small: "240p",
+      tiny: "144p",
+      auto: "تلقائي"
+    };
+    return map[q] || q;
   };
 
   if (!videoId) return <div className="w-full h-full flex items-center justify-center bg-black text-white text-sm">رابط الفيديو غير صالح</div>;
@@ -891,8 +929,9 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
           className="absolute inset-0 z-10 cursor-pointer" 
           onClick={(e) => {
             e.stopPropagation();
-            if (showSpeedMenu) {
+            if (showSpeedMenu || showQualityMenu) {
               setShowSpeedMenu(false);
+              setShowQualityMenu(false);
             } else {
               togglePlay();
             }
@@ -952,7 +991,7 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
               {/* قائمة السرعة */}
               <div className="relative">
                 <button 
-                  onClick={() => setShowSpeedMenu(!showSpeedMenu)} 
+                  onClick={() => { setShowSpeedMenu(!showSpeedMenu); setShowQualityMenu(false); }} 
                   className="text-xs font-bold px-2 py-1 rounded border border-white/30 hover:border-white/60 transition-colors"
                 >
                   {playbackRate}x
@@ -973,6 +1012,33 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
                   </div>
                 )}
               </div>
+
+              {/* قائمة الجودة */}
+              {qualityLevels.length > 0 && (
+                <div className="relative">
+                  <button 
+                    onClick={() => { setShowQualityMenu(!showQualityMenu); setShowSpeedMenu(false); }} 
+                    className="text-xs font-bold px-2 py-1 rounded border border-white/30 hover:border-white/60 transition-colors"
+                  >
+                    {mapQualityLabel(selectedQuality)}
+                  </button>
+                  {showQualityMenu && (
+                    <div className="absolute bottom-full right-0 pb-2 z-50">
+                      <div className="bg-black/90 backdrop-blur-sm rounded-lg overflow-hidden max-h-[200px] overflow-y-auto">
+                        {qualityLevels.map((q) => (
+                          <button 
+                            key={q} 
+                            onClick={() => { setQuality(q); setShowQualityMenu(false); }} 
+                            className={`block w-full px-4 py-2 text-xs text-right whitespace-nowrap hover:bg-white/10 ${selectedQuality === q ? "text-red-400 font-bold" : ""}`}
+                          >
+                            {mapQualityLabel(q)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* ملء الشاشة (المسؤول عن التكبير العرضي) */}
               <button onClick={toggleFullscreen} className="hover:text-red-400 transition-colors">
