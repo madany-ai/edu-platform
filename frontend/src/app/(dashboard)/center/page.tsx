@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/providers/auth-provider";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useCenterFilters } from "@/providers/center-filters-provider";
 import {
   centerService,
   Group,
@@ -34,6 +35,8 @@ export default function CenterDashboardPage() {
   const { user, isInstructor, isAssistant, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  const { selectedYearId, selectedGrade, selectedTerm } = useCenterFilters();
+
   const [groups, setGroups] = useState<Group[]>([]);
   const [sessions, setSessions] = useState<AcademicSession[]>([]);
   const [exams, setExams] = useState<CenterExam[]>([]);
@@ -47,18 +50,26 @@ export default function CenterDashboardPage() {
         router.push("/dashboard");
         return;
       }
-      initData();
+      if (selectedGrade) {
+        initData();
+      }
     }
-  }, [authLoading, isInstructor, isAssistant, user]);
+  }, [authLoading, isInstructor, isAssistant, user, selectedGrade, selectedYearId, selectedTerm]);
 
   const initData = async () => {
     setLoading(true);
     try {
+      const params = {
+        academic_year_id: selectedYearId,
+        academic_year: selectedGrade,
+        term: selectedTerm,
+      };
+
       const [groupsData, sessionsData, examsData, rankingsData] = await Promise.all([
-        centerService.getGroups(),
-        centerService.getSessions(),
-        centerService.getExams(),
-        centerService.getRankings(),
+        centerService.getGroups(params),
+        centerService.getSessions(params),
+        centerService.getExams(params),
+        centerService.getRankings(params),
       ]);
 
       setGroups(groupsData);
