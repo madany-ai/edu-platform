@@ -11,9 +11,10 @@ use App\Models\Student;
 use App\Filament\Resources\Students\Pages\ManageStudents;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ExportBulkAction;
+use App\Filament\Exports\StudentExporter;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -496,7 +497,11 @@ class StudentResource extends Resource
                         'student' => $record,
                     ])),
 
-                DeleteAction::make(),
+            ])
+            ->headerActions([
+                ExportAction::make()
+                    ->exporter(StudentExporter::class)
+                    ->label('تصدير بيانات الطلاب (Excel)'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -510,7 +515,9 @@ class StudentResource extends Resource
                         ->modalContent(fn (\Illuminate\Database\Eloquent\Collection $records) => view('filament.modals.bulk-student-qr-cards', [
                             'students' => $records,
                         ])),
-                    DeleteBulkAction::make(),
+                    ExportBulkAction::make()
+                        ->exporter(StudentExporter::class)
+                        ->label('تصدير الطلاب المحددين (Excel)'),
                 ]),
             ]);
     }
@@ -527,7 +534,7 @@ class StudentResource extends Resource
 
     public static function canDelete(Model $record): bool
     {
-        return ! auth()->user()->hasRole('assistant');
+        return false;
     }
 
     public static function getPages(): array

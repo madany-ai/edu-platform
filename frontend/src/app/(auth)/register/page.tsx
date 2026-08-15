@@ -93,7 +93,14 @@ export default function RegisterPage() {
     setErrors([]);
     if (step === 1) {
       const newErrors: FieldError[] = [];
-      if (!email) newErrors.push({ field: "email", message: "البريد الإلكتروني مطلوب" });
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if (!email) {
+        newErrors.push({ field: "email", message: "البريد الإلكتروني مطلوب" });
+      } else if (!emailRegex.test(email)) {
+        newErrors.push({ field: "email", message: "يرجى كتابة بريد إلكتروني صحيح" });
+      }
+      
       if (!password) newErrors.push({ field: "password", message: "كلمة المرور مطلوبة" });
       if (password.length < 8) newErrors.push({ field: "password", message: "كلمة المرور يجب أن تكون 8 أحرف على الأقل" });
       if (password !== passwordConfirmation) newErrors.push({ field: "password_confirmation", message: "كلمة المرور غير متطابقة" });
