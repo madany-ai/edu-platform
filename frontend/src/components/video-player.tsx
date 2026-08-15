@@ -640,17 +640,10 @@ declare global {
 
 function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [isApiReady, setIsApiReady] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [playbackRate, setPlaybackRate] = useState(1);
-  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
-  const speedOptions = [0.5, 1, 1.25, 1.5, 2];
 
   useEffect(() => {
     if (!window.YT) {
@@ -667,29 +660,52 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
   }, []);
 
   useEffect(() => {
-    if (isApiReady && videoId && containerRef.current && !playerRef.current) {
-      playerRef.current = new window.YT.Player(containerRef.current, {
+    if (isApiReady && videoId && containerRef.current) {
+      // تنظيف الكونتينر قبل إنشاء المشغل الجديد
+      containerRef.current.innerHTML = "";
+
+      // إنشاء iframe يدوياً لتطبيق سياسات الحماية (sandbox)
+      const iframe = document.createElement("iframe");
+      iframe.className = "absolute inset-0 w-full h-full border-0";
+      
+      // Sandbox: يمنع فتح النوافذ المنبثقة (popups) وتغيير الرابط الرئيسي، مما يعطل كل الروابط الخارجية وزر المشاركة
+      iframe.setAttribute("sandbox", "allow-same-origin allow-scripts allow-presentation");
+      
+      // Allow: نمنع web-share و clipboard-write لزيادة الحماية
+      iframe.setAttribute("allow", "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen");
+      
+      containerRef.current.appendChild(iframe);
+
+      playerRef.current = new window.YT.Player(iframe, {
         videoId,
-        playerVars: { controls: 1, disablekb: 0, rel: 0, modestbranding: 1, iv_load_policy: 3, fs: 1, playsinline: 1 },
+        playerVars: { 
+          controls: 1, 
+          disablekb: 0, 
+          rel: 0, 
+          modestbranding: 1, 
+          iv_load_policy: 3, 
+          fs: 1, 
+          playsinline: 1 
+        },
         events: {
-          onReady: (e: any) => setDuration(e.target.getDuration()),
           onStateChange: (e: any) => {
-            if (e.data === window.YT.PlayerState.PLAYING) { setIsPlaying(true); setDuration(e.target.getDuration()); }
-            else if (e.data === window.YT.PlayerState.PAUSED || e.data === window.YT.PlayerState.ENDED) setIsPlaying(false);
+            if (e.data === window.YT.PlayerState.PLAYING) { 
+              setIsPlaying(true); 
+            }
+            else if (e.data === window.YT.PlayerState.PAUSED || e.data === window.YT.PlayerState.ENDED) { 
+              setIsPlaying(false); 
+            }
           },
         },
       });
     }
-    return () => { if (playerRef.current) { playerRef.current.destroy(); playerRef.current = null; } };
+    return () => { 
+      if (playerRef.current) { 
+        playerRef.current.destroy(); 
+        playerRef.current = null; 
+      } 
+    };
   }, [isApiReady, videoId]);
-
-  useEffect(() => {
-    let i: NodeJS.Timeout;
-    if (isPlaying && playerRef.current?.getCurrentTime) {
-      i = setInterval(() => setCurrentTime(playerRef.current.getCurrentTime()), 500);
-    }
-    return () => clearInterval(i);
-  }, [isPlaying]);
 
   useEffect(() => {
     const h = () => {
@@ -710,28 +726,23 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
     return () => document.removeEventListener("fullscreenchange", h);
   }, []);
 
-  const togglePlay = () => {
-    if (!playerRef.current || typeof playerRef.current.playVideo !== "function") return;
-    isPlaying ? playerRef.current.pauseVideo() : playerRef.current.playVideo();
-  };
-
   if (!videoId) return <div className="w-full h-full flex items-center justify-center bg-black text-white text-sm">رابط الفيديو غير صالح</div>;
 
   return (
-    <div ref={wrapperRef} className="w-full h-full relative rounded-lg overflow-hidden bg-black group flex flex-col">
+    <div className="w-full h-full relative rounded-lg overflow-hidden bg-black group flex flex-col">
       <div className="flex-1 relative w-full h-full">
-        <div className="absolute inset-0">
-          <div ref={containerRef} className="w-full h-full" />
-        </div>
+        {/* حاوية المشغل */}
+        <div ref={containerRef} className="absolute inset-0 w-full h-full" />
         
-        {/* Transparent blocker for the entire video area EXCEPT the bottom control bar (~50px) */}
-        {/* This blocks the Share button, Title, Avatar, and More Videos, while allowing custom click-to-play */}
+        {/* طبقة شفافة تغطي الجزء العلوي فقط (لمنع النقر على العنوان وزر المشاركة) */}
         <div 
-          className="absolute top-0 left-0 right-0 bottom-[50px] bg-transparent z-10 cursor-pointer" 
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); togglePlay(); }}
+          className="absolute top-0 left-0 right-0 h-[80px] bg-transparent z-10" 
           onContextMenu={(e) => e.preventDefault()} 
         />
+        
+        {/* تمت إزالة الطبقة السفلية لتمكين التفاعل الكامل مع شريط التحكم الأصلي لليوتيوب (الجودة، السرعة، الصوت، ملء الشاشة) */}
       </div>
     </div>
   );
 }
+
