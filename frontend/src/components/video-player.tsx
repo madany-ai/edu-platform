@@ -692,7 +692,20 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
   }, [isPlaying]);
 
   useEffect(() => {
-    const h = () => setIsFullscreen(!!document.fullscreenElement);
+    const h = () => {
+      const isFs = !!document.fullscreenElement;
+      setIsFullscreen(isFs);
+      const orientation = (screen as any).orientation;
+      if (isFs) {
+        if (orientation && orientation.lock) {
+          orientation.lock("landscape").catch(() => {});
+        }
+      } else {
+        if (orientation && orientation.unlock) {
+          orientation.unlock();
+        }
+      }
+    };
     document.addEventListener("fullscreenchange", h);
     return () => document.removeEventListener("fullscreenchange", h);
   }, []);
