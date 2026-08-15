@@ -24,8 +24,6 @@ export interface RegisterPayload {
   last_name: string;
   phone: string;
   father_phone: string;
-  mother_phone: string;
-  guardian_job: string;
   gender: "male" | "female";
   birth_date: string;
   governorate_id: string;
