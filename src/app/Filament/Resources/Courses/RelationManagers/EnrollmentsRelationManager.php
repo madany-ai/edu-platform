@@ -30,7 +30,7 @@ class EnrollmentsRelationManager extends RelationManager
             ->schema([
                 Select::make('student_id')
                     ->label('الطالب')
-                    ->relationship('student', 'first_name')
+                    ->relationship('student', 'first_name', fn ($query) => $query->where('academic_year', $this->getOwnerRecord()->academic_year))
                     ->getOptionLabelFromRecordUsing(fn (Student $record) => "{$record->first_name} {$record->second_name} {$record->third_name} ({$record->student_code})")
                     ->searchable()
                     ->required(),
@@ -77,11 +77,15 @@ class EnrollmentsRelationManager extends RelationManager
                             ->label('اختر الطلاب')
                             ->multiple()
                             ->searchable()
-                            ->getSearchResultsUsing(function (string $search) {
+                            ->getSearchResultsUsing(function (string $search, RelationManager $livewire) {
+                                $courseAcademicYear = $livewire->getOwnerRecord()->academic_year;
                                 return Student::query()
-                                    ->where('first_name', 'like', "%{$search}%")
-                                    ->orWhere('student_code', 'like', "%{$search}%")
-                                    ->orWhere('phone', 'like', "%{$search}%")
+                                    ->where('academic_year', $courseAcademicYear)
+                                    ->where(function ($query) use ($search) {
+                                        $query->where('first_name', 'like', "%{$search}%")
+                                            ->orWhere('student_code', 'like', "%{$search}%")
+                                            ->orWhere('phone', 'like', "%{$search}%");
+                                    })
                                     ->limit(50)
                                     ->get()
                                     ->mapWithKeys(fn ($student) => [$student->id => "{$student->first_name} {$student->second_name} {$student->third_name} ({$student->student_code})"])
