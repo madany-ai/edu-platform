@@ -116,16 +116,30 @@ export default function RegisterPage() {
 
     // Step 2 validation before submitting
     const newErrors: FieldError[] = [];
+    const egyptianPhoneRegex = /^01[0125][0-9]{8}$/;
+
     if (!firstName) newErrors.push({ field: "first_name", message: "الاسم الأول مطلوب" });
     if (!secondName) newErrors.push({ field: "second_name", message: "الاسم الثاني مطلوب" });
     if (!thirdName) newErrors.push({ field: "third_name", message: "الاسم الثالث مطلوب" });
     if (!lastName) newErrors.push({ field: "last_name", message: "الاسم الأخير مطلوب" });
     if (!gender) newErrors.push({ field: "gender", message: "الجنس مطلوب" });
     if (!birthDate) newErrors.push({ field: "birth_date", message: "تاريخ الميلاد مطلوب" });
-    if (!phone) newErrors.push({ field: "phone", message: "رقم الهاتف مطلوب" });
+    
+    if (!phone) {
+      newErrors.push({ field: "phone", message: "رقم الهاتف مطلوب" });
+    } else if (!egyptianPhoneRegex.test(phone)) {
+      newErrors.push({ field: "phone", message: "رقم هاتف غير صالح. يجب أن يتكون من 11 رقم ويبدأ بـ 010, 011, 012 أو 015" });
+    }
+
     if (!governorateId) newErrors.push({ field: "governorate_id", message: "المحافظة مطلوبة" });
     if (!academicYear) newErrors.push({ field: "academic_year", message: "الصف الدراسي مطلوب" });
-    if (!fatherPhone) newErrors.push({ field: "father_phone", message: "رقم هاتف ولي الأمر مطلوب" });
+    
+    if (!fatherPhone) {
+      newErrors.push({ field: "father_phone", message: "رقم هاتف ولي الأمر مطلوب" });
+    } else if (!egyptianPhoneRegex.test(fatherPhone)) {
+      newErrors.push({ field: "father_phone", message: "رقم هاتف غير صالح. يجب أن يتكون من 11 رقم ويبدأ بـ 010, 011, 012 أو 015" });
+    }
+
     if (newErrors.length > 0) {
       setErrors(newErrors);
       return;
@@ -141,8 +155,8 @@ export default function RegisterPage() {
         second_name: secondName,
         third_name: thirdName,
         last_name: lastName,
-        phone: phone.replace(/[^\d+]/g, ""),
-        father_phone: fatherPhone.replace(/[^\d+]/g, ""),
+        phone: phone.replace(/[^\d]/g, ""),
+        father_phone: fatherPhone.replace(/[^\d]/g, ""),
         gender: gender as "male" | "female",
         birth_date: birthDate,
         governorate_id: governorateId,
