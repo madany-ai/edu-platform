@@ -459,6 +459,7 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
   return (
     <div
       ref={containerRef}
+      dir="ltr"
       className="relative w-full h-full bg-black rounded-lg overflow-hidden select-none group"
       onMouseMove={resetHideTimer}
       onContextMenu={(e) => e.preventDefault()}
@@ -692,7 +693,8 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
           onReady: (e: any) => {
             setDuration(e.target.getDuration());
             if (e.target.getAvailableQualityLevels) {
-              setQualityLevels(e.target.getAvailableQualityLevels());
+              const levels = e.target.getAvailableQualityLevels();
+              if (levels && levels.length > 0) setQualityLevels(levels);
             }
           },
           onStateChange: (e: any) => {
@@ -701,6 +703,10 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
               setDuration(e.target.getDuration()); 
               if (e.target.getPlaybackQuality) {
                 setSelectedQuality(e.target.getPlaybackQuality());
+              }
+              if (e.target.getAvailableQualityLevels) {
+                const levels = e.target.getAvailableQualityLevels();
+                if (levels && levels.length > 0) setQualityLevels(levels);
               }
             }
             else if (e.data === window.YT.PlayerState.PAUSED || e.data === window.YT.PlayerState.ENDED) {
@@ -857,6 +863,7 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
   return (
     <div
       ref={wrapperRef}
+      dir="ltr"
       className="relative w-full h-full bg-black rounded-lg overflow-hidden select-none group flex flex-col"
       onMouseMove={resetHideTimer}
       onTouchStart={resetHideTimer}
