@@ -12,8 +12,8 @@ use App\Filament\Resources\Students\Pages\ManageStudents;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ExportBulkAction;
+use Filament\Actions\ExportAction;
+use Filament\Actions\ExportBulkAction;
 use App\Filament\Exports\StudentExporter;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -499,7 +499,7 @@ class StudentResource extends Resource
 
             ])
             ->headerActions([
-                ExportAction::make()
+                \Filament\Actions\ExportAction::make()
                     ->exporter(StudentExporter::class)
                     ->label('تصدير بيانات الطلاب (Excel)'),
             ])
