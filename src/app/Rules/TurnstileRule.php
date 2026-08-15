@@ -17,8 +17,8 @@ class TurnstileRule implements ValidationRule
     {
         $secretKey = config('services.turnstile.secret_key');
 
-        if (empty($secretKey)) {
-            return; // Skip validation if no key is set
+        if (empty($secretKey) || app()->environment('testing')) {
+            return; // Skip validation if no key is set or in testing mode
         }
 
         $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [

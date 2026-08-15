@@ -148,7 +148,7 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [qualityLevels, setQualityLevels] = useState<number[]>([]);
+  const [qualityLevels, setQualityLevels] = useState<{level: number, height: number}[]>([]);
   const [selectedQuality, setSelectedQuality] = useState<number>(-1); // -1 = auto
   const [watermarkPos, setWatermarkPos] = useState<{top?:string;left?:string;right?:string}>(WATERMARK_POSITIONS[0]);
 
@@ -203,8 +203,8 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
 
 
       hls.on(Hls.Events.MANIFEST_PARSED, (_e, data) => {
-        const levels = data.levels.map((_, i) => i);
-        setQualityLevels(levels);
+        const levels = data.levels.map((lvl: any, i: number) => ({ level: i, height: lvl.height || 0 }));
+        setQualityLevels(levels.filter(l => l.height > 0)); // Only show valid video qualities
         handleLoadedMetadata();
       });
 
@@ -350,7 +350,19 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
 
   // ── Fullscreen listener ──
   useEffect(() => {
-    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    const onChange = () => {
+      const isFs = !!document.fullscreenElement;
+      setIsFullscreen(isFs);
+      if (isFs) {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch(() => {});
+        }
+      } else {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      }
+    };
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
@@ -558,25 +570,25 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
 
             <div className="flex items-center gap-3">
               {/* Quality selector */}
-              {qualityLevels.length > 1 && (
+              {qualityLevels.length > 0 && (
                 <div className="relative group/q">
                   <button className="text-xs font-bold px-2 py-1 rounded border border-white/30 hover:border-white/60 transition-colors">
-                    {selectedQuality === -1 ? "AUTO" : `${[1080, 720, 480, 360][selectedQuality] || "HD"}`}
+                    {selectedQuality === -1 ? "تلقائي" : `${qualityLevels.find(q => q.level === selectedQuality)?.height || "HD"}p`}
                   </button>
                   <div className="absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-sm rounded-lg overflow-hidden opacity-0 group-hover/q:opacity-100 pointer-events-none group-hover/q:pointer-events-auto transition-opacity">
                     <button
                       onClick={() => setQuality(-1)}
-                      className={`block w-full px-4 py-2 text-xs text-left whitespace-nowrap hover:bg-white/10 ${selectedQuality === -1 ? "text-red-400 font-bold" : ""}`}
+                      className={`block w-full px-4 py-2 text-xs text-right whitespace-nowrap hover:bg-white/10 ${selectedQuality === -1 ? "text-red-400 font-bold" : ""}`}
                     >
-                      Auto
+                      تلقائي
                     </button>
-                    {qualityLevels.map((lvl) => (
+                    {qualityLevels.map((q) => (
                       <button
-                        key={lvl}
-                        onClick={() => setQuality(lvl)}
-                        className={`block w-full px-4 py-2 text-xs text-left whitespace-nowrap hover:bg-white/10 ${selectedQuality === lvl ? "text-red-400 font-bold" : ""}`}
+                        key={q.level}
+                        onClick={() => setQuality(q.level)}
+                        className={`block w-full px-4 py-2 text-xs text-right whitespace-nowrap hover:bg-white/10 ${selectedQuality === q.level ? "text-red-400 font-bold" : ""}`}
                       >
-                        {lvl}p
+                        {q.height}p
                       </button>
                     ))}
                   </div>

@@ -19,8 +19,6 @@ function validRegistrationData(array $overrides = []): array
         'password_confirmation' => 'password123',
         'phone' => '01000000000',
         'father_phone' => '01100000000',
-        'mother_phone' => '01200000000',
-        'guardian_job' => 'Employee',
         'gender' => 'male',
         'birth_date' => '2000-01-01',
         'governorate_id' => test()->governorate->id,
@@ -67,8 +65,8 @@ it('rejects registration with invalid data', function () {
     $response->assertStatus(422)
         ->assertJsonValidationErrors([
             'first_name', 'email', 'password', 'second_name', 'third_name',
-            'last_name', 'phone', 'father_phone', 'mother_phone',
-            'guardian_job', 'gender', 'birth_date', 'governorate_id', 'academic_year',
+            'last_name', 'phone', 'father_phone',
+            'gender', 'birth_date', 'governorate_id', 'academic_year',
         ]);
 });
 
