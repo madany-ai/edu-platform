@@ -718,7 +718,13 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
         <div className="absolute inset-0">
           <div ref={containerRef} className="w-full h-full" />
         </div>
-        {/* Watermark overlay (if you want to add one later, it goes here with pointer-events-none) */}
+        
+        {/* Transparent blockers for YouTube external links */}
+        {/* Block Top Bar (Title, Avatar, Share, Watch Later) */}
+        <div className="absolute top-0 left-0 right-0 h-20 bg-transparent z-10" onContextMenu={(e) => e.preventDefault()} />
+        
+        {/* Block Bottom Right YouTube Logo (above control bar which is ~50px) */}
+        <div className="absolute bottom-[50px] right-0 w-32 h-16 bg-transparent z-10" onContextMenu={(e) => e.preventDefault()} />
       </div>
     </div>
   );
