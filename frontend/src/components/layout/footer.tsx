@@ -49,7 +49,7 @@ export function Footer() {
         </div>
         <div className="mt-8 border-t border-[#3b413c] pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground/60">
           <span>© {new Date().getFullYear()} {APP_NAME}. جميع الحقوق محفوظة.</span>
-          <span>تطوير بواسطة: <span className="font-bold text-primary science-glow-text">madanyai</span></span>
+          <span>تطوير بواسطة: <a href="https://www.linkedin.com/in/madanyai" target="_blank" rel="noopener noreferrer" className="font-bold text-primary science-glow-text hover:underline transition-all duration-300">madanyai</a></span>
         </div>
       </div>
     </footer>
