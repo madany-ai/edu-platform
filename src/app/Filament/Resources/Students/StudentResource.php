@@ -99,19 +99,10 @@ class StudentResource extends Resource
                         ignorable: fn (?Student $record) => $record?->user
                     ),
                 TextInput::make('father_phone')
-                    ->label('هاتف الأب')
+                    ->label('رقم هاتف ولي الأمر')
                     ->required()
                     ->tel()
                     ->maxLength(20),
-                TextInput::make('mother_phone')
-                    ->label('هاتف الأم')
-                    ->required()
-                    ->tel()
-                    ->maxLength(20),
-                TextInput::make('guardian_job')
-                    ->label('وظيفة ولي الأمر')
-                    ->required()
-                    ->maxLength(255),
                 Select::make('gender')  
                     ->label('الجنس')
                     ->options([

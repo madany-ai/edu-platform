@@ -36,8 +36,6 @@ class AuthService
                 'last_name' => $data['last_name'],
                 'phone' => $data['phone'],
                 'father_phone' => $data['father_phone'],
-                'mother_phone' => $data['mother_phone'],
-                'guardian_job' => $data['guardian_job'],
                 'gender' => $data['gender'],
                 'birth_date' => $data['birth_date'],
                 'governorate_id' => $data['governorate_id'],

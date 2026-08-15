@@ -62,8 +62,6 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
 
   const [fatherPhone, setFatherPhone] = useState("");
-  const [motherPhone, setMotherPhone] = useState("");
-  const [guardianJob, setGuardianJob] = useState("");
 
   const [governorates, setGovernorates] = useState<GovernorateInfo[]>([]);
   const [governorateId, setGovernorateId] = useState("");
@@ -104,39 +102,18 @@ export default function RegisterPage() {
         return;
       }
     }
-    if (step === 2) {
-      const newErrors: FieldError[] = [];
-      if (!firstName) newErrors.push({ field: "first_name", message: "الاسم الأول مطلوب" });
-      if (!secondName) newErrors.push({ field: "second_name", message: "الاسم الثاني مطلوب" });
-      if (!thirdName) newErrors.push({ field: "third_name", message: "الاسم الثالث مطلوب" });
-      if (!lastName) newErrors.push({ field: "last_name", message: "الاسم الأخير مطلوب" });
-      if (!gender) newErrors.push({ field: "gender", message: "الجنس مطلوب" });
-      if (!birthDate) newErrors.push({ field: "birth_date", message: "تاريخ الميلاد مطلوب" });
-      if (!phone) newErrors.push({ field: "phone", message: "رقم الهاتف مطلوب" });
-      if (!governorateId) newErrors.push({ field: "governorate_id", message: "المحافظة مطلوبة" });
-      if (!academicYear) newErrors.push({ field: "academic_year", message: "الصف الدراسي مطلوب" });
-      if (newErrors.length > 0) {
-        setErrors(newErrors);
-        return;
-      }
-    }
-    setStep((s) => s + 1);
-  };
-
-  const handleBack = () => {
-    setErrors([]);
-    setStep((s) => s - 1);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors([]);
-    
-    // Step 3 validation before submitting
+    // Step 2 validation before submitting
     const newErrors: FieldError[] = [];
-    if (!fatherPhone) newErrors.push({ field: "father_phone", message: "هاتف الأب مطلوب" });
-    if (!motherPhone) newErrors.push({ field: "mother_phone", message: "هاتف الأم مطلوب" });
-    if (!guardianJob) newErrors.push({ field: "guardian_job", message: "وظيفة ولي الأمر مطلوبة" });
+    if (!firstName) newErrors.push({ field: "first_name", message: "الاسم الأول مطلوب" });
+    if (!secondName) newErrors.push({ field: "second_name", message: "الاسم الثاني مطلوب" });
+    if (!thirdName) newErrors.push({ field: "third_name", message: "الاسم الثالث مطلوب" });
+    if (!lastName) newErrors.push({ field: "last_name", message: "الاسم الأخير مطلوب" });
+    if (!gender) newErrors.push({ field: "gender", message: "الجنس مطلوب" });
+    if (!birthDate) newErrors.push({ field: "birth_date", message: "تاريخ الميلاد مطلوب" });
+    if (!phone) newErrors.push({ field: "phone", message: "رقم الهاتف مطلوب" });
+    if (!governorateId) newErrors.push({ field: "governorate_id", message: "المحافظة مطلوبة" });
+    if (!academicYear) newErrors.push({ field: "academic_year", message: "الصف الدراسي مطلوب" });
+    if (!fatherPhone) newErrors.push({ field: "father_phone", message: "رقم هاتف ولي الأمر مطلوب" });
     if (newErrors.length > 0) {
       setErrors(newErrors);
       return;
@@ -154,8 +131,6 @@ export default function RegisterPage() {
         last_name: lastName,
         phone: phone.replace(/[^\d+]/g, ""),
         father_phone: fatherPhone.replace(/[^\d+]/g, ""),
-        mother_phone: motherPhone.replace(/[^\d+]/g, ""),
-        guardian_job: guardianJob,
         gender: gender as "male" | "female",
         birth_date: birthDate,
         governorate_id: governorateId,
@@ -231,13 +206,12 @@ export default function RegisterPage() {
           </h2>
           <p className="text-xs text-muted-foreground">
             {step === 1 && "الخطوة الأولى: بيانات تسجيل الدخول"}
-            {step === 2 && "الخطوة الثانية: المعلومات الشخصية"}
-            {step === 3 && "الخطوة الثالثة: بيانات ولي الأمر والاتصال"}
+            {step === 2 && "الخطوة الثانية: المعلومات الشخصية وبيانات الاتصال"}
           </p>
 
           {/* Stepper Indicators */}
           <div className="mt-6 flex items-center justify-center gap-3">
-            {[1, 2, 3].map((s) => (
+            {[1, 2].map((s) => (
               <div key={s} className="flex items-center">
                 <div
                   className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
@@ -250,7 +224,7 @@ export default function RegisterPage() {
                 >
                   {s}
                 </div>
-                {s < 3 && (
+                {s < 2 && (
                   <div
                     className={`h-[2px] w-8 mx-1 transition-all ${
                       s < step ? "bg-secondary" : "bg-muted"
@@ -459,80 +433,39 @@ export default function RegisterPage() {
                   )}
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">رقم هاتف الطالب *</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="مثال: 01000000000"
-                  value={phone}
-                  onChange={(e) => { setPhone(e.target.value); clearFieldError("phone"); }}
-                  required
-                  className="bg-background/50 border-border/60 text-foreground"
-                />
-                {getFieldError("phone") && (
-                  <p className="text-xs text-destructive">{getFieldError("phone")}</p>
-                )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">رقم هاتف الطالب *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="مثال: 01000000000"
+                    value={phone}
+                    onChange={(e) => { setPhone(e.target.value); clearFieldError("phone"); }}
+                    required
+                    className="bg-background/50 border-border/60 text-foreground"
+                  />
+                  {getFieldError("phone") && (
+                    <p className="text-xs text-destructive">{getFieldError("phone")}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="father_phone">رقم هاتف ولي الأمر *</Label>
+                  <Input
+                    id="father_phone"
+                    type="tel"
+                    placeholder="مثال: 01100000000"
+                    value={fatherPhone}
+                    onChange={(e) => { setFatherPhone(e.target.value); clearFieldError("father_phone"); }}
+                    required
+                    className="bg-background/50 border-border/60 text-foreground"
+                  />
+                  {getFieldError("father_phone") && (
+                    <p className="text-xs text-destructive">{getFieldError("father_phone")}</p>
+                  )}
+                </div>
               </div>
-              <div className="flex gap-3 pt-2">
-                <Button type="button" variant="outline" className="flex-1 border-border/60 hover:bg-muted text-foreground" onClick={handleBack}>
-                  السابق
-                </Button>
-                <Button type="button" className="flex-1 bg-primary text-primary-foreground font-semibold" onClick={handleNext}>
-                  التالي
-                </Button>
-              </div>
-            </div>
-          )}
 
-          {step === 3 && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="father_phone">رقم هاتف الأب *</Label>
-                <Input
-                  id="father_phone"
-                  type="tel"
-                  placeholder="مثال: 01100000000"
-                  value={fatherPhone}
-                  onChange={(e) => { setFatherPhone(e.target.value); clearFieldError("father_phone"); }}
-                  required
-                  className="bg-background/50 border-border/60 text-foreground"
-                />
-                {getFieldError("father_phone") && (
-                  <p className="text-xs text-destructive">{getFieldError("father_phone")}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="mother_phone">رقم هاتف الأم *</Label>
-                <Input
-                  id="mother_phone"
-                  type="tel"
-                  placeholder="مثال: 01200000000"
-                  value={motherPhone}
-                  onChange={(e) => { setMotherPhone(e.target.value); clearFieldError("mother_phone"); }}
-                  required
-                  className="bg-background/50 border-border/60 text-foreground"
-                />
-                {getFieldError("mother_phone") && (
-                  <p className="text-xs text-destructive">{getFieldError("mother_phone")}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="guardian_job">وظيفة ولي الأمر *</Label>
-                <Input
-                  id="guardian_job"
-                  type="text"
-                  placeholder="مثال: مهندس أو محاسب"
-                  value={guardianJob}
-                  onChange={(e) => { setGuardianJob(e.target.value); clearFieldError("guardian_job"); }}
-                  required
-                  className="bg-background/50 border-border/60 text-foreground"
-                />
-                {getFieldError("guardian_job") && (
-                  <p className="text-xs text-destructive">{getFieldError("guardian_job")}</p>
-                )}
-              </div>
-              
               <div className="flex justify-center my-4">
                 <Turnstile
                   siteKey={env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
