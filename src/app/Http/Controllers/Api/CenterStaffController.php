@@ -57,6 +57,31 @@ class CenterStaffController extends Controller
         return response()->json(['message' => 'تم تحديث السنة الدراسية بنجاح.', 'data' => $year]);
     }
 
+    // ─── Stats ───
+    public function stats(Request $request): JsonResponse
+    {
+        $totalStudentsQuery = \App\Models\Student::query();
+        if ($request->has('academic_year')) {
+            $totalStudentsQuery->where('academic_year', $request->query('academic_year'));
+        }
+
+        $activeGroupsQuery = \App\Models\Group::where('is_active', true);
+        if ($request->has('academic_year')) {
+            $activeGroupsQuery->where('academic_year', $request->query('academic_year'));
+        }
+        if ($request->has('academic_year_id')) {
+            $activeGroupsQuery->where('academic_year_id', $request->query('academic_year_id'));
+        }
+        if ($request->has('term')) {
+            $activeGroupsQuery->where('term', $request->query('term'));
+        }
+
+        return response()->json([
+            'total_students' => $totalStudentsQuery->count(),
+            'active_groups' => $activeGroupsQuery->count(),
+        ]);
+    }
+
     // ─── Groups ───
     public function groups(Request $request): JsonResponse
     {

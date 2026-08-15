@@ -152,6 +152,7 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
 
     // ─── Center Management (Staff: Instructor & Assistant) ───
     Route::middleware('role:instructor|assistant|admin|super_admin')->prefix('center/staff')->group(function () {
+        Route::get('stats', [\App\Http\Controllers\Api\CenterStaffController::class, 'stats']);
         Route::get('academic-years', [\App\Http\Controllers\Api\CenterStaffController::class, 'academicYears']);
         Route::post('academic-years', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeAcademicYear']);
         Route::put('academic-years/{id}', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateAcademicYear']);

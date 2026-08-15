@@ -41,6 +41,7 @@ export default function CenterDashboardPage() {
   const [sessions, setSessions] = useState<AcademicSession[]>([]);
   const [exams, setExams] = useState<CenterExam[]>([]);
   const [rankings, setRankings] = useState<RankingItem[]>([]);
+  const [stats, setStats] = useState<{total_students: number; active_groups: number}>({total_students: 0, active_groups: 0});
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -65,17 +66,19 @@ export default function CenterDashboardPage() {
         term: selectedTerm,
       };
 
-      const [groupsData, sessionsData, examsData, rankingsData] = await Promise.all([
+      const [groupsData, sessionsData, examsData, rankingsData, statsData] = await Promise.all([
         centerService.getGroups(params),
         centerService.getSessions(params),
         centerService.getExams(params),
         centerService.getRankings(params),
+        centerService.getStats(params),
       ]);
 
       setGroups(groupsData);
       setSessions(sessionsData);
       setExams(examsData);
       setRankings(rankingsData.slice(0, 5));
+      setStats(statsData);
     } catch (e) {
       console.error("Failed to load center stats", e);
     } finally {
@@ -92,7 +95,8 @@ export default function CenterDashboardPage() {
     );
   }
 
-  const totalStudents = groups.reduce((acc, g) => acc + (g.students_count || 0), 0);
+  const totalStudents = stats.total_students;
+  const activeGroupsCount = stats.active_groups;
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-8">
@@ -134,7 +138,7 @@ export default function CenterDashboardPage() {
         <div className="glass-card p-6 rounded-2xl border border-border flex items-center justify-between">
           <div>
             <span className="text-xs text-muted-foreground font-semibold block">المجموعات الدراسية النشطة</span>
-            <span className="text-2xl font-extrabold text-foreground mt-1 block">{groups.length} مجموعات</span>
+            <span className="text-2xl font-extrabold text-foreground mt-1 block">{activeGroupsCount} مجموعات</span>
           </div>
           <div className="p-3.5 rounded-2xl bg-blue-500/10 text-blue-400">
             <Building2 className="h-6 w-6" />

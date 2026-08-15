@@ -96,6 +96,12 @@ export interface StudentReport {
 }
 
 export const centerService = {
+  // Stats
+  getStats: async (params?: { academic_year_id?: string; academic_year?: string; term?: string }): Promise<{ total_students: number; active_groups: number }> => {
+    const { data } = await api.get<{ total_students: number; active_groups: number }>("/center/staff/stats", { params });
+    return data;
+  },
+
   // Grade Levels
   getGradeLevels: async (): Promise<Array<{ id: string; name: string }>> => {
     const { data } = await api.get<{ data: Array<{ id: string; name: string }> }>("/grade-levels");
