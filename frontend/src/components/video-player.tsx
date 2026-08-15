@@ -710,6 +710,11 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
     return () => document.removeEventListener("fullscreenchange", h);
   }, []);
 
+  const togglePlay = () => {
+    if (!playerRef.current || typeof playerRef.current.playVideo !== "function") return;
+    isPlaying ? playerRef.current.pauseVideo() : playerRef.current.playVideo();
+  };
+
   if (!videoId) return <div className="w-full h-full flex items-center justify-center bg-black text-white text-sm">رابط الفيديو غير صالح</div>;
 
   return (
@@ -719,12 +724,13 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
           <div ref={containerRef} className="w-full h-full" />
         </div>
         
-        {/* Transparent blockers for YouTube external links */}
-        {/* Block Top Bar (Title, Avatar, Share, Watch Later) */}
-        <div className="absolute top-0 left-0 right-0 h-20 bg-transparent z-10" onContextMenu={(e) => e.preventDefault()} />
-        
-        {/* Block Bottom Right YouTube Logo (above control bar which is ~50px) */}
-        <div className="absolute bottom-[50px] right-0 w-32 h-16 bg-transparent z-10" onContextMenu={(e) => e.preventDefault()} />
+        {/* Transparent blocker for the entire video area EXCEPT the bottom control bar (~50px) */}
+        {/* This blocks the Share button, Title, Avatar, and More Videos, while allowing custom click-to-play */}
+        <div 
+          className="absolute top-0 left-0 right-0 bottom-[50px] bg-transparent z-10 cursor-pointer" 
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); togglePlay(); }}
+          onContextMenu={(e) => e.preventDefault()} 
+        />
       </div>
     </div>
   );
