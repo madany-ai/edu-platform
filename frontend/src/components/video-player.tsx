@@ -353,13 +353,14 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
     const onChange = () => {
       const isFs = !!document.fullscreenElement;
       setIsFullscreen(isFs);
+      const orientation = (screen as any).orientation;
       if (isFs) {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock("landscape").catch(() => {});
+        if (orientation && orientation.lock) {
+          orientation.lock("landscape").catch(() => {});
         }
       } else {
-        if (screen.orientation && screen.orientation.unlock) {
-          screen.orientation.unlock();
+        if (orientation && orientation.unlock) {
+          orientation.unlock();
         }
       }
     };
