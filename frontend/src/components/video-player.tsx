@@ -640,6 +640,7 @@ declare global {
 
 function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isApiReady, setIsApiReady] = useState(false);
@@ -660,51 +661,19 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
   }, []);
 
   useEffect(() => {
-    if (isApiReady && videoId && containerRef.current) {
-      // تنظيف الكونتينر قبل إنشاء المشغل الجديد
-      containerRef.current.innerHTML = "";
-
-      // إنشاء iframe يدوياً لتطبيق سياسات الحماية (sandbox)
-      const iframe = document.createElement("iframe");
-      iframe.className = "absolute inset-0 w-full h-full border-0";
-      
-      // Sandbox: يمنع فتح النوافذ المنبثقة (popups) وتغيير الرابط الرئيسي، مما يعطل كل الروابط الخارجية وزر المشاركة
-      iframe.setAttribute("sandbox", "allow-same-origin allow-scripts allow-presentation");
-      
-      // Allow: نمنع web-share و clipboard-write لزيادة الحماية
-      iframe.setAttribute("allow", "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen");
-      
-      containerRef.current.appendChild(iframe);
-
-      playerRef.current = new window.YT.Player(iframe, {
+    if (isApiReady && videoId && containerRef.current && !playerRef.current) {
+      playerRef.current = new window.YT.Player(containerRef.current, {
         videoId,
-        playerVars: { 
-          controls: 1, 
-          disablekb: 0, 
-          rel: 0, 
-          modestbranding: 1, 
-          iv_load_policy: 3, 
-          fs: 1, 
-          playsinline: 1 
-        },
+        playerVars: { controls: 1, disablekb: 0, rel: 0, modestbranding: 1, iv_load_policy: 3, fs: 1, playsinline: 1 },
         events: {
           onStateChange: (e: any) => {
-            if (e.data === window.YT.PlayerState.PLAYING) { 
-              setIsPlaying(true); 
-            }
-            else if (e.data === window.YT.PlayerState.PAUSED || e.data === window.YT.PlayerState.ENDED) { 
-              setIsPlaying(false); 
-            }
+            if (e.data === window.YT.PlayerState.PLAYING) { setIsPlaying(true); }
+            else if (e.data === window.YT.PlayerState.PAUSED || e.data === window.YT.PlayerState.ENDED) setIsPlaying(false);
           },
         },
       });
     }
-    return () => { 
-      if (playerRef.current) { 
-        playerRef.current.destroy(); 
-        playerRef.current = null; 
-      } 
-    };
+    return () => { if (playerRef.current) { playerRef.current.destroy(); playerRef.current = null; } };
   }, [isApiReady, videoId]);
 
   useEffect(() => {
@@ -726,21 +695,41 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
     return () => document.removeEventListener("fullscreenchange", h);
   }, []);
 
+  const togglePlay = () => {
+    if (!playerRef.current || typeof playerRef.current.playVideo !== "function") return;
+    isPlaying ? playerRef.current.pauseVideo() : playerRef.current.playVideo();
+  };
+
   if (!videoId) return <div className="w-full h-full flex items-center justify-center bg-black text-white text-sm">رابط الفيديو غير صالح</div>;
 
   return (
-    <div className="w-full h-full relative rounded-lg overflow-hidden bg-black group flex flex-col">
+    <div ref={wrapperRef} className="w-full h-full relative rounded-lg overflow-hidden bg-black group flex flex-col">
       <div className="flex-1 relative w-full h-full">
-        {/* حاوية المشغل */}
-        <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+        <div className="absolute inset-0">
+          <div ref={containerRef} className="w-full h-full" />
+        </div>
         
-        {/* طبقة شفافة تغطي الجزء العلوي فقط (لمنع النقر على العنوان وزر المشاركة) */}
+        {/* 1. الطبقة العلوية: تقوم بتغطية عنوان الفيديو وزر المشاركة بالكامل */}
         <div 
           className="absolute top-0 left-0 right-0 h-[80px] bg-transparent z-10" 
           onContextMenu={(e) => e.preventDefault()} 
         />
         
-        {/* تمت إزالة الطبقة السفلية لتمكين التفاعل الكامل مع شريط التحكم الأصلي لليوتيوب (الجودة، السرعة، الصوت، ملء الشاشة) */}
+        {/* 2. طبقة المنتصف: تمنع النقر على الفيديوهات المقترحة عند الإيقاف.
+               ملاحظة هامة: تركنا مسافة 300px من اليمين مفتوحة لكي تتمكن قائمة "الجودة والسرعة" من الظهور للاعلى بدون أن تُحجب! */}
+        <div 
+          className="absolute top-[80px] left-0 right-[300px] bottom-[60px] bg-transparent z-10 cursor-pointer" 
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); togglePlay(); }}
+          onContextMenu={(e) => e.preventDefault()} 
+        />
+
+        {/* 3. طبقة الشعار: لتغطية علامة يوتيوب المائية التي تظهر في أسفل اليمين فوق شريط التحكم */}
+        <div 
+          className="absolute bottom-[60px] right-[10px] w-[120px] h-[60px] bg-transparent z-10" 
+          onContextMenu={(e) => e.preventDefault()} 
+        />
+        
+        {/* شريط التحكم السفلي (60px) متروك بالكامل للتحكم بالصوت وملء الشاشة */}
       </div>
     </div>
   );
