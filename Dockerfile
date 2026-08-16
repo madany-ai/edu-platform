@@ -11,6 +11,7 @@ RUN apk add --no-cache \
     libzip-dev \
     zip \
     unzip \
+    postgresql-client \
     postgresql-dev \
     icu-dev \
     oniguruma-dev \
