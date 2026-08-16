@@ -54,6 +54,7 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
   const [error, setError] = useState<string | null>(null);
   const [exam, setExam] = useState<Exam | null>(null);
   const [latestAttempt, setLatestAttempt] = useState<Attempt | null>(null);
+  const [maxAttemptsReached, setMaxAttemptsReached] = useState(false);
 
   // Take Exam States
   const [activeAttempt, setActiveAttempt] = useState<Attempt | null>(null);
@@ -75,9 +76,10 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get<{ exam: Exam; latest_attempt: Attempt | null }>(fetchEndpoint);
+      const res = await api.get<{ exam: Exam; latest_attempt: Attempt | null; max_attempts_reached: boolean }>(fetchEndpoint);
       setExam(res.data.exam);
       setLatestAttempt(res.data.latest_attempt);
+      setMaxAttemptsReached(res.data.max_attempts_reached || false);
       
       // If there is an active (unsubmitted) attempt, resume it
       if (res.data.latest_attempt && !res.data.latest_attempt.submitted_at) {
@@ -299,7 +301,7 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
           </div>
 
           <div className="flex items-center justify-center gap-4">
-            {passed && (
+            {(passed || maxAttemptsReached) && (
               <button
                 onClick={() => {
                   window.location.href = `/courses/${courseId}/lectures/${lectureId}`;
@@ -317,13 +319,15 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
               <Eye className="h-4 w-4" />
               {showReview ? "إخفاء مراجعة الأسئلة" : "مراجعة أسئلتي وإجاباتي"}
             </button>
-            <button
-              onClick={handleStart}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-colors text-sm"
-            >
-              <RefreshCw className="h-4 w-4" />
-              إعادة المحاولة
-            </button>
+            {!maxAttemptsReached && (
+              <button
+                onClick={handleStart}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-colors text-sm"
+              >
+                <RefreshCw className="h-4 w-4" />
+                إعادة المحاولة
+              </button>
+            )}
           </div>
         </div>
 
@@ -595,13 +599,19 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
       )}
 
       <div className="pt-4">
-        <button
-          onClick={handleStart}
-          className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-all hover:scale-105 active:scale-95 shadow-md shadow-primary/20 text-sm"
-        >
-          <Play className="h-4 w-4 fill-current" />
-          {latestAttempt ? `بدء محاولة جديدة` : `بدء ${label} الآن`}
-        </button>
+        {maxAttemptsReached ? (
+          <div className="bg-red-500/10 border border-red-200 text-red-600 rounded-xl p-4 text-sm font-medium">
+            لقد استنفدت الحد الأقصى للمحاولات المتاحة لهذا الاختبار. يمكنك الآن تخطي الاختبار والانتقال للمحاضرة التالية.
+          </div>
+        ) : (
+          <button
+            onClick={handleStart}
+            className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-all hover:scale-105 active:scale-95 shadow-md shadow-primary/20 text-sm"
+          >
+            <Play className="h-4 w-4 fill-current" />
+            {latestAttempt ? `بدء محاولة جديدة` : `بدء ${label} الآن`}
+          </button>
+        )}
       </div>
     </div>
   );

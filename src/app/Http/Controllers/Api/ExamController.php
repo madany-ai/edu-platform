@@ -35,19 +35,38 @@ class ExamController extends Controller
             return response()->json(['message' => $msg], 404);
         }
 
+        if ($exam->relationLoaded('questions')) {
+            $exam->questions->each(function ($question) {
+                if ($question->relationLoaded('choices')) {
+                    $question->choices->each->makeHidden('is_correct');
+                }
+            });
+        }
+
         $user = request()->user();
         $student = $user ? \App\Models\Student::where('user_id', $user->id)->first() : null;
         $latestAttempt = null;
+        $maxAttemptsReached = false;
+        
         if ($student) {
             $latestAttempt = \App\Models\ExamAttempt::where('exam_id', $exam->id)
                 ->where('student_id', $student->id)
                 ->latest()
                 ->first();
+                
+            $completedAttemptsCount = \App\Models\ExamAttempt::where('exam_id', $exam->id)
+                ->where('student_id', $student->id)
+                ->whereNotNull('submitted_at')
+                ->count();
+                
+            $maxAttempts = $exam->max_attempts ?? 3;
+            $maxAttemptsReached = $completedAttemptsCount >= $maxAttempts;
         }
 
         return response()->json([
             'exam' => $exam,
             'latest_attempt' => $latestAttempt,
+            'max_attempts_reached' => $maxAttemptsReached,
         ]);
     }
 

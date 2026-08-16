@@ -11,7 +11,6 @@ class Choice extends Model
 {
     use HasUuids;
     protected $fillable = ['question_id', 'answer', 'is_correct'];
-    protected $hidden = ['is_correct'];
 
     protected function casts(): array
     {

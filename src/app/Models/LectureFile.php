@@ -20,6 +20,9 @@ class LectureFile extends Model
 
     public function getFilePathAttribute($value)
     {
-        return $this->resolveMinioUrl($value);
+        if (request()->is('api/*')) {
+            return $this->resolveMinioUrl($value);
+        }
+        return $value;
     }
 }
