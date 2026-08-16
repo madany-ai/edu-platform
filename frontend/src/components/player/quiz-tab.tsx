@@ -85,7 +85,8 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
       if (res.data.latest_attempt && !res.data.latest_attempt.submitted_at) {
         setActiveAttempt(res.data.latest_attempt);
         // Calculate remaining time
-        const startTime = new Date(res.data.latest_attempt.started_at).getTime();
+        const startedAtStr = String(res.data.latest_attempt.started_at);
+        const startTime = new Date(startedAtStr + (!startedAtStr.endsWith('Z') ? 'Z' : '')).getTime();
         const durationMs = res.data.exam.duration * 60 * 1000;
         const elapsed = Date.now() - startTime;
         const remaining = Math.max(0, Math.floor((durationMs - elapsed) / 1000));
@@ -103,22 +104,34 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
     fetchExamData();
   }, [lectureId, examId]);
 
-  // Timer effect: decrements timeLeft every second without recreating the interval
+  // Timer logic
   useEffect(() => {
-    if (!activeAttempt || timeLeft <= 0) return;
+    if (!activeAttempt || examFinished) return;
+    if (!exam?.duration) return; // Skip timer if no duration set
 
+    const startedAtStr = String(activeAttempt.started_at);
+    const startedAt = new Date(startedAtStr + (!startedAtStr.endsWith('Z') ? 'Z' : ''));
+    const durationSecs = (exam.duration) * 60;
+    
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
+      const now = new Date();
+      const elapsed = Math.floor((now.getTime() - startedAt.getTime()) / 1000);
+      const remaining = durationSecs - elapsed;
+
+      if (remaining <= 0) {
+        setTimeLeft(0);
+        clearInterval(timer);
+        if (!isSubmitting) {
+          toast.error("انتهى الوقت المحدد للاختبار! سيتم تسليم إجاباتك تلقائياً.");
+          handleSubmit(true);
         }
-        return prev - 1;
-      });
+      } else {
+        setTimeLeft(remaining);
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [activeAttempt?.id]);
+  }, [activeAttempt, examFinished, exam?.duration, isSubmitting]);
 
   // Auto-submit when time runs out
   useEffect(() => {
@@ -147,7 +160,8 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
 
       if (exam.duration) {
         // Calculate remaining time based on the server's started_at
-        const startedAt = new Date(attempt.started_at).getTime();
+        const startedAtStr = String(attempt.started_at);
+        const startedAt = new Date(startedAtStr + (!startedAtStr.endsWith('Z') ? 'Z' : '')).getTime();
         const now = new Date().getTime();
         const elapsedSeconds = Math.floor((now - startedAt) / 1000);
         const remainingSeconds = exam.duration * 60 - elapsedSeconds;
@@ -300,13 +314,13 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3 sm:gap-4 w-full mt-2">
             {(passed || maxAttemptsReached) && (
               <button
                 onClick={() => {
                   window.location.href = `/courses/${courseId}/lectures/${lectureId}`;
                 }}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-colors text-sm"
+                className="flex items-center justify-center gap-2 px-6 py-3 sm:py-2.5 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-colors text-sm w-full sm:w-auto"
               >
                 <Play className="h-4 w-4" />
                 متابعة المحاضرة
@@ -314,14 +328,14 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
             )}
             <button
               onClick={() => setShowReview(!showReview)}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl border font-bold hover:bg-muted transition-colors text-sm"
+              className="flex items-center justify-center gap-2 px-6 py-3 sm:py-2.5 rounded-xl border font-bold hover:bg-muted transition-colors text-sm w-full sm:w-auto"
             >
               <Eye className="h-4 w-4" />
               {showReview ? "إخفاء مراجعة الأسئلة" : "مراجعة أسئلتي وإجاباتي"}
             </button>
             <button
               onClick={handleStart}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-colors text-sm"
+              className="flex items-center justify-center gap-2 px-6 py-3 sm:py-2.5 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-colors text-sm w-full sm:w-auto"
             >
               <RefreshCw className="h-4 w-4" />
               إعادة المحاولة
@@ -381,7 +395,7 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
                           <div
                             key={c.id}
                             className={cn(
-                              "p-3 rounded-xl border flex items-center justify-between text-sm",
+                              "p-3 rounded-xl border flex flex-col justify-center text-sm",
                               isChoiceCorrect
                                 ? "bg-green-500/10 border-green-200 text-green-700 font-medium"
                                 : isStudentSelected
@@ -389,8 +403,13 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
                                 : "bg-muted/30 border-transparent text-muted-foreground"
                             )}
                           >
-                            <span>{c.answer}</span>
-                            {isChoiceCorrect && <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />}
+                            <div className="flex items-center justify-between">
+                              <span>{c.answer}</span>
+                              {isChoiceCorrect && <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />}
+                            </div>
+                            {c.image_path && (
+                              <img src={c.image_path} alt="خيار" className="w-16 h-16 object-contain rounded mt-2 bg-white" />
+                            )}
                           </div>
                         );
                       })}
