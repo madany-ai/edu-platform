@@ -133,17 +133,13 @@ class ExamService
 
     public function startAttempt(Exam $exam, Student $student): ExamAttempt
     {
-        // Enforce maximum 3 attempts per exam for a student
+        // Infinite attempts allowed as per user request
         $completedAttemptsCount = ExamAttempt::where('exam_id', $exam->id)
             ->where('student_id', $student->id)
             ->whereNotNull('submitted_at')
             ->count();
 
-        $maxAttempts = $exam->max_attempts ?? 3;
-        if ($completedAttemptsCount >= $maxAttempts) {
-            abort(403, "لقد استنفدت الحد الأقصى للمحاولات المتاحة لهذا الاختبار ({$maxAttempts} محاولات). يمكنك الآن تخطي الاختبار والانتقال للمحاضرة التالية.");
-        }
-
+        // Check for existing unsubmitted attempt
         $existingAttempt = ExamAttempt::where('exam_id', $exam->id)
             ->where('student_id', $student->id)
             ->whereNull('submitted_at')

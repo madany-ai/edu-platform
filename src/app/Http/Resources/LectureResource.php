@@ -135,7 +135,7 @@ class LectureResource extends JsonResource
                         'submitted_at' => is_array($latestAttempt) ? ($latestAttempt['submitted_at'] ?? null) : $latestAttempt->submitted_at,
                     ] : null,
                     'passed' => $latestAttempt ? ($score >= $exam->pass_percentage) : false,
-                    'max_attempts_exhausted' => $attemptsCount >= $maxAttempts,
+                    'max_attempts_exhausted' => false,
                 ];
             });
         }
@@ -179,7 +179,7 @@ class LectureResource extends JsonResource
                         'submitted_at' => is_array($latestAttempt) ? ($latestAttempt['submitted_at'] ?? null) : $latestAttempt->submitted_at,
                     ] : null,
                     'passed' => $latestAttempt ? ($score >= $assignment->pass_percentage) : false,
-                    'max_attempts_exhausted' => $attemptsCount >= $maxAttempts,
+                    'max_attempts_exhausted' => false,
                 ];
             });
         }

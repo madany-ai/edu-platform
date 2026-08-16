@@ -49,18 +49,18 @@ class ExamController extends Controller
         $maxAttemptsReached = false;
         
         if ($student) {
-            $latestAttempt = \App\Models\ExamAttempt::where('exam_id', $exam->id)
+            $latestAttempt = ExamAttempt::where('exam_id', $exam->id)
                 ->where('student_id', $student->id)
-                ->latest()
+                ->whereNotNull('submitted_at')
+                ->latest('submitted_at')
                 ->first();
-                
-            $completedAttemptsCount = \App\Models\ExamAttempt::where('exam_id', $exam->id)
+
+            $completedAttemptsCount = ExamAttempt::where('exam_id', $exam->id)
                 ->where('student_id', $student->id)
                 ->whereNotNull('submitted_at')
                 ->count();
                 
-            $maxAttempts = $exam->max_attempts ?? 3;
-            $maxAttemptsReached = $completedAttemptsCount >= $maxAttempts;
+            $maxAttemptsReached = false; // Infinite attempts allowed
         }
 
         return response()->json([
