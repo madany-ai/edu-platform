@@ -23,11 +23,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Database\Factories\StudentFactory;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
-
 class Student extends Model
 {
-    use HasUuids, SoftDeletes;
+    use HasUuids;
     /** @use HasFactory<\Database\Factories\StudentFactory> */
     use HasFactory;
 
