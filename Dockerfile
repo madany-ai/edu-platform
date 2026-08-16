@@ -70,6 +70,12 @@ RUN mkdir -p /var/www/html/storage/framework/cache/data \
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
 
+# Recreate storage symlink — Docker COPY dereferences symlinks, so public/storage
+# becomes a stale regular directory. This ensures it points to the actual storage
+# volume used in production (storage_data:/var/www/html/storage/app/public).
+RUN rm -rf /var/www/html/public/storage && \
+    ln -s ../storage/app/public /var/www/html/public/storage
+
 USER www-data
 EXPOSE 9000
 CMD ["php-fpm"]

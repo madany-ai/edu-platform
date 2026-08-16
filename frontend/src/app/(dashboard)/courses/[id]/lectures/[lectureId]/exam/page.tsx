@@ -205,6 +205,15 @@ export default function ExamPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {question.image_path && (
+                <div className="w-full max-h-[300px] overflow-hidden rounded-xl border mb-4">
+                  <img
+                    src={question.image_path}
+                    alt="سؤال توضيحي"
+                    className="w-full h-full object-contain bg-muted"
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 {question.choices.map((choice) => (
                   <label

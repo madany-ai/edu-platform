@@ -1,3 +1,10 @@
 FROM nginx:1.30-alpine
 COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY ./src/public /var/www/html/public
+
+# Recreate storage symlink — Docker COPY dereferences symlinks, so public/storage
+# becomes a stale regular directory. This ensures it points to the actual storage
+# volume (storage_data:/var/www/html/storage/app/public).
+RUN rm -rf /var/www/html/public/storage && \
+    mkdir -p /var/www/html/storage/app/public && \
+    ln -s ../storage/app/public /var/www/html/public/storage

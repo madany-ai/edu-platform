@@ -15,6 +15,7 @@ export interface ExamQuestion {
   type: "multiple_choice" | "true_false";
   question: string;
   degree: number;
+  image_path?: string;
   choices: ExamChoice[];
 }
 
