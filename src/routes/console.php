@@ -11,3 +11,7 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('sanctum:prune-expired --hours=24')->daily();
 Schedule::command('activitylog:clean')->daily();
+
+// النسخ الاحتياطي التلقائي (البيانات فقط) أسبوعياً، وتنظيف النسخ القديمة يومياً
+Schedule::command('backup:clean')->daily();
+Schedule::command('backup:run --only-db')->weeklyOn(5, '00:00');

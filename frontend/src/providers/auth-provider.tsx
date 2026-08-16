@@ -15,6 +15,8 @@ interface AuthContextType {
   isInstructor: boolean;
   isAssistant: boolean;
   isStudent: boolean;
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -35,6 +37,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const isAuthenticated = !!user;
+  const isInstructor = user?.roles?.some((r: any) => (typeof r === "string" ? r : r.name) === "instructor") ?? false;
+  const isAssistant = user?.roles?.some((r: any) => (typeof r === "string" ? r : r.name) === "assistant") ?? false;
+  const isStudent = user?.roles?.some((r: any) => (typeof r === "string" ? r : r.name) === "student") ?? false;
+  const isAdmin = user?.roles?.some((r: any) => (typeof r === "string" ? r : r.name) === "admin") ?? false;
+  const isSuperAdmin = user?.roles?.some((r: any) => (typeof r === "string" ? r : r.name) === "super_admin") ?? false;
+
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -49,6 +58,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     load();
     return () => { cancelled = true; };
   }, [fetchUser, router]);
+
+  // Silent background heartbeat to keep the session & token alive
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    // Ping the server every 15 minutes silently
+    const heartbeat = setInterval(async () => {
+      try {
+        // 1. Extend the stateful session cookie by pinging /auth/me
+        await api.get("/auth/me", { _retry: true } as any);
+        
+        // 2. Optionally refresh the Bearer token in the background silently
+        if (typeof window !== "undefined") {
+          const token = localStorage.getItem("edu_platform_token");
+          if (token) {
+            const { data } = await api.post("/auth/refresh-token", {}, {
+              headers: { Authorization: `Bearer ${token}` },
+              _retry: true,
+            } as any);
+            if (data?.token) {
+              localStorage.setItem("edu_platform_token", data.token);
+            }
+          }
+        }
+      } catch (err) {
+        // Silently ignore background errors so the user feels nothing
+      }
+    }, 15 * 60 * 1000); // 15 minutes
+
+    return () => clearInterval(heartbeat);
+  }, [isAuthenticated]);
 
   const login = async (payload: LoginPayload) => {
     await authService.login(payload);
@@ -76,13 +116,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const isAuthenticated = !!user;
-  const isInstructor = user?.roles?.some((r: any) => (typeof r === "string" ? r : r.name) === "instructor") ?? false;
-  const isAssistant = user?.roles?.some((r: any) => (typeof r === "string" ? r : r.name) === "assistant") ?? false;
-  const isStudent = user?.roles?.some((r: any) => (typeof r === "string" ? r : r.name) === "student") ?? false;
-
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, isAuthenticated, isInstructor, isAssistant, isStudent }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, isAuthenticated, isInstructor, isAssistant, isStudent, isAdmin, isSuperAdmin }}>
       {children}
     </AuthContext.Provider>
   );

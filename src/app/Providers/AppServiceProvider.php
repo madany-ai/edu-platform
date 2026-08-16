@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Course;
 use App\Policies\CoursePolicy;
 use Illuminate\Support\ServiceProvider;
+use Opcodes\LogViewer\Facades\LogViewer;
 use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
@@ -16,6 +17,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        LogViewer::auth(function ($request) {
+            return $request->user() && $request->user()->hasAnyRole(['super_admin', 'admin']);
+        });
+
         if (config('app.env') === 'production') {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }

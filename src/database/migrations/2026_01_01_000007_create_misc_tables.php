@@ -43,7 +43,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('notifications', function (Blueprint $table) {
+        Schema::create('custom_notifications', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->string('title');
@@ -100,7 +100,7 @@ return new class extends Migration
         Schema::dropIfExists('student_statistics');
         Schema::dropIfExists('media');
         Schema::dropIfExists('activity_logs');
-        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('custom_notifications');
         Schema::dropIfExists('question_replies');
         Schema::dropIfExists('questions_posts');
         Schema::dropIfExists('assignment_submissions');

@@ -1,6 +1,7 @@
 import api from "./api.client";
 import type { User } from "@/types";
 import env from "@/config/env";
+import { STORAGE_KEYS } from "@/lib/constants";
 
 export interface LoginPayload {
   email: string;
@@ -51,6 +52,11 @@ export const authService = {
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
     await api.get("/sanctum/csrf-cookie", { baseURL: env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, "") });
     const { data } = await api.post<LoginResponse>("/auth/login", payload);
+    if (data.token) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
+      }
+    }
     return data;
   },
 
@@ -61,6 +67,9 @@ export const authService = {
   },
 
   logout: async (): Promise<void> => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    }
     await api.post("/auth/logout");
   },
 

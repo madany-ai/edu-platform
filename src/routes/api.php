@@ -41,6 +41,7 @@ Route::get('video/{videoId}/segment', [\App\Http\Controllers\Api\VideoStreamCont
 // Authenticated routes
 Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout']);
+    Route::post('auth/refresh-token', [AuthController::class, 'refreshToken']);
     Route::get('auth/me', [AuthController::class, 'me']);
     Route::put('auth/profile', [AuthController::class, 'updateProfile']);
     Route::put('auth/change-password', [AuthController::class, 'changePassword']);

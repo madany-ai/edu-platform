@@ -41,7 +41,7 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=()" },
-          { key: "Content-Security-Policy", value: `default-src 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' blob: ${process.env.NODE_ENV !== 'production' ? "'unsafe-eval'" : ''} https://challenges.cloudflare.com https://www.youtube.com https://s.ytimg.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https:; connect-src 'self' http://localhost:8000 https:; frame-src 'self' https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com https://*.bunny.net https://iframe.mediadelivery.net; media-src 'self' blob: https:;` },
+          { key: "Content-Security-Policy", value: `default-src 'self'; img-src 'self' data: blob: https: http://localhost:8000; script-src 'self' 'unsafe-inline' blob: ${process.env.NODE_ENV !== 'production' ? "'unsafe-eval'" : ''} https://challenges.cloudflare.com https://www.youtube.com https://s.ytimg.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https:; connect-src 'self' http://localhost:8000 https:; frame-src 'self' https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com https://*.bunny.net https://iframe.mediadelivery.net; media-src 'self' blob: https:;` },
         ],
       },
     ];

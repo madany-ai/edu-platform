@@ -56,6 +56,31 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out']);
     }
 
+    public function refreshToken(\Illuminate\Http\Request $request): JsonResponse
+    {
+        $user = $request->user();
+        
+        // Delete the current token being used
+        $token = $request->user()->currentAccessToken();
+        if ($token) {
+            $token->delete();
+        }
+        
+        // Create a new token
+        $newToken = $user->createToken('auth_token')->plainTextToken;
+        
+        // Regenerate the session cookie so SPA requests continue to work
+        \Illuminate\Support\Facades\Auth::guard('web')->login($user);
+        if (request()->hasSession()) {
+            request()->session()->regenerate();
+        }
+        
+        return response()->json([
+            'token' => $newToken,
+            'message' => 'Token refreshed successfully'
+        ]);
+    }
+
     public function me(): JsonResponse
     {
         $user = request()->user();

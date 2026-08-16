@@ -109,7 +109,7 @@ class AuthService
 
         return [
             'user' => $user,
-            // 'token' => $user->createToken('api')->plainTextToken, // SPA uses stateful session cookie
+            'token' => $user->createToken('api')->plainTextToken,
         ];
     }
 

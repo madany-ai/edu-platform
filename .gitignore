@@ -28,3 +28,4 @@ yarn-error.log*
 .idea/
 src/test_*.php
 src/query_db.php
+docker-compose.override.yml
