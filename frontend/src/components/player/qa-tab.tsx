@@ -28,6 +28,7 @@ export default function QATab({ lectureId }: QATabProps) {
 
   const questions = questionsResponse?.data || [];
   const meta = questionsResponse?.meta;
+  const isStudent = !!user?.student;
 
   useQAReplyTracker(questions);
 
@@ -75,7 +76,8 @@ export default function QATab({ lectureId }: QATabProps) {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Post Question Form */}
+      {/* Post Question Form — students only */}
+      {isStudent && (
       <div className="flex gap-4">
         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
           {user?.name?.charAt(0) || "U"}
@@ -105,6 +107,7 @@ export default function QATab({ lectureId }: QATabProps) {
           </div>
         </div>
       </div>
+      )}
 
       {/* Questions List */}
       {questions.length === 0 ? (

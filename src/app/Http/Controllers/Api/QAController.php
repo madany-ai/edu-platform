@@ -25,11 +25,7 @@ class QAController extends Controller
     public function store(StoreQuestionRequest $request, Lecture $lecture): JsonResponse
     {
         $user = $request->user();
-        $student = $this->resolveStudent($user);
-
-        if (! $student && ! $user->hasRole(['instructor', 'admin', 'super_admin'])) {
-            abort(404, 'الطالب غير موجود.');
-        }
+        $student = $this->resolveStudent($user) ?? abort(403, 'الأسئلة متاحة للطلاب فقط.');
 
         $question = $this->qaService->postQuestion($lecture, $student, $user, $request->validated());
 
