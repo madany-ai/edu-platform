@@ -17,15 +17,16 @@ class QAService
         private readonly NotificationService $notificationService,
     ) {}
 
-    public function postQuestion(Lecture $lecture, Student $student, array $data): QuestionsPost
+    public function postQuestion(Lecture $lecture, ?Student $student, User $user, array $data): QuestionsPost
     {
         $question = QuestionsPost::create([
             'lecture_id' => $lecture->id,
-            'student_id' => $student->id,
+            'student_id' => $student?->id,
+            'user_id' => $user->id,
             'body' => $data['body'],
         ]);
 
-        $question->load('student.user', 'lecture');
+        $question->load('student.user', 'user', 'lecture');
 
         $this->notifyInstructorAndAssistants($question);
 
@@ -34,7 +35,7 @@ class QAService
 
     public function getLectureQuestions(Lecture $lecture, ?Student $student, int $page = 1, int $perPage = 20): LengthAwarePaginator
     {
-        $query = QuestionsPost::with(['student.user', 'replies.user'])
+        $query = QuestionsPost::with(['student.user', 'user', 'replies.user'])
             ->withCount('replies')
             ->where('lecture_id', $lecture->id)
             ->latest();
@@ -44,7 +45,7 @@ class QAService
 
     public function getQuestion(QuestionsPost $question): QuestionsPost
     {
-        return $question->load(['student.user', 'replies.user', 'lecture.section.course']);
+        return $question->load(['student.user', 'user', 'replies.user', 'lecture.section.course']);
     }
 
     public function replyToQuestion(QuestionsPost $question, User $user, array $data): QuestionReply
@@ -63,7 +64,7 @@ class QAService
 
     public function getMyQuestions(Student $student, int $page = 1, int $perPage = 20): LengthAwarePaginator
     {
-        return QuestionsPost::with(['lecture.section.course', 'replies.user'])
+        return QuestionsPost::with(['lecture.section.course', 'user', 'replies.user'])
             ->withCount('replies')
             ->where('student_id', $student->id)
             ->latest()
@@ -90,7 +91,7 @@ class QAService
 
     public function getInstructorQuestions(User $instructor, int $page = 1, int $perPage = 20): LengthAwarePaginator
     {
-        return QuestionsPost::with(['student.user', 'lecture.section.course', 'replies.user'])
+        return QuestionsPost::with(['student.user', 'user', 'lecture.section.course', 'replies.user'])
             ->withCount('replies')
             ->whereHas('lecture.section.course', function ($q) use ($instructor) {
                 $q->where('instructor_id', $instructor->id);
@@ -103,7 +104,7 @@ class QAService
     {
         $courseIds = $assistant->assistedCourses()->pluck('courses.id');
 
-        return QuestionsPost::with(['student.user', 'lecture.section.course', 'replies.user'])
+        return QuestionsPost::with(['student.user', 'user', 'lecture.section.course', 'replies.user'])
             ->withCount('replies')
             ->whereHas('lecture.section.course', function ($q) use ($courseIds) {
                 $q->whereIn('courses.id', $courseIds);

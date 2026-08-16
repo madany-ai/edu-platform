@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class QuestionsPost extends Model
 {
     use HasUuids;
-    protected $fillable = ['lecture_id', 'student_id', 'body'];
+    protected $fillable = ['lecture_id', 'student_id', 'user_id', 'body'];
 
     public function lecture(): BelongsTo
     {
@@ -26,8 +26,18 @@ class QuestionsPost extends Model
         return $this->belongsTo(Student::class);
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function replies(): HasMany
     {
         return $this->hasMany(QuestionReply::class, 'question_id');
+    }
+
+    public function getAuthorNameAttribute(): string
+    {
+        return $this->student?->user?->name ?? $this->user?->name ?? 'محذوف';
     }
 }

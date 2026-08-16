@@ -12,10 +12,15 @@ class QuestionResource extends JsonResource
         return [
             'id' => $this->id,
             'body' => $this->body,
+            'author_name' => $this->author_name,
             'student' => $this->student ? [
                 'id' => $this->student->id,
                 'name' => $this->student->user?->name ?? 'محذوف',
             ] : null,
+            'user' => $this->whenLoaded('user', fn () => [
+                'id' => $this->user->id,
+                'name' => $this->user->name,
+            ]),
             'lecture' => $this->lecture ? [
                 'id' => $this->lecture->id,
                 'title' => $this->lecture->title,

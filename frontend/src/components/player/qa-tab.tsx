@@ -132,7 +132,7 @@ export default function QATab({ lectureId }: QATabProps) {
               isReplyPending={replyMutation.isPending}
               onDeleteQuestion={() => handleDeleteQuestion(question.id)}
               onDeleteReply={handleDeleteReply}
-              isOwnQuestion={question.student.id === user?.student?.id}
+              isOwnQuestion={question.student ? question.student.id === user?.student?.id : false}
             />
           ))}
 
@@ -209,11 +209,11 @@ function QuestionCard({
       <div className="p-4">
         <div className="flex items-start gap-3">
           <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-            {question.student.name.charAt(0)}
+            {question.author_name.charAt(0)}
           </div>
           <div className="flex-grow min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm font-semibold">{question.student.name}</span>
+              <span className="text-sm font-semibold">{question.author_name}</span>
               <span className="text-xs text-muted-foreground">
                 {new Date(question.created_at).toLocaleDateString("ar-EG", {
                   year: "numeric",

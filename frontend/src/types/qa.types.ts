@@ -1,11 +1,12 @@
 export interface Question {
   id: string;
   body: string;
+  author_name: string;
   student: {
     id: string;
     name: string;
     student_code: string;
-  };
+  } | null;
   lecture: {
     id: string;
     title: string;
