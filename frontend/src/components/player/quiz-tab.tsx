@@ -319,15 +319,13 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
               <Eye className="h-4 w-4" />
               {showReview ? "إخفاء مراجعة الأسئلة" : "مراجعة أسئلتي وإجاباتي"}
             </button>
-            {!maxAttemptsReached && (
-              <button
-                onClick={handleStart}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-colors text-sm"
-              >
-                <RefreshCw className="h-4 w-4" />
-                إعادة المحاولة
-              </button>
-            )}
+            <button
+              onClick={handleStart}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-colors text-sm"
+            >
+              <RefreshCw className="h-4 w-4" />
+              إعادة المحاولة
+            </button>
           </div>
         </div>
 
@@ -609,28 +607,13 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
       )}
 
       <div className="pt-4">
-        {maxAttemptsReached ? (
-          <div className="space-y-4">
-            <div className="bg-red-500/10 border border-red-200 text-red-600 rounded-xl p-4 text-sm font-medium">
-              لقد استنفدت الحد الأقصى للمحاولات المتاحة لهذا الاختبار. يمكنك الآن تخطي الاختبار والانتقال للمحاضرة التالية.
-            </div>
-            <button
-              onClick={() => window.location.reload()}
-              className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-all hover:scale-105 active:scale-95 shadow-md shadow-primary/20 text-sm"
-            >
-              تحديث الصفحة لمتابعة المحاضرة
-              <RefreshCw className="h-4 w-4 mr-1" />
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={handleStart}
-            className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-all hover:scale-105 active:scale-95 shadow-md shadow-primary/20 text-sm"
-          >
-            <Play className="h-4 w-4 fill-current" />
-            {latestAttempt ? `بدء محاولة جديدة` : `بدء ${label} الآن`}
-          </button>
-        )}
+        <button
+          onClick={handleStart}
+          className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-all hover:scale-105 active:scale-95 shadow-md shadow-primary/20 text-sm"
+        >
+          <Play className="h-4 w-4 fill-current" />
+          {latestAttempt ? `بدء محاولة جديدة` : `بدء ${label} الآن`}
+        </button>
       </div>
     </div>
   );
