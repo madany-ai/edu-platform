@@ -88,8 +88,8 @@ export default function LectureViewPage() {
   // If lecture has a mandatory blocking exam/assignment that hasn't been passed, redirect to it first
   useEffect(() => {
     if (!lecture || searchParams.get("type")) return; // only on initial load (no type param)
-    const blockingExam = lecture.exams?.find((e: any) => e.is_blocking && !e.passed);
-    const blockingAssignment = lecture.assignments?.find((a: any) => a.is_blocking && !a.passed);
+    const blockingExam = lecture.exams?.find((e: any) => e.is_blocking && !e.passed && !e.max_attempts_exhausted);
+    const blockingAssignment = lecture.assignments?.find((a: any) => a.is_blocking && !a.passed && !a.max_attempts_exhausted);
     const blocking = blockingExam || blockingAssignment;
     if (blocking) {
       const type = blockingExam ? "exam" : "assignment";
@@ -145,6 +145,7 @@ export default function LectureViewPage() {
             sort_order: 1 + (idx * 0.1), // Force exams to appear first
             is_blocking: exam.is_blocking,
             passed: exam.passed,
+            max_attempts_exhausted: exam.max_attempts_exhausted,
             is_locked: lec.is_locked || !lec.has_access,
           });
         });
@@ -169,6 +170,7 @@ export default function LectureViewPage() {
             sort_order: 3 + (idx * 0.1), // Force assignments to appear last
             is_blocking: assign.is_blocking,
             passed: assign.passed,
+            max_attempts_exhausted: assign.max_attempts_exhausted,
             is_locked: lec.is_locked || !lec.has_access,
           });
         });
@@ -197,7 +199,7 @@ export default function LectureViewPage() {
             item.is_locked = true;
           }
           // Only exam/assignment blocking propagates to subsequent items
-          if ((item.type === "exam" || item.type === "assignment") && item.is_blocking && !item.passed) {
+          if ((item.type === "exam" || item.type === "assignment") && item.is_blocking && !item.passed && !item.max_attempts_exhausted) {
             isBlockedByPreviousExam = true;
           }
         });

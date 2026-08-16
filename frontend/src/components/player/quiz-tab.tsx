@@ -300,7 +300,7 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             {(passed || maxAttemptsReached) && (
               <button
                 onClick={() => {
@@ -359,7 +359,17 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
                     </span>
                   </div>
 
-                  <p className="text-foreground font-medium">{q.question}</p>
+                  <p className="text-foreground font-medium whitespace-pre-wrap">{q.question}</p>
+
+                  {q.image_path && (
+                    <div className="w-full max-h-[300px] overflow-hidden rounded-2xl border my-4">
+                      <img
+                        src={q.image_path}
+                        alt="سؤال توضيحي"
+                        className="w-full h-full object-contain bg-muted"
+                      />
+                    </div>
+                  )}
 
                   {/* Multiple Choice Choices review */}
                   {!isEssay && q.choices && (
@@ -600,8 +610,17 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
 
       <div className="pt-4">
         {maxAttemptsReached ? (
-          <div className="bg-red-500/10 border border-red-200 text-red-600 rounded-xl p-4 text-sm font-medium">
-            لقد استنفدت الحد الأقصى للمحاولات المتاحة لهذا الاختبار. يمكنك الآن تخطي الاختبار والانتقال للمحاضرة التالية.
+          <div className="space-y-4">
+            <div className="bg-red-500/10 border border-red-200 text-red-600 rounded-xl p-4 text-sm font-medium">
+              لقد استنفدت الحد الأقصى للمحاولات المتاحة لهذا الاختبار. يمكنك الآن تخطي الاختبار والانتقال للمحاضرة التالية.
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-all hover:scale-105 active:scale-95 shadow-md shadow-primary/20 text-sm"
+            >
+              تحديث الصفحة لمتابعة المحاضرة
+              <RefreshCw className="h-4 w-4 mr-1" />
+            </button>
           </div>
         ) : (
           <button

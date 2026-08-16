@@ -9,6 +9,7 @@ class LectureResource extends JsonResource
 {
     private ?array $progressMap = null;
     private ?array $attemptsMap = null;
+    private ?array $attemptsCountMap = null;
     private $student = null;
     private bool $hasStudentBeenSet = false;
 
@@ -21,6 +22,12 @@ class LectureResource extends JsonResource
     public function setAttemptsMap(?array $map): self
     {
         $this->attemptsMap = $map;
+        return $this;
+    }
+
+    public function setAttemptsCountMap(?array $map): self
+    {
+        $this->attemptsCountMap = $map;
         return $this;
     }
 
@@ -92,17 +99,28 @@ class LectureResource extends JsonResource
         $examsFormatted = [];
         if ($this->relationLoaded('exams')) {
             $examsFormatted = $this->exams->map(function ($exam) use ($student) {
+                $attemptsCount = 0;
+                
                 if ($this->attemptsMap && array_key_exists($exam->id, $this->attemptsMap)) {
                     $latestAttempt = $this->attemptsMap[$exam->id];
+                    $attemptsCount = $this->attemptsCountMap[$exam->id] ?? 0;
                 } else {
                     $latestAttempt = $student ? \App\Models\ExamAttempt::where('exam_id', $exam->id)
                         ->where('student_id', $student->id)
                         ->whereNotNull('submitted_at')
                         ->latest('submitted_at')
                         ->first() : null;
+                        
+                    if ($student) {
+                        $attemptsCount = \App\Models\ExamAttempt::where('exam_id', $exam->id)
+                            ->where('student_id', $student->id)
+                            ->whereNotNull('submitted_at')
+                            ->count();
+                    }
                 }
 
                 $score = $latestAttempt ? (is_array($latestAttempt) ? ($latestAttempt['score'] ?? 0) : $latestAttempt->score) : 0;
+                $maxAttempts = $exam->max_attempts ?? 3;
 
                 return [
                     'id' => $exam->id,
@@ -117,6 +135,7 @@ class LectureResource extends JsonResource
                         'submitted_at' => is_array($latestAttempt) ? ($latestAttempt['submitted_at'] ?? null) : $latestAttempt->submitted_at,
                     ] : null,
                     'passed' => $latestAttempt ? ($score >= $exam->pass_percentage) : false,
+                    'max_attempts_exhausted' => $attemptsCount >= $maxAttempts,
                 ];
             });
         }
@@ -124,17 +143,28 @@ class LectureResource extends JsonResource
         $assignmentsFormatted = [];
         if ($this->relationLoaded('assignments')) {
             $assignmentsFormatted = $this->assignments->map(function ($assignment) use ($student) {
+                $attemptsCount = 0;
+                
                 if ($this->attemptsMap && array_key_exists($assignment->id, $this->attemptsMap)) {
                     $latestAttempt = $this->attemptsMap[$assignment->id];
+                    $attemptsCount = $this->attemptsCountMap[$assignment->id] ?? 0;
                 } else {
                     $latestAttempt = $student ? \App\Models\ExamAttempt::where('exam_id', $assignment->id)
                         ->where('student_id', $student->id)
                         ->whereNotNull('submitted_at')
                         ->latest('submitted_at')
                         ->first() : null;
+                        
+                    if ($student) {
+                        $attemptsCount = \App\Models\ExamAttempt::where('exam_id', $assignment->id)
+                            ->where('student_id', $student->id)
+                            ->whereNotNull('submitted_at')
+                            ->count();
+                    }
                 }
 
                 $score = $latestAttempt ? (is_array($latestAttempt) ? ($latestAttempt['score'] ?? 0) : $latestAttempt->score) : 0;
+                $maxAttempts = $assignment->max_attempts ?? 3;
 
                 return [
                     'id' => $assignment->id,
@@ -149,6 +179,7 @@ class LectureResource extends JsonResource
                         'submitted_at' => is_array($latestAttempt) ? ($latestAttempt['submitted_at'] ?? null) : $latestAttempt->submitted_at,
                     ] : null,
                     'passed' => $latestAttempt ? ($score >= $assignment->pass_percentage) : false,
+                    'max_attempts_exhausted' => $attemptsCount >= $maxAttempts,
                 ];
             });
         }

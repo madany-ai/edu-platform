@@ -65,13 +65,17 @@ class CourseController extends Controller
                 $course->setAttribute('progress_map', $progressMap);
 
                 $examIds = $course->sections->flatMap(fn($s) => $s->lectures->flatMap(fn($l) => $l->exams->pluck('id')->concat($l->assignments->pluck('id'))))->toArray();
-                $attemptsMap = \App\Models\ExamAttempt::where('student_id', $student->id)
+                $allAttempts = \App\Models\ExamAttempt::where('student_id', $student->id)
                     ->whereIn('exam_id', $examIds)
                     ->whereNotNull('submitted_at')
                     ->get()
-                    ->groupBy('exam_id')
-                    ->map(fn($group) => $group->sortByDesc('submitted_at')->first())
-                    ->all();
+                    ->groupBy('exam_id');
+
+                $attemptsMap = $allAttempts->map(fn($group) => $group->sortByDesc('submitted_at')->first())->all();
+                $attemptsCountMap = $allAttempts->map(fn($group) => $group->count())->all();
+
+                $course->setAttribute('attempts_map', $attemptsMap);
+                $course->setAttribute('attempts_count_map', $attemptsCountMap);
 
                 $course->setAttribute('attempts_map', $attemptsMap);
             }
