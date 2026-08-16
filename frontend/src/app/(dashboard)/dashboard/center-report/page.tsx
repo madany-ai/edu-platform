@@ -17,6 +17,7 @@ import {
   Building2,
   Phone,
   QrCode,
+  Printer,
 } from "lucide-react";
 
 export default function MyCenterReportPage() {
@@ -44,6 +45,51 @@ export default function MyCenterReportPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePrintQR = () => {
+    const svg = document.getElementById("qr-code-svg");
+    if (!svg || !data?.student?.code) return;
+    
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    
+    printWindow.document.write(`
+      <html dir="rtl">
+        <head>
+          <title>طباعة الباركود - ${user?.name}</title>
+          <style>
+            body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: system-ui, sans-serif; background: #fff; color: #000; }
+            .card { border: 2px dashed #ccc; padding: 2.5rem; border-radius: 1.5rem; text-align: center; }
+            .title { font-size: 1rem; color: #666; margin-bottom: 0.5rem; }
+            .name { font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem; }
+            .qr-container { display: flex; justify-content: center; }
+            .qr-container svg { width: 150px; height: 150px; }
+            .code { font-family: monospace; font-size: 1.5rem; font-weight: bold; margin-top: 1.5rem; letter-spacing: 0.15em; }
+            @media print {
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              .card { border: 2px solid #000; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <div class="title">الباركود الخاص بالطالب</div>
+            <div class="name">${user?.name}</div>
+            <div class="qr-container">${svgData}</div>
+            <div class="code">${data.student.code}</div>
+          </div>
+          <script>
+            window.onload = () => {
+              window.print();
+              setTimeout(() => window.close(), 500);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   if (loading) return <PageLoading />;
@@ -75,10 +121,17 @@ export default function MyCenterReportPage() {
             {/* QR Code Card */}
             {student?.code && (
               <div className="glass-card p-3 rounded-2xl border border-border bg-white text-center flex flex-col items-center justify-center">
-                <QRCode value={student.code} size={90} className="rounded-md" />
+                <QRCode id="qr-code-svg" value={student.code} size={90} className="rounded-md" />
                 <span className="text-[10px] text-muted-foreground font-mono font-bold mt-2 tracking-wider">
                   {student.code}
                 </span>
+                <button
+                  onClick={handlePrintQR}
+                  className="mt-3 w-full flex items-center justify-center gap-1.5 bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors text-[11px] py-1.5 rounded-lg font-bold"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  طباعة الكود
+                </button>
               </div>
             )}
             <div className="glass-card px-6 py-4 rounded-2xl border border-amber-500/30 text-center bg-amber-500/5 flex flex-col justify-center h-[130px]">

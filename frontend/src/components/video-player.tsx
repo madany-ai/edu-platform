@@ -444,9 +444,26 @@ function HLSPlayer({ lectureId, streamUrl, streamType, initialTime = 0 }: VideoP
   };
 
   const toggleFullscreen = () => {
-    const el = containerRef.current;
+    const el = containerRef.current as any;
     if (!el) return;
-    document.fullscreenElement ? document.exitFullscreen() : el.requestFullscreen();
+    
+    if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
+    } else {
+      if (el.requestFullscreen) {
+        el.requestFullscreen().catch((err: any) => {
+          // Fallback to video element for iOS Safari on iPhone
+          if (videoRef.current && (videoRef.current as any).webkitEnterFullscreen) {
+            (videoRef.current as any).webkitEnterFullscreen();
+          }
+        });
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen();
+      } else if (videoRef.current && (videoRef.current as any).webkitEnterFullscreen) {
+        (videoRef.current as any).webkitEnterFullscreen();
+      }
+    }
   };
 
   const setQuality = (level: number) => {
@@ -849,8 +866,17 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
   };
 
   const toggleFullscreen = () => {
-    if (!wrapperRef.current) return;
-    document.fullscreenElement ? document.exitFullscreen() : wrapperRef.current.requestFullscreen();
+    const el = wrapperRef.current as any;
+    if (!el) return;
+
+    if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
+    } else {
+      if (el.requestFullscreen) el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      else if (el.webkitEnterFullscreen) el.webkitEnterFullscreen();
+    }
   };
 
   const setSpeed = (rate: number) => {

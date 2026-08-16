@@ -151,7 +151,7 @@ class ExamController extends Controller
         $this->authorize('submit', $attempt);
 
         $validated = request()->validate([
-            'answers' => 'required|array',
+            'answers' => 'present|array',
             'answers.*.question_id' => [
                 'required',
                 \Illuminate\Validation\Rule::exists('questions', 'id')->where('exam_id', $attempt->exam_id),

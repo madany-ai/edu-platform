@@ -61,6 +61,7 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [autoSubmitAttempted, setAutoSubmitAttempted] = useState(false);
   const [examFinished, setExamFinished] = useState(false);
   const [gradedAttempt, setGradedAttempt] = useState<any>(null);
   const [showReview, setShowReview] = useState(false);
@@ -119,22 +120,45 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
 
   // Auto-submit when time runs out
   useEffect(() => {
-    if (activeAttempt && timeLeft <= 0 && !isSubmitting && !examFinished) {
+    if (activeAttempt && timeLeft <= 0 && !isSubmitting && !examFinished && !autoSubmitAttempted) {
+      setAutoSubmitAttempted(true);
       handleSubmit(true);
     }
-  }, [timeLeft, activeAttempt, isSubmitting, examFinished]);
+  }, [timeLeft, activeAttempt, isSubmitting, examFinished, autoSubmitAttempted]);
 
   const handleStart = async () => {
     if (!exam) return;
     try {
       setLoading(true);
       const res = await api.post<Attempt>(`/exams/${exam.id}/start`);
-      setActiveAttempt(res.data);
-      setTimeLeft(exam.duration * 60);
+      const attempt = res.data;
+
+      // If the backend auto-submitted the attempt because time was already over
+      if (attempt.submitted_at) {
+        setGradedAttempt(attempt);
+        setExamFinished(true);
+        setLoading(false);
+        return;
+      }
+
+      setActiveAttempt(attempt);
+
+      if (exam.duration) {
+        // Calculate remaining time based on the server's started_at
+        const startedAt = new Date(attempt.started_at).getTime();
+        const now = new Date().getTime();
+        const elapsedSeconds = Math.floor((now - startedAt) / 1000);
+        const remainingSeconds = exam.duration * 60 - elapsedSeconds;
+        setTimeLeft(remainingSeconds > 0 ? remainingSeconds : 0);
+      } else {
+        setTimeLeft(0);
+      }
+
       setAnswers({});
       setCurrentQuestionIndex(0);
       setExamFinished(false);
       setGradedAttempt(null);
+      setAutoSubmitAttempted(false);
     } catch (err: any) {
       console.error(err);
       toast.error(err.response?.data?.message || "فشل بدء الاختبار.");
@@ -164,11 +188,13 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
 
     try {
       setIsSubmitting(true);
-      // Format answers for API
-      const formattedAnswers = exam.questions.map((q) => ({
-        question_id: q.id,
-        answer: answers[q.id] || "",
-      }));
+      // Format answers for API (exclude empty/unanswered questions)
+      const formattedAnswers = exam.questions
+        .map((q) => ({
+          question_id: q.id,
+          answer: answers[q.id] || "",
+        }))
+        .filter((a) => a.answer !== "");
 
       const res = await api.post(`/attempts/${attemptToSubmit.id}/submit`, {
         answers: formattedAnswers,
@@ -187,7 +213,14 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
       queryClient.invalidateQueries({ queryKey: ["my-attempts"] });
     } catch (err: any) {
       console.error(err);
-      toast.error("حدث خطأ أثناء تسليم الإجابات.");
+      
+      const errorMessage = err.response?.data?.message || err.message || "حدث خطأ أثناء تسليم الإجابات.";
+      toast.error(errorMessage);
+
+      if (err.response?.status === 422 && (errorMessage.includes("الوقت") || errorMessage.includes("time"))) {
+        await loadGradedResult(attemptToSubmit.id);
+        setActiveAttempt(null);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -302,8 +335,11 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
               const studentAnswer = gradedAttempt.answers?.find((a: any) => a.question_id === q.id);
               const isEssay = q.type === "essay";
               
-              // Find correct choice
-              const correctChoice = q.choices?.find((c) => c.is_correct);
+              // Get the question data from the graded attempt which includes the 'is_correct' field
+              const gradedQuestion = studentAnswer?.question;
+              
+              // Find correct choice from the graded question
+              const correctChoice = gradedQuestion?.choices?.find((c: any) => c.is_correct);
               const isCorrect = !isEssay && studentAnswer && correctChoice && String(studentAnswer.answer) === String(correctChoice.id);
 
               return (
@@ -326,12 +362,15 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                       {q.choices.map((c) => {
                         const isStudentSelected = studentAnswer && String(studentAnswer.answer) === String(c.id);
+                        const gradedChoice = gradedQuestion?.choices?.find((gc: any) => gc.id === c.id);
+                        const isChoiceCorrect = gradedChoice?.is_correct || false;
+                        
                         return (
                           <div
                             key={c.id}
                             className={cn(
                               "p-3 rounded-xl border flex items-center justify-between text-sm",
-                              c.is_correct
+                              isChoiceCorrect
                                 ? "bg-green-500/10 border-green-200 text-green-700 font-medium"
                                 : isStudentSelected
                                 ? "bg-red-500/10 border-red-200 text-red-700"
@@ -339,7 +378,7 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
                             )}
                           >
                             <span>{c.answer}</span>
-                            {c.is_correct && <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />}
+                            {isChoiceCorrect && <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />}
                           </div>
                         );
                       })}
