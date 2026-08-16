@@ -51,12 +51,28 @@ class BackupManager extends Page
 
     public function createBackup()
     {
-        Artisan::call('backup:run', ['--only-db' => true]);
-        
-        Notification::make()
-            ->title('تم إنشاء نسخة احتياطية لقاعدة البيانات بنجاح')
-            ->success()
-            ->send();
+        try {
+            $exitCode = Artisan::call('backup:run', ['--only-db' => true]);
+            
+            if ($exitCode === 0) {
+                Notification::make()
+                    ->title('تم إنشاء نسخة احتياطية لقاعدة البيانات بنجاح')
+                    ->success()
+                    ->send();
+            } else {
+                Notification::make()
+                    ->title('حدث خطأ أثناء إنشاء النسخة الاحتياطية')
+                    ->body('Exit code: ' . $exitCode)
+                    ->danger()
+                    ->send();
+            }
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('حدث استثناء أثناء إنشاء النسخة الاحتياطية')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
             
         $this->loadBackups();
     }
