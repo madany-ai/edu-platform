@@ -26,6 +26,9 @@ class Question extends Model
 
     public function getImagePathAttribute($value)
     {
+        if (request()->is('admin/*') || request()->is('livewire/*')) {
+            return $value;
+        }
         return $this->resolveMinioUrl($value);
     }
 }
