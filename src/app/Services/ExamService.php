@@ -141,7 +141,7 @@ class ExamService
 
         $maxAttempts = $exam->max_attempts ?? 3;
         if ($completedAttemptsCount >= $maxAttempts) {
-            abort(403, "لقد استنفدت الحد الأقصى للمحاولات المتاحة لهذا الاختبار ({$maxAttempts} محاولات).");
+            abort(403, "لقد استنفدت الحد الأقصى للمحاولات المتاحة لهذا الاختبار ({$maxAttempts} محاولات). يمكنك الآن تخطي الاختبار والانتقال للمحاضرة التالية.");
         }
 
         $existingAttempt = ExamAttempt::where('exam_id', $exam->id)

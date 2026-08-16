@@ -51,16 +51,29 @@ class VideoAccessService
     protected function loadStudentPassedExams(Student $student, string $courseId): void
     {
         if (app()->runningUnitTests() || !isset($this->studentPassedExams[$student->id])) {
-            $this->studentPassedExams[$student->id] = \App\Models\ExamAttempt::where('student_id', $student->id)
+            $attempts = \App\Models\ExamAttempt::where('student_id', $student->id)
                 ->whereNotNull('submitted_at')
                 ->whereHas('exam.lecture.section', function ($q) use ($courseId) {
                     $q->where('course_id', $courseId);
                 })
-                ->get()
-                ->filter(fn($attempt) => $attempt->score >= ($attempt->exam->pass_percentage ?? 0))
-                ->pluck('exam_id')
-                ->unique()
-                ->toArray();
+                ->with('exam')
+                ->get();
+            
+            $passedExamIds = [];
+            $groupedByExam = $attempts->groupBy('exam_id');
+            
+            foreach ($groupedByExam as $examId => $examAttempts) {
+                $exam = $examAttempts->first()->exam;
+                $maxAttempts = $exam->max_attempts ?? 3;
+                
+                $hasPassed = $examAttempts->contains(fn($attempt) => $attempt->score >= ($exam->pass_percentage ?? 0));
+                
+                if ($hasPassed || $examAttempts->count() >= $maxAttempts) {
+                    $passedExamIds[] = $examId;
+                }
+            }
+
+            $this->studentPassedExams[$student->id] = $passedExamIds;
         }
     }
 
