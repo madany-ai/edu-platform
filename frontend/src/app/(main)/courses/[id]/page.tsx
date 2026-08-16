@@ -31,7 +31,7 @@ import {
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, isAdmin, isSuperAdmin } = useAuth();
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [purchaseTarget, setPurchaseTarget] = useState<{ id: string; price: number } | null>(null);
@@ -46,9 +46,10 @@ export default function CourseDetailPage() {
   const purchaseMutation = usePurchase();
 
   const course = courseData;
-  const enrolled = enrollmentsData?.data?.some(
+  const hasFullAccess = isAdmin || isSuperAdmin;
+  const enrolled = hasFullAccess || (enrollmentsData?.data?.some(
     (e) => e.course_id === id || e.course?.id === id
-  ) ?? false;
+  ) ?? false);
   const hasAnyEnrollment = enrolled;
 
   const unlockedLectures = new Set(entitlements?.map((e: any) => e.lecture_id) || []);

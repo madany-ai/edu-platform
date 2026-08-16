@@ -25,7 +25,8 @@ const VideoPlayer = dynamic(() => import("@/components/video-player"), {
 });
 
 export default function LectureViewPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, isAdmin, isSuperAdmin, loading: authLoading } = useAuth();
+  const hasFullAccess = isAdmin || isSuperAdmin;
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -80,14 +81,14 @@ export default function LectureViewPage() {
   }, [lecture]);
 
   useEffect(() => {
-    if (lecture?.is_locked) {
+    if (lecture?.is_locked && !hasFullAccess) {
       router.push(`/courses/${courseId}`);
     }
-  }, [lecture, courseId, router]);
+  }, [lecture, courseId, router, hasFullAccess]);
 
   // If lecture has a mandatory blocking exam/assignment that hasn't been passed, redirect to it first
   useEffect(() => {
-    if (!lecture || searchParams.get("type")) return; // only on initial load (no type param)
+    if (!lecture || searchParams.get("type") || hasFullAccess) return; // only on initial load (no type param), skip for admins
     const blockingExam = lecture.exams?.find((e: any) => e.is_blocking && !e.passed && !e.max_attempts_exhausted);
     const blockingAssignment = lecture.assignments?.find((a: any) => a.is_blocking && !a.passed && !a.max_attempts_exhausted);
     const blocking = blockingExam || blockingAssignment;
@@ -95,7 +96,7 @@ export default function LectureViewPage() {
       const type = blockingExam ? "exam" : "assignment";
       router.replace(`/courses/${courseId}/lectures/${lectureId}?type=${type}&itemId=${blocking.id}`);
     }
-  }, [lecture, courseId, lectureId, router, searchParams]);
+  }, [lecture, courseId, lectureId, router, searchParams, hasFullAccess]);
 
   if (authLoading || lectureLoading || courseLoading) return <PageLoading />;
   if (!lecture && lectureError) {
