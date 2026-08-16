@@ -6,6 +6,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -43,6 +44,14 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
                 \App\Filament\Pages\Settings::class,
             ])
+
+            ->navigationItems([
+                NavigationItem::make('سجلات النظام (Logs)')
+                    ->url(fn (): string => route('log-viewer.index'))
+                    ->icon('heroicon-o-document-text')
+                    ->group('إدارة النظام')
+                    ->sort(99),
+            ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 \App\Filament\Widgets\InstructorStatsOverview::class,
@@ -59,6 +68,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \App\Http\Middleware\PreventCloudflareCaching::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
