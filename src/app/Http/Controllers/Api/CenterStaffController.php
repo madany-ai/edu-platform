@@ -700,8 +700,18 @@ class CenterStaffController extends Controller
             'phone' => 'nullable|string|max:20',
             'father_phone' => 'nullable|string|max:20',
             'academic_year' => 'required|string|in:prep_1,prep_2,prep_3,sec_1,sec_2,sec_3',
+            'academic_track' => 'nullable|string|in:math,science,literary,general',
             'group_id' => 'nullable|uuid|exists:groups,id',
         ]);
+
+        // Check duplicate phone in users table — if exists, skip setting phone on user
+        $phoneForUser = null;
+        if (!empty($validated['phone'])) {
+            $phoneAlreadyUsed = \App\Models\User::where('phone', $validated['phone'])->exists();
+            if (!$phoneAlreadyUsed) {
+                $phoneForUser = $validated['phone'];
+            }
+        }
 
         do {
             $studentCode = 'ST' . date('Y') . rand(10000, 99999);
@@ -711,7 +721,7 @@ class CenterStaffController extends Controller
             'name' => "{$validated['first_name']} {$validated['last_name']}",
             'email' => strtolower($studentCode) . '@student.local',
             'password' => \Illuminate\Support\Facades\Hash::make('password123'),
-            'phone' => $validated['phone'] ?? null,
+            'phone' => $phoneForUser,
             'status' => \App\Enums\UserStatus::Active,
         ]);
         $user->assignRole('student');
@@ -726,6 +736,7 @@ class CenterStaffController extends Controller
             'phone' => $validated['phone'] ?? null,
             'father_phone' => $validated['father_phone'] ?? null,
             'academic_year' => $validated['academic_year'],
+            'academic_track' => $validated['academic_track'] ?? null,
             'group_id' => $validated['group_id'] ?? null,
         ]);
 
