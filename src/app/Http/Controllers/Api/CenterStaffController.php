@@ -388,20 +388,27 @@ class CenterStaffController extends Controller
             ], 444);
         }
 
+        $existingAtt = Attendance::where('session_id', $session->id)
+            ->where('student_id', $student->id)
+            ->first();
+
+        if ($existingAtt) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "تم تسجيل حضور هذا الطالب مسبقاً في هذه الحصة!",
+            ], 409);
+        }
+
         $isGuest = $student->group_id !== $session->group_id;
         $status = $validated['status'] ?? ($isGuest ? 'guest' : 'present');
 
-        $att = Attendance::updateOrCreate(
-            [
-                'session_id' => $session->id,
-                'student_id' => $student->id,
-            ],
-            [
-                'status' => $status,
-                'is_guest' => $isGuest,
-                'original_group_id' => $isGuest ? $student->group_id : null,
-            ]
-        );
+        $att = Attendance::create([
+            'session_id' => $session->id,
+            'student_id' => $student->id,
+            'status' => $status,
+            'is_guest' => $isGuest,
+            'original_group_id' => $isGuest ? $student->group_id : null,
+        ]);
 
         // Notify parent
         try {

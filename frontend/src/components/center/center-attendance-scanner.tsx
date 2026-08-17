@@ -35,6 +35,7 @@ export function CenterAttendanceScanner({ sessions, academicTrack, onAttendanceU
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const lastScannedCode = useRef<string | null>(null);
   const lastScanTime = useRef<number>(0);
+  const isScanningRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (sessions.length > 0) {
@@ -133,7 +134,12 @@ export function CenterAttendanceScanner({ sessions, academicTrack, onAttendanceU
       return;
     }
     if (!codeToScan || !codeToScan.trim()) return;
+    if (isScanningRef.current) {
+      console.log("Scan ignored: Already scanning");
+      return;
+    }
 
+    isScanningRef.current = true;
     setLoading(true);
     setScanError("");
     setScanResult(null);
@@ -154,13 +160,15 @@ export function CenterAttendanceScanner({ sessions, academicTrack, onAttendanceU
       setManualCode("");
       if (onAttendanceUpdated) onAttendanceUpdated();
     } catch (err: any) {
-      console.error("API Scan Error:", err);
+      // Changed console.error to console.warn to prevent Next.js error overlay from popping up during development
+      console.warn("API Scan Error:", err.message);
       playSound("error");
       const msg = err.response?.data?.message || `لم يتم العثور على طالب بالكود: ${codeToScan}`;
       setScanError(msg);
     } finally {
       console.log("Scan finally block executed");
       setLoading(false);
+      isScanningRef.current = false;
     }
   };
 
@@ -245,25 +253,28 @@ export function CenterAttendanceScanner({ sessions, academicTrack, onAttendanceU
         if (result) {
           const text = result.getText();
           const now = Date.now();
-          if (text !== lastScannedCode.current || (now - lastScanTime.current > 3000)) {
-            lastScannedCode.current = text;
-            lastScanTime.current = now;
-            
-            try {
-              const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-              const oscillator = audioCtx.createOscillator();
-              const gainNode = audioCtx.createGain();
-              oscillator.connect(gainNode);
-              gainNode.connect(audioCtx.destination);
-              oscillator.type = "sine";
-              oscillator.frequency.value = 800;
-              gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-              gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-              oscillator.start();
-              oscillator.stop(audioCtx.currentTime + 0.1);
-            } catch (e) {}
+          if (text !== lastScannedCode.current || (now - lastScanTime.current > 4000)) {
+            // Only trigger if we are not currently scanning
+            if (!isScanningRef.current) {
+              lastScannedCode.current = text;
+              lastScanTime.current = now;
+              
+              try {
+                const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.type = "sine";
+                oscillator.frequency.value = 800;
+                gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.1);
+              } catch (e) {}
 
-            handleScanCodeRef.current(text);
+              handleScanCodeRef.current(text);
+            }
           }
         }
       });

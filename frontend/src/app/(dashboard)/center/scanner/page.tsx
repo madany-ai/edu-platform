@@ -10,7 +10,7 @@ import { ACADEMIC_TRACKS } from "@/lib/constants";
 
 export default function ScannerPage() {
   const [sessions, setSessions] = useState<AcademicSession[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [academicTrack, setAcademicTrack] = useState("");
 
   const { selectedYearId, selectedGrade, selectedTerm } = useCenterFilters();
@@ -26,7 +26,7 @@ export default function ScannerPage() {
   }, [selectedYearId, selectedGrade, selectedTerm, academicTrack]);
 
   const loadSessions = async () => {
-    setLoading(true);
+    // We only set loading implicitly for silent re-fetches without unmounting the scanner
     try {
       const data = await centerService.getSessions({
         academic_year_id: selectedYearId,
@@ -37,11 +37,11 @@ export default function ScannerPage() {
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
     }
   };
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center gap-3">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
