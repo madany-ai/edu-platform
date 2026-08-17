@@ -66,6 +66,7 @@ export default function RegisterPage() {
   const [governorates, setGovernorates] = useState<GovernorateInfo[]>([]);
   const [governorateId, setGovernorateId] = useState("");
   const [academicYear, setAcademicYear] = useState("");
+  const [academicTrack, setAcademicTrack] = useState("");
 
   const [errors, setErrors] = useState<FieldError[]>([]);
   const [loading, setLoading] = useState(false);
@@ -140,6 +141,9 @@ export default function RegisterPage() {
 
     if (!governorateId) newErrors.push({ field: "governorate_id", message: "المحافظة مطلوبة" });
     if (!academicYear) newErrors.push({ field: "academic_year", message: "الصف الدراسي مطلوب" });
+    if (academicYear === "sec_3" && !academicTrack) {
+      newErrors.push({ field: "academic_track", message: "الشعبة الدراسية مطلوبة للصف الثالث الثانوي" });
+    }
     
     if (!fatherPhone) {
       newErrors.push({ field: "father_phone", message: "رقم هاتف ولي الأمر مطلوب" });
@@ -154,6 +158,11 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
+      let trackToSubmit = academicTrack;
+      if (academicYear === "sec_1") trackToSubmit = "general";
+      if (academicYear === "sec_2") trackToSubmit = "science";
+      if (academicYear.startsWith("prep")) trackToSubmit = "general";
+
       await register({
         email,
         password,
@@ -168,6 +177,7 @@ export default function RegisterPage() {
         birth_date: birthDate,
         governorate_id: governorateId,
         academic_year: academicYear,
+        academic_track: trackToSubmit,
         "cf-turnstile-response": turnstileToken,
       });
       setSubmitted(true);
@@ -449,7 +459,7 @@ export default function RegisterPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="academic_year" className="text-xs">الصف الدراسي *</Label>
-                  <Select value={academicYear} onValueChange={(val) => { setAcademicYear(val); clearFieldError("academic_year"); }}>
+                  <Select value={academicYear} onValueChange={(val) => { setAcademicYear(val); setAcademicTrack(""); clearFieldError("academic_year"); }}>
                     <SelectTrigger id="academic_year" className="bg-background/50 border-border/60 text-foreground text-sm">
                       <SelectValue placeholder="اختر الصف الدراسي" />
                     </SelectTrigger>
@@ -466,6 +476,27 @@ export default function RegisterPage() {
                   )}
                 </div>
               </div>
+              
+              {academicYear === "sec_3" && (
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="academic_track" className="text-xs">الشعبة الدراسية *</Label>
+                    <Select value={academicTrack} onValueChange={(val) => { setAcademicTrack(val); clearFieldError("academic_track"); }}>
+                      <SelectTrigger id="academic_track" className="bg-background/50 border-border/60 text-foreground text-sm">
+                        <SelectValue placeholder="اختر الشعبة" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border-border/60 text-foreground">
+                        <SelectItem value="math">علمي رياضة</SelectItem>
+                        <SelectItem value="literary">أدبي</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {getFieldError("academic_track") && (
+                      <p className="text-xs text-destructive">{getFieldError("academic_track")}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">رقم هاتف الطالب *</Label>

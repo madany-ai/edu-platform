@@ -41,6 +41,7 @@ class AuthService
                 'birth_date' => $data['birth_date'],
                 'governorate_id' => $data['governorate_id'],
                 'academic_year' => $data['academic_year'],
+                'academic_track' => $data['academic_track'] ?? null,
             ]);
 
             return $user;

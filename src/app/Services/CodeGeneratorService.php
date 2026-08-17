@@ -11,17 +11,42 @@ class CodeGeneratorService
 {
     public function generateStudentCode(Student $student): string
     {
-        $gradeNumber = 'X';
-        if ($student->academic_year) {
-            $map = [
-                'prep_1' => '1', 'prep_2' => '2', 'prep_3' => '3',
-                'sec_1' => '4', 'sec_2' => '5', 'sec_3' => '6',
-            ];
-            $gradeNumber = $map[$student->academic_year] ?? 'X';
+        $prefix = '';
+        $track = $student->academic_track ?? 'general';
+
+        switch ($student->academic_year) {
+            case 'prep_1': $prefix = '71'; break;
+            case 'prep_2': $prefix = '81'; break;
+            case 'prep_3': $prefix = '91'; break;
+            case 'sec_1':  $prefix = '12'; break;
+            case 'sec_2':  $prefix = '22'; break;
+            case 'sec_3':
+                if ($track === 'math') {
+                    $prefix = '31';
+                } elseif ($track === 'literary') {
+                    $prefix = '32';
+                } else {
+                    $prefix = '31'; // default to math for sec_3 if unknown
+                }
+                break;
+            default: $prefix = '99'; break;
         }
-        $prefix = "ST{$gradeNumber}";
+
+        $maxAttempts = 100;
+        // الاعتماد على الوقت (الدقائق والثواني) كما طلبت
+        $timeDigits = date('is');
         
-        return $this->generateUnique($prefix, fn ($code) => Student::where('student_code', $code)->exists());
+        for ($i = 0; $i < $maxAttempts; $i++) {
+            $code = $prefix . str_pad($timeDigits, 4, '0', STR_PAD_LEFT);
+            if (! Student::where('student_code', $code)->exists()) {
+                return $code;
+            }
+            // في حالة نادرة جداً أن الوقت تكرر بنفس الدقيقة والثانية، نولد رقم عشوائي
+            $timeDigits = (string) random_int(1000, 9999);
+        }
+
+        // Fallback: use time based to guarantee uniqueness if 4 digits are exhausted
+        return $prefix . substr(time(), -4);
     }
 
     public function generateAssistantCode(): string
