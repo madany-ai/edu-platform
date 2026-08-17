@@ -10,10 +10,11 @@ import { BrowserMultiFormatReader } from "@zxing/library";
 
 interface ScannerProps {
   sessions: AcademicSession[];
+  academicTrack?: string;
   onAttendanceUpdated?: () => void;
 }
 
-export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: ScannerProps) {
+export function CenterAttendanceScanner({ sessions, academicTrack, onAttendanceUpdated }: ScannerProps) {
   const [selectedSessionId, setSelectedSessionId] = useState<string>(sessions[0]?.id || "");
   const [manualCode, setManualCode] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -25,6 +26,7 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
   const [activeTab, setActiveTab] = useState<"scanner" | "sheet">("scanner");
   const [attendanceSheet, setAttendanceSheet] = useState<AttendanceRecord[]>([]);
   const [sheetLoading, setSheetLoading] = useState(false);
+  const [sheetSearchQuery, setSheetSearchQuery] = useState("");
   
   // Camera State
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
@@ -50,7 +52,9 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
     if (!selectedSessionId) return;
     setSheetLoading(true);
     try {
-      const res = await centerService.getSessionAttendance(selectedSessionId);
+      const res = await centerService.getSessionAttendance(selectedSessionId, {
+        academic_track: academicTrack,
+      });
       setAttendanceSheet(res.attendance || []);
     } catch (e) {
       console.error(e);
@@ -489,9 +493,19 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
           <div className="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/30">
             <h4 className="text-sm font-bold flex items-center gap-2">
               <FileSpreadsheet className="h-5 w-5 text-primary" />
-              كشف غياب وحضور الحصة ({attendanceSheet.length} طالب)
+              كشف غياب وحضور الحصة ({attendanceSheet.filter(st =>
+                !sheetSearchQuery ||
+                st.full_name.includes(sheetSearchQuery) ||
+                st.student_code.includes(sheetSearchQuery)
+              ).length} طالب)
             </h4>
             <div className="flex flex-wrap gap-2">
+              <Input
+                placeholder="بحث بالاسم أو الكود..."
+                value={sheetSearchQuery}
+                onChange={(e) => setSheetSearchQuery(e.target.value)}
+                className="h-9 text-xs w-48"
+              />
               <Button size="sm" variant="outline" onClick={fetchAttendanceSheet} className="gap-2 h-9 text-xs flex-1 sm:flex-none">
                 <RefreshCw className={`h-3 w-3 ${sheetLoading ? 'animate-spin' : ''}`} /> تحديث
               </Button>
@@ -523,7 +537,13 @@ export function CenterAttendanceScanner({ sessions, onAttendanceUpdated }: Scann
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/40">
-                  {attendanceSheet.map((st) => (
+                  {attendanceSheet
+                    .filter(st =>
+                      !sheetSearchQuery ||
+                      st.full_name.includes(sheetSearchQuery) ||
+                      st.student_code.includes(sheetSearchQuery)
+                    )
+                    .map((st) => (
                     <tr key={st.student_id} className="hover:bg-muted/30 transition-colors">
                       <td className="py-3 px-4 font-mono text-xs text-primary font-bold">{st.student_code}</td>
                       <td className="py-3 px-4 font-bold text-foreground">{st.full_name}</td>

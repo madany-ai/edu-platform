@@ -166,9 +166,10 @@ export const centerService = {
     return data.data;
   },
 
-  getSessionAttendance: async (sessionId: string): Promise<{ session: AcademicSession; attendance: AttendanceRecord[] }> => {
+  getSessionAttendance: async (sessionId: string, params?: { academic_track?: string }): Promise<{ session: AcademicSession; attendance: AttendanceRecord[] }> => {
     const { data } = await api.get<{ session: AcademicSession; attendance: AttendanceRecord[] }>(
-      `/center/staff/sessions/${sessionId}/attendance`
+      `/center/staff/sessions/${sessionId}/attendance`,
+      { params }
     );
     return data;
   },
@@ -202,9 +203,10 @@ export const centerService = {
     return data.data;
   },
 
-  getExamGrades: async (examId: string): Promise<{ exam: CenterExam; grades: ExamGradeRecord[] }> => {
+  getExamGrades: async (examId: string, params?: { academic_track?: string }): Promise<{ exam: CenterExam; grades: ExamGradeRecord[] }> => {
     const { data } = await api.get<{ exam: CenterExam; grades: ExamGradeRecord[] }>(
-      `/center/staff/exams/${examId}/grades`
+      `/center/staff/exams/${examId}/grades`,
+      { params }
     );
     return data;
   },
@@ -220,7 +222,7 @@ export const centerService = {
   },
 
   // Students & Student Report Card
-  getStudents: async (params?: { search?: string; group_id?: string; academic_year_id?: string; academic_year?: string; term?: string; page?: number }): Promise<any> => {
+  getStudents: async (params?: { search?: string; group_id?: string; academic_year_id?: string; academic_year?: string; term?: string; academic_track?: string; page?: number }): Promise<any> => {
     const { data } = await api.get("/center/staff/students", { params });
     return data;
   },

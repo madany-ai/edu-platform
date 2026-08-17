@@ -9,10 +9,11 @@ import { FileSpreadsheet, Save, Loader2, CheckCircle2, AlertCircle, Award } from
 
 interface GradeMatrixProps {
   exams: CenterExam[];
+  academicTrack?: string;
   onGradesSaved?: () => void;
 }
 
-export function CenterGradeMatrix({ exams, onGradesSaved }: GradeMatrixProps) {
+export function CenterGradeMatrix({ exams, academicTrack, onGradesSaved }: GradeMatrixProps) {
   const [selectedExamId, setSelectedExamId] = useState<string>(exams[0]?.id || "");
   const [loading, setLoading] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
@@ -20,6 +21,7 @@ export function CenterGradeMatrix({ exams, onGradesSaved }: GradeMatrixProps) {
   const [grades, setGrades] = useState<ExamGradeRecord[]>([]);
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [gradeSearchQuery, setGradeSearchQuery] = useState<string>("");
 
   useEffect(() => {
     if (exams.length > 0) {
@@ -44,7 +46,9 @@ export function CenterGradeMatrix({ exams, onGradesSaved }: GradeMatrixProps) {
     setErrorMessage("");
     setSuccessMessage("");
     try {
-      const res = await centerService.getExamGrades(examId);
+      const res = await centerService.getExamGrades(examId, {
+        academic_track: academicTrack,
+      });
       setExam(res.exam);
       setGrades(res.grades);
     } catch (e: any) {
@@ -166,7 +170,16 @@ export function CenterGradeMatrix({ exams, onGradesSaved }: GradeMatrixProps) {
             يرجى اختيار امتحان لعرض جدول الطلاب ورصد الدرجات.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            <div className="p-4 border-b border-border bg-muted/30">
+              <Input
+                placeholder="بحث بالاسم أو كود الطالب..."
+                value={gradeSearchQuery}
+                onChange={(e) => setGradeSearchQuery(e.target.value)}
+                className="h-9 text-xs max-w-sm"
+              />
+            </div>
+            <div className="overflow-x-auto">
             <table className="w-full text-right text-sm border-collapse">
               <thead>
                 <tr className="bg-muted/50 border-b border-border text-xs font-bold text-muted-foreground">
@@ -179,7 +192,13 @@ export function CenterGradeMatrix({ exams, onGradesSaved }: GradeMatrixProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
-                {grades.map((g, idx) => {
+                {grades
+                  .filter(g =>
+                    !gradeSearchQuery ||
+                    g.full_name.includes(gradeSearchQuery) ||
+                    g.student_code.includes(gradeSearchQuery)
+                  )
+                  .map((g, idx) => {
                   const maxM = exam?.total_marks || 1;
                   const pct = Math.round(((g.score || 0) / maxM) * 100);
                   return (
@@ -228,6 +247,7 @@ export function CenterGradeMatrix({ exams, onGradesSaved }: GradeMatrixProps) {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </div>

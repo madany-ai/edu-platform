@@ -45,6 +45,12 @@ export const GRADE_LEVELS = [
   { id: "sec_3", name: "الصف الثالث الثانوي" },
 ];
 
+export const ACADEMIC_TRACKS = [
+  { id: "math", name: "علمي رياضيات" },
+  { id: "science", name: "علمي علوم" },
+  { id: "literary", name: "أدبي" },
+];
+
 export const ENROLLMENT_STATUS = {
   ACTIVE: "active",
   EXPIRED: "expired",

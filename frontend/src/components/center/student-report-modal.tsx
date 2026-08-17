@@ -91,7 +91,7 @@ export function StudentReportModal({ studentId, onClose }: StudentReportModalPro
                       <span>اتصال بالأب</span>
                     </a>
                     <a
-                      href={`https://wa.me/${report.student.father_phone.replace(/[^\d]/g, "")}`}
+                      href={`https://wa.me/20${report.student.father_phone.replace(/^0/, "").replace(/[^\d]/g, "")}`}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all"

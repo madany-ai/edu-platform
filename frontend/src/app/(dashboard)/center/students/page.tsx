@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, Eye, Loader2, User, Plus, ArrowRightLeft, CheckCircle2, Printer } from "lucide-react";
 
-import { GRADE_LEVELS } from "@/lib/constants";
+import { GRADE_LEVELS, ACADEMIC_TRACKS } from "@/lib/constants";
 import { useCenterFilters } from "@/providers/center-filters-provider";
 import { toast } from "sonner";
 
@@ -21,6 +21,7 @@ export default function StudentsDirectoryPage() {
   const [selectedStudents, setSelectedStudents] = useState<any[]>([]);
 
   const { selectedYearId, selectedGrade, selectedTerm } = useCenterFilters();
+  const [academicTrack, setAcademicTrack] = useState("");
 
   // Modals
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
@@ -40,8 +41,14 @@ export default function StudentsDirectoryPage() {
 
 
   useEffect(() => {
+    if (selectedGrade !== 'sec_3') {
+      setAcademicTrack("");
+    }
+  }, [selectedGrade]);
+
+  useEffect(() => {
     initData();
-  }, [selectedYearId, selectedGrade, selectedTerm]);
+  }, [selectedYearId, selectedGrade, selectedTerm, academicTrack]);
 
   const initData = async () => {
     setLoading(true);
@@ -52,6 +59,7 @@ export default function StudentsDirectoryPage() {
           academic_year_id: selectedYearId,
           academic_year: selectedGrade,
           term: selectedTerm,
+          academic_track: selectedGrade === 'sec_3' ? academicTrack : undefined,
         }),
         centerService.getGroups({
           academic_year_id: selectedYearId,
@@ -78,6 +86,7 @@ export default function StudentsDirectoryPage() {
         academic_year_id: selectedYearId,
         academic_year: selectedGrade,
         term: selectedTerm,
+        academic_track: selectedGrade === 'sec_3' ? academicTrack : undefined,
       });
       setStudents(res.data || []);
     } catch (e) {
@@ -202,14 +211,28 @@ export default function StudentsDirectoryPage() {
       )}
 
       {/* Search Bar */}
-      <div className="glass-card p-4 rounded-2xl border border-border flex gap-2">
+      <div className="glass-card p-4 rounded-2xl border border-border flex flex-col sm:flex-row gap-2">
         <Input
           placeholder="ابحث باسم الطالب، كود الطالب (ST2026101) أو رقم الهاتف..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-          className="h-11 text-sm font-medium"
+          className="h-11 text-sm font-medium flex-1"
         />
+        {selectedGrade === 'sec_3' && (
+          <select
+            value={academicTrack}
+            onChange={(e) => setAcademicTrack(e.target.value)}
+            className="h-11 rounded-lg bg-background border border-border px-3 text-xs font-semibold min-w-[160px]"
+          >
+            <option value="">جميع الشعب</option>
+            {ACADEMIC_TRACKS.map((track) => (
+              <option key={track.id} value={track.id}>
+                {track.name}
+              </option>
+            ))}
+          </select>
+        )}
         <Button onClick={handleSearch} className="h-11 px-6 font-bold gap-2">
           <Search className="h-4 w-4" /> بحث
         </Button>

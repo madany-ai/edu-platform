@@ -73,7 +73,7 @@ export default function GroupsPage() {
     if (!groupToDelete) return;
     try {
       await centerService.deleteGroup(groupToDelete.id);
-      toast.success("تم حذف المجموعة بنجاح.");
+      toast.success("تم حذف/أرشفة المجموعة بنجاح.");
       setGroupToDelete(null);
       fetchGroups();
     } catch (err: any) {
@@ -224,23 +224,25 @@ export default function GroupsPage() {
         </div>
       )}
 
-      {/* Modal: Delete Group Confirmation */}
+      {/* Modal: Delete/Archive Group Confirmation */}
       {groupToDelete && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="glass-card w-full max-w-md p-6 rounded-2xl border border-red-500/20 space-y-4 shadow-2xl">
             <div className="flex items-center gap-3 text-red-500">
               <Trash2 className="h-6 w-6" />
-              <h3 className="text-base font-bold">تأكيد حذف المجموعة</h3>
+              <h3 className="text-base font-bold">حذف / أرشفة المجموعة</h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              هل أنت متأكد من حذف المجموعة <strong className="text-foreground">{groupToDelete.name}</strong>؟<br />
-              <span className="text-xs text-red-400/80 mt-2 block">
-                ملاحظة: سيتم رفض الحذف إذا كانت المجموعة تحتوي على حصص مسجلة، وذلك لمنع ضياع غياب وحضور الطلاب.
-              </span>
+              هل أنت متأكد من حذف المجموعة <strong className="text-foreground">{groupToDelete.name}</strong>؟
             </p>
+            <div className="glass-card p-3 rounded-xl border border-amber-500/20 bg-amber-500/5">
+              <p className="text-xs text-amber-500 font-semibold">
+                إذا كانت المجموعة تحتوي على حصص دراسية، سيتم <strong>أرشفة المجموعة</strong> (تعطيلها) بدلاً من حذفها للحفاظ على سجلات الحضور والدرجات.
+              </p>
+            </div>
             <div className="flex gap-2 pt-2">
               <Button onClick={handleDeleteGroup} variant="destructive" className="flex-1 font-bold">
-                نعم، احذف المجموعة
+                نعم، حذف / أرشفة المجموعة
               </Button>
               <Button variant="outline" onClick={() => setGroupToDelete(null)}>
                 إلغاء

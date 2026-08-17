@@ -156,9 +156,10 @@ class CenterStaffController extends Controller
         $group = Group::findOrFail($id);
 
         if ($group->sessions()->exists()) {
+            $group->update(['is_active' => false]);
             return response()->json([
-                'message' => 'لا يمكن حذف هذه المجموعة لوجود حصص دراسية وسجلات حضور مرتبطة بها. قم بحذف الحصص أولاً.'
-            ], 422);
+                'message' => 'تم أرشفة المجموعة بنجاح (تعطيل المجموعة بدلاً من الحذف للحفاظ على سجلات الحضور والدرجات).'
+            ]);
         }
 
         $group->delete();
@@ -230,12 +231,16 @@ class CenterStaffController extends Controller
         ], 201);
     }
 
-    public function getSessionAttendance(string $sessionId): JsonResponse
+    public function getSessionAttendance(Request $request, string $sessionId): JsonResponse
     {
         $session = AcademicSession::with('group')->findOrFail($sessionId);
 
-        // Get all students enrolled in the group
-        $groupStudents = Student::where('group_id', $session->group_id)->get();
+        // Get all students enrolled in the group, with optional academic_track filter
+        $studentsQuery = Student::where('group_id', $session->group_id);
+        if ($request->has('academic_track') && $request->query('academic_track')) {
+            $studentsQuery->where('academic_track', $request->query('academic_track'));
+        }
+        $groupStudents = $studentsQuery->get();
 
         // Get existing attendance records for this session
         $attendanceMap = Attendance::where('session_id', $sessionId)
@@ -461,13 +466,19 @@ class CenterStaffController extends Controller
         return response()->json(['message' => 'تم إضافة الامتحان بنجاح.', 'data' => $exam->load('group')], 201);
     }
 
-    public function getExamGrades(string $examId): JsonResponse
+    public function getExamGrades(Request $request, string $examId): JsonResponse
     {
         $exam = CenterExam::with('group')->findOrFail($examId);
 
-        $students = $exam->group_id
-            ? Student::where('group_id', $exam->group_id)->get()
-            : Student::limit(200)->get();
+        $studentsQuery = $exam->group_id
+            ? Student::where('group_id', $exam->group_id)
+            : Student::limit(200);
+
+        if ($request->has('academic_track') && $request->query('academic_track')) {
+            $studentsQuery->where('academic_track', $request->query('academic_track'));
+        }
+
+        $students = $studentsQuery->get();
 
         $gradesMap = CenterGrade::where('center_exam_id', $examId)
             ->get()
@@ -578,6 +589,10 @@ class CenterStaffController extends Controller
                   ->orWhere('student_code', 'LIKE', "%{$search}%")
                   ->orWhere('phone', 'LIKE', "%{$search}%");
             });
+        }
+
+        if ($request->has('academic_track') && $request->query('academic_track')) {
+            $query->where('academic_track', $request->query('academic_track'));
         }
 
         if ($request->has('group_id')) {

@@ -6,16 +6,24 @@ import { CenterAttendanceScanner } from "@/components/center/center-attendance-s
 import { Loader2, QrCode } from "lucide-react";
 
 import { useCenterFilters } from "@/providers/center-filters-provider";
+import { ACADEMIC_TRACKS } from "@/lib/constants";
 
 export default function ScannerPage() {
   const [sessions, setSessions] = useState<AcademicSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [academicTrack, setAcademicTrack] = useState("");
 
   const { selectedYearId, selectedGrade, selectedTerm } = useCenterFilters();
 
   useEffect(() => {
+    if (selectedGrade !== 'sec_3') {
+      setAcademicTrack("");
+    }
+  }, [selectedGrade]);
+
+  useEffect(() => {
     loadSessions();
-  }, [selectedYearId, selectedGrade, selectedTerm]);
+  }, [selectedYearId, selectedGrade, selectedTerm, academicTrack]);
 
   const loadSessions = async () => {
     setLoading(true);
@@ -56,7 +64,31 @@ export default function ScannerPage() {
         </div>
       </div>
 
-      <CenterAttendanceScanner sessions={sessions} />
+      {selectedGrade === 'sec_3' && (
+        <div className="glass-card p-4 rounded-2xl border border-border">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold text-muted-foreground">الشعبة:</span>
+            <select
+              value={academicTrack}
+              onChange={(e) => setAcademicTrack(e.target.value)}
+              className="h-10 rounded-lg bg-background border border-border px-3 text-xs font-semibold min-w-[180px]"
+            >
+              <option value="">جميع الشعب</option>
+              {ACADEMIC_TRACKS.map((track) => (
+                <option key={track.id} value={track.id}>
+                  {track.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
+      <CenterAttendanceScanner
+        sessions={sessions}
+        academicTrack={selectedGrade === 'sec_3' ? academicTrack : undefined}
+        onAttendanceUpdated={loadSessions}
+      />
     </div>
   );
 }

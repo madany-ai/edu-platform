@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { FileSpreadsheet, Plus, Loader2 } from "lucide-react";
 
 import { useCenterFilters } from "@/providers/center-filters-provider";
+import { ACADEMIC_TRACKS } from "@/lib/constants";
 
 export default function ExamsPage() {
   const [exams, setExams] = useState<CenterExam[]>([]);
@@ -16,6 +17,7 @@ export default function ExamsPage() {
   const [loading, setLoading] = useState(true);
 
   const { selectedYearId, selectedGrade, selectedTerm } = useCenterFilters();
+  const [academicTrack, setAcademicTrack] = useState("");
 
   // Modal State
   const [showAddModal, setShowAddModal] = useState(false);
@@ -25,8 +27,14 @@ export default function ExamsPage() {
   const [newDate, setNewDate] = useState(new Date().toISOString().split("T")[0]);
 
   useEffect(() => {
+    if (selectedGrade !== 'sec_3') {
+      setAcademicTrack("");
+    }
+  }, [selectedGrade]);
+
+  useEffect(() => {
     loadData();
-  }, [selectedYearId, selectedGrade, selectedTerm]);
+  }, [selectedYearId, selectedGrade, selectedTerm, academicTrack]);
 
   const loadData = async () => {
     setLoading(true);
@@ -35,6 +43,7 @@ export default function ExamsPage() {
         academic_year_id: selectedYearId,
         academic_year: selectedGrade,
         term: selectedTerm,
+        academic_track: selectedGrade === 'sec_3' ? academicTrack : undefined,
       };
       const [examsData, groupsData] = await Promise.all([
         centerService.getExams(filterParams),
@@ -96,7 +105,27 @@ export default function ExamsPage() {
         </Button>
       </div>
 
-      <CenterGradeMatrix exams={exams} onGradesSaved={loadData} />
+      {selectedGrade === 'sec_3' && (
+        <div className="glass-card p-4 rounded-2xl border border-border">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold text-muted-foreground">الشعبة:</span>
+            <select
+              value={academicTrack}
+              onChange={(e) => setAcademicTrack(e.target.value)}
+              className="h-10 rounded-lg bg-background border border-border px-3 text-xs font-semibold min-w-[180px]"
+            >
+              <option value="">جميع الشعب</option>
+              {ACADEMIC_TRACKS.map((track) => (
+                <option key={track.id} value={track.id}>
+                  {track.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
+      <CenterGradeMatrix exams={exams} onGradesSaved={loadData} academicTrack={selectedGrade === 'sec_3' ? academicTrack : undefined} />
 
       {/* Modal: Add Exam */}
       {showAddModal && (
