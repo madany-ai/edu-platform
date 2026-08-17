@@ -12,6 +12,7 @@ interface Choice {
   id: string;
   answer: string;
   is_correct: boolean;
+  image_path?: string;
 }
 
 interface Question {
