@@ -9,9 +9,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->string('academic_track')->nullable()->after('academic_year');
-        });
+        if (!Schema::hasColumn('students', 'academic_track')) {
+            Schema::table('students', function (Blueprint $table) {
+                $table->string('academic_track')->nullable()->after('academic_year');
+            });
+        }
 
         // Update existing students based on the requested logic
         $students = DB::table('students')->get();
