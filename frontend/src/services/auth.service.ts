@@ -29,6 +29,7 @@ export interface RegisterPayload {
   birth_date: string;
   governorate_id: string;
   academic_year: string;
+  academic_track?: string;
 }
 
 export interface RegisterResponse {

@@ -134,6 +134,7 @@ export default function LectureViewPage() {
           sort_order: number;
           is_blocking?: boolean;
           passed?: boolean;
+          max_attempts_exhausted?: boolean;
           is_locked?: boolean;
         }[] = [];
         

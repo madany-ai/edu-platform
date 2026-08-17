@@ -59,6 +59,7 @@ export interface CourseExam {
     submitted_at: string | null;
   } | null;
   passed: boolean;
+  max_attempts_exhausted?: boolean;
 }
 
 export interface LectureVideo {
