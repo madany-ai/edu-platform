@@ -77,7 +77,7 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get<{ exam: Exam; latest_attempt: Attempt | null; max_attempts_reached: boolean }>(fetchEndpoint);
+      const res = await api.get<{ exam: Exam; latest_attempt: Attempt | null; max_attempts_reached: boolean; server_time: string }>(fetchEndpoint);
       setExam(res.data.exam);
       setLatestAttempt(res.data.latest_attempt);
       setMaxAttemptsReached(res.data.max_attempts_reached || false);
@@ -89,7 +89,9 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
         const startedAtStr = String(res.data.latest_attempt.started_at);
         const startTime = new Date(startedAtStr + (!startedAtStr.endsWith('Z') ? 'Z' : '')).getTime();
         const durationMs = res.data.exam.duration * 60 * 1000;
-        const elapsed = Date.now() - startTime;
+        const serverTimeStr = res.data.server_time;
+        const serverTime = serverTimeStr ? new Date(serverTimeStr).getTime() : Date.now();
+        const elapsed = serverTime - startTime;
         const remaining = Math.max(0, Math.floor((durationMs - elapsed) / 1000));
         setTimeLeft(remaining);
       }
@@ -146,7 +148,7 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
     if (!exam) return;
     try {
       setLoading(true);
-      const res = await api.post<Attempt>(`/exams/${exam.id}/start`);
+      const res = await api.post<Attempt & { server_time?: string }>(`/exams/${exam.id}/start`);
       const attempt = res.data;
 
       // If the backend auto-submitted the attempt because time was already over
@@ -163,8 +165,9 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
         // Calculate remaining time based on the server's started_at
         const startedAtStr = String(attempt.started_at);
         const startedAt = new Date(startedAtStr + (!startedAtStr.endsWith('Z') ? 'Z' : '')).getTime();
-        const now = new Date().getTime();
-        const elapsedSeconds = Math.floor((now - startedAt) / 1000);
+        const serverTimeStr = attempt.server_time;
+        const serverTime = serverTimeStr ? new Date(serverTimeStr).getTime() : Date.now();
+        const elapsedSeconds = Math.floor((serverTime - startedAt) / 1000);
         const remainingSeconds = exam.duration * 60 - elapsedSeconds;
         setTimeLeft(remainingSeconds > 0 ? remainingSeconds : 0);
       } else {
@@ -197,10 +200,8 @@ export default function QuizTab({ lectureId, isAssignment = false, examId }: Qui
     if (!exam || !attemptToSubmit) return;
 
     if (!isAuto && Object.keys(answers).length < exam.questions.length) {
-      const confirmSubmit = window.confirm(
-        "لم تقم بالإجابة على جميع الأسئلة. هل أنت متأكد من رغبتك في تسليم الاختبار؟"
-      );
-      if (!confirmSubmit) return;
+      toast.error("عفواً، لا يمكنك تسليم الاختبار قبل الإجابة على جميع الأسئلة. يرجى مراجعة الأسئلة غير المجابة.");
+      return;
     }
 
     try {

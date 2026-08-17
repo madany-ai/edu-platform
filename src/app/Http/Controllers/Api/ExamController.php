@@ -67,6 +67,7 @@ class ExamController extends Controller
             'exam' => $exam,
             'latest_attempt' => $latestAttempt,
             'max_attempts_reached' => $maxAttemptsReached,
+            'server_time' => now()->toIso8601String(),
         ]);
     }
 
@@ -162,7 +163,9 @@ class ExamController extends Controller
 
         $attempt = $this->examService->startAttempt($exam, $student);
 
-        return response()->json($attempt);
+        return response()->json(array_merge($attempt->toArray(), [
+            'server_time' => now()->toIso8601String(),
+        ]));
     }
 
     public function submitAttempt(ExamAttempt $attempt): JsonResponse
