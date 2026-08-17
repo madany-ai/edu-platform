@@ -142,9 +142,14 @@ class StudentResource extends Resource
                             $set('academic_track_id', null);
                         }
                     }),
-                Select::make('academic_track_id')
+                Select::make('academic_track')
                     ->label('الشعبة')
-                    ->options(\App\Models\AcademicTrack::pluck('name', 'id'))
+                    ->options([
+                        'math' => 'علمي رياضة',
+                        'science' => 'علمي علوم',
+                        'literary' => 'أدبي',
+                        'general' => 'عام',
+                    ])
                     ->searchable()
                     ->preload()
                     ->visible(function (callable $get) {
