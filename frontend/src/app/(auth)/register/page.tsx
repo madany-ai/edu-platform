@@ -188,7 +188,13 @@ export default function RegisterPage() {
         if (data?.errors) {
           const mapped: FieldError[] = [];
           for (const [field, msgs] of Object.entries(data.errors)) {
-            mapped.push({ field, message: msgs[0] });
+            let msg = msgs[0];
+            if (msg.includes("has already been taken")) {
+              if (field === "phone") msg = "رقم الهاتف مسجل بالفعل";
+              else if (field === "email") msg = "البريد الإلكتروني مسجل بالفعل";
+              else msg = "هذه البيانات مسجلة بالفعل";
+            }
+            mapped.push({ field, message: msg });
           }
           setErrors(mapped);
         } else {
@@ -409,7 +415,9 @@ export default function RegisterPage() {
                   <Label htmlFor="gender" className="text-xs">الجنس *</Label>
                   <Select value={gender} onValueChange={(val) => { setGender(val as "male" | "female"); clearFieldError("gender"); }}>
                     <SelectTrigger id="gender" className="bg-background/50 border-border/60 text-foreground text-sm">
-                      <SelectValue placeholder="اختر" />
+                      <SelectValue placeholder="اختر">
+                        {gender ? GENDER_OPTIONS.find(o => o.value === gender)?.label : "اختر"}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border/60 text-foreground">
                       {GENDER_OPTIONS.map((opt) => (
@@ -443,7 +451,9 @@ export default function RegisterPage() {
                   <Label htmlFor="governorate_id" className="text-xs">المحافظة *</Label>
                   <Select value={governorateId} onValueChange={(val) => { setGovernorateId(val); clearFieldError("governorate_id"); }}>
                     <SelectTrigger id="governorate_id" className="bg-background/50 border-border/60 text-foreground text-sm">
-                      <SelectValue placeholder="اختر المحافظة" />
+                      <SelectValue placeholder="اختر المحافظة">
+                        {governorateId ? governorates.find(g => g.id === governorateId)?.name : "اختر المحافظة"}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border/60 text-foreground max-h-[200px] overflow-y-auto">
                       {governorates.map((gov) => (
@@ -461,7 +471,9 @@ export default function RegisterPage() {
                   <Label htmlFor="academic_year" className="text-xs">الصف الدراسي *</Label>
                   <Select value={academicYear} onValueChange={(val) => { setAcademicYear(val); setAcademicTrack(""); clearFieldError("academic_year"); }}>
                     <SelectTrigger id="academic_year" className="bg-background/50 border-border/60 text-foreground text-sm">
-                      <SelectValue placeholder="اختر الصف الدراسي" />
+                      <SelectValue placeholder="اختر الصف الدراسي">
+                        {academicYear ? ACADEMIC_YEARS.find(y => y.value === academicYear)?.label : "اختر الصف الدراسي"}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border/60 text-foreground">
                       {ACADEMIC_YEARS.map((grade) => (
@@ -483,7 +495,9 @@ export default function RegisterPage() {
                     <Label htmlFor="academic_track" className="text-xs">الشعبة الدراسية *</Label>
                     <Select value={academicTrack} onValueChange={(val) => { setAcademicTrack(val); clearFieldError("academic_track"); }}>
                       <SelectTrigger id="academic_track" className="bg-background/50 border-border/60 text-foreground text-sm">
-                        <SelectValue placeholder="اختر الشعبة" />
+                        <SelectValue placeholder="اختر الشعبة">
+                          {academicTrack === "math" ? "علمي رياضة" : academicTrack === "literary" ? "أدبي" : "اختر الشعبة"}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent className="bg-popover border-border/60 text-foreground">
                         <SelectItem value="math">علمي رياضة</SelectItem>
