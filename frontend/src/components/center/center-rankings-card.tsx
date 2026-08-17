@@ -123,22 +123,30 @@ export function CenterRankingsCard({ groups }: RankingsCardProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
-                {rankings.map((item, idx) => {
-                  const rank = idx + 1;
-                  return (
-                    <tr
-                      key={item.student_id + idx}
-                      className={`transition-colors hover:bg-amber-500/5 ${
-                        rank === 1
-                          ? "bg-amber-500/10 dark:bg-amber-500/15"
-                          : rank === 2
-                          ? "bg-slate-500/5"
-                          : rank === 3
-                          ? "bg-amber-700/5"
-                          : ""
-                      }`}
-                    >
-                      <td className="py-3 px-4 font-bold text-base">
+                {(() => {
+                  let currentRank = 1;
+                  return rankings.map((item, idx) => {
+                    if (idx > 0) {
+                      const prevItem = rankings[idx - 1];
+                      if (item.total_score !== prevItem.total_score || item.percentage !== prevItem.percentage) {
+                        currentRank++;
+                      }
+                    }
+                    const rank = currentRank;
+                    return (
+                      <tr
+                        key={item.student_id + idx}
+                        className={`transition-colors hover:bg-amber-500/5 ${
+                          rank === 1
+                            ? "bg-amber-500/10 dark:bg-amber-500/15"
+                            : rank === 2
+                            ? "bg-slate-500/5"
+                            : rank === 3
+                            ? "bg-amber-700/5"
+                            : ""
+                        }`}
+                      >
+                        <td className="py-3 px-4 font-bold text-base">
                         {rank === 1 ? (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-500 border border-amber-500/30">
                             🥇 المركز الأول
@@ -180,7 +188,8 @@ export function CenterRankingsCard({ groups }: RankingsCardProps) {
                       </td>
                     </tr>
                   );
-                })}
+                  });
+                })()}
               </tbody>
             </table>
           </div>

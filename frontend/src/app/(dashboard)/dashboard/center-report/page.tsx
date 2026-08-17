@@ -18,6 +18,9 @@ import {
   Phone,
   QrCode,
   Printer,
+  Trophy,
+  Medal,
+  MessageSquareHeart,
 } from "lucide-react";
 
 export default function MyCenterReportPage() {
@@ -100,6 +103,9 @@ export default function MyCenterReportPage() {
   const attendances = data?.attendances || [];
   const grades = data?.grades || [];
 
+  const perfectExams = grades.filter((gr: any) => gr.score > 0 && gr.score === gr.exam?.total_marks);
+  const notesList = grades.filter((gr: any) => gr.notes && gr.notes.trim() !== "");
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-8">
       {/* Banner */}
@@ -161,6 +167,52 @@ export default function MyCenterReportPage() {
           <span className="text-2xl font-extrabold text-destructive mt-1 block">{stats.absent_count}</span>
         </div>
       </div>
+
+      {/* Achievements & Notes */}
+      {(perfectExams.length > 0 || notesList.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Achievements */}
+          {perfectExams.length > 0 && (
+            <div className={`glass-card p-6 rounded-2xl border border-amber-500/20 bg-amber-500/5 space-y-4 ${notesList.length > 0 ? 'lg:col-span-6' : 'lg:col-span-12'}`}>
+              <h3 className="text-sm font-bold flex items-center gap-2 text-amber-500">
+                <Trophy className="h-5 w-5" />
+                إنجازاتي ولوحة الشرف
+              </h3>
+              <div className="grid gap-3 max-h-60 overflow-y-auto pr-1">
+                {perfectExams.map((gr: any) => (
+                  <div key={gr.id} className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 shadow-sm">
+                    <div className="p-2 bg-amber-500/20 text-amber-500 rounded-full shrink-0">
+                      <Medal className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-amber-600 dark:text-amber-500 text-sm">المركز الأول (الدرجة النهائية) 🥇</p>
+                      <p className="text-xs text-amber-600/70 dark:text-amber-500/70 mt-0.5">في امتحان: {gr.exam?.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Teacher Notes */}
+          {notesList.length > 0 && (
+            <div className={`glass-card p-6 rounded-2xl border border-primary/20 bg-primary/5 space-y-4 ${perfectExams.length > 0 ? 'lg:col-span-6' : 'lg:col-span-12'}`}>
+              <h3 className="text-sm font-bold flex items-center gap-2 text-primary">
+                <MessageSquareHeart className="h-5 w-5" />
+                ملاحظات ورسائل المعلم
+              </h3>
+              <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                {notesList.map((gr: any) => (
+                  <div key={gr.id} className="p-3 rounded-xl bg-background/60 border border-primary/10 text-xs shadow-sm">
+                    <p className="font-semibold text-primary mb-1">حول امتحان {gr.exam?.name}:</p>
+                    <p className="text-muted-foreground leading-relaxed text-sm">"{gr.notes}"</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Attendance & Grades Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
