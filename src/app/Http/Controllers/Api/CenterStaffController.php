@@ -85,7 +85,7 @@ class CenterStaffController extends Controller
     // ─── Groups ───
     public function groups(Request $request): JsonResponse
     {
-        $query = Group::withCount('students');
+        $query = Group::withCount('students')->where('is_active', true);
 
         if ($request->has('academic_year')) {
             $query->where('academic_year', $request->query('academic_year'));
