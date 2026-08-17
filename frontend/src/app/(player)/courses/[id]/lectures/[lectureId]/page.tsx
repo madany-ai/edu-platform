@@ -148,7 +148,7 @@ export default function LectureViewPage() {
             is_blocking: exam.is_blocking,
             passed: exam.passed,
             max_attempts_exhausted: exam.max_attempts_exhausted,
-            is_locked: lec.is_locked || !lec.has_access,
+            is_locked: hasFullAccess ? false : (lec.is_locked || !lec.has_access),
           });
         });
         
@@ -159,7 +159,7 @@ export default function LectureViewPage() {
             id: lec.id,
             title: lec.title,
             sort_order: 2, // Force video to appear second
-            is_locked: lec.is_locked || lec.video_locked || !lec.has_access,
+            is_locked: hasFullAccess ? false : (lec.is_locked || lec.video_locked || !lec.has_access),
           });
         }
         
@@ -173,7 +173,7 @@ export default function LectureViewPage() {
             is_blocking: assign.is_blocking,
             passed: assign.passed,
             max_attempts_exhausted: assign.max_attempts_exhausted,
-            is_locked: lec.is_locked || !lec.has_access,
+            is_locked: hasFullAccess ? false : (lec.is_locked || !lec.has_access),
           });
         });
         
@@ -197,7 +197,7 @@ export default function LectureViewPage() {
       section.lectures.forEach(lec => {
         lec.sidebarItems.forEach(item => {
           // Only block from previous exams/assignments, not from access denial
-          if (isBlockedByPreviousExam) {
+          if (isBlockedByPreviousExam && !hasFullAccess) {
             item.is_locked = true;
           }
           // Only exam/assignment blocking propagates to subsequent items
@@ -234,7 +234,7 @@ export default function LectureViewPage() {
           <>
             {/* Video Stage */}
             <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-xl border border-white/10 shrink-0">
-              {lecture.video_locked ? (
+              {lecture.video_locked && !hasFullAccess ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 text-white p-6">
                   <Lock className="h-16 w-16 text-primary mb-4" />
                   <h3 className="text-lg font-bold mb-2">الفيديو مغلق</h3>

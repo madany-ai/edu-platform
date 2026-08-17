@@ -7,6 +7,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class EnrollmentResource extends JsonResource
 {
+    use \App\Traits\ResolvesMinioUrls;
+
     public function toArray(Request $request): array
     {
         return [
@@ -15,6 +17,8 @@ class EnrollmentResource extends JsonResource
             'course' => $this->whenLoaded('course', fn () => $this->course ? [
                 'id' => $this->course->id,
                 'title' => $this->course->title,
+                'description' => $this->course->description,
+                'thumbnail' => $this->resolveMinioUrl($this->course->thumbnail),
                 'price' => (float) $this->course->price,
                 'status' => $this->course->status,
                 'instructor' => $this->course->instructor ? [

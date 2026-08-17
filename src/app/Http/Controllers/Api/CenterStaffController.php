@@ -745,4 +745,48 @@ class CenterStaffController extends Controller
             'student' => $student->load(['group'])
         ], 201);
     }
+    public function approveStudent(string $id): JsonResponse
+    {
+        $student = Student::with('user')->findOrFail($id);
+        
+        if ($student->user) {
+            $student->user->update(['status' => 'active']);
+        }
+        $student->update(['is_verified' => true]);
+
+        try {
+            $this->notificationService->send(
+                $student->user,
+                'تم اعتماد حسابك',
+                'تم اعتماد حسابك في المنصة. يمكنك الآن تسجيل الدخول والبدء في التعلم.'
+            );
+        } catch (\Exception $e) {}
+
+        return response()->json([
+            'message' => 'تم اعتماد الطالب بنجاح.',
+            'student' => $student->fresh(['user', 'group'])
+        ]);
+    }
+
+    public function rejectStudent(string $id): JsonResponse
+    {
+        $student = Student::with('user')->findOrFail($id);
+        
+        if ($student->user) {
+            $student->user->update(['status' => 'rejected']);
+        }
+
+        try {
+            $this->notificationService->send(
+                $student->user,
+                'لم يتم اعتماد حسابك',
+                'نأسف، لم يتم اعتماد حسابك في المنصة. يرجى التواصل مع الإدارة لمزيد من التفاصيل.'
+            );
+        } catch (\Exception $e) {}
+
+        return response()->json([
+            'message' => 'تم رفض الطالب بنجاح.',
+            'student' => $student->fresh(['user', 'group'])
+        ]);
+    }
 }

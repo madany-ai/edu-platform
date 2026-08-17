@@ -242,6 +242,16 @@ export const centerService = {
     return data;
   },
 
+  approveStudent: async (studentId: string): Promise<any> => {
+    const { data } = await api.put(`/center/staff/students/${studentId}/approve`);
+    return data;
+  },
+
+  rejectStudent: async (studentId: string): Promise<any> => {
+    const { data } = await api.put(`/center/staff/students/${studentId}/reject`);
+    return data;
+  },
+
   getStudentReport: async (studentId: string): Promise<StudentReport> => {
     const { data } = await api.get<StudentReport>(`/center/staff/students/${studentId}/report`);
     return data;

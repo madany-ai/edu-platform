@@ -40,7 +40,7 @@ class CourseController extends Controller
         $isPublished = $course->status === \App\Enums\CourseStatus::Published || $course->status === 'published';
 
         if (! $isPublished) {
-            if (! $user || (! $user->hasRole('super_admin') && $user->id !== $course->instructor_id)) {
+            if (! $user || (! $user->hasRole('super_admin') && ! $user->hasRole('admin') && $user->id !== $course->instructor_id)) {
                 abort(404, 'الدورة غير موجودة أو غير منشورة.');
             }
         }

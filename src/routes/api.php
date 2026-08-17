@@ -180,6 +180,8 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
         Route::post('students', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeStudent']);
         Route::put('students/bulk-group', [\App\Http\Controllers\Api\CenterStaffController::class, 'bulkUpdateStudentGroup']);
         Route::put('students/{id}/group', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateStudentGroup']);
+        Route::put('students/{id}/approve', [\App\Http\Controllers\Api\CenterStaffController::class, 'approveStudent']);
+        Route::put('students/{id}/reject', [\App\Http\Controllers\Api\CenterStaffController::class, 'rejectStudent']);
         Route::get('students/{id}/report', [\App\Http\Controllers\Api\CenterStaffController::class, 'studentReport']);
     });
 });

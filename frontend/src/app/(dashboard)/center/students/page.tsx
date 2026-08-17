@@ -159,6 +159,27 @@ export default function StudentsDirectoryPage() {
     }
   };
 
+  const handleApprove = async (studentId: string) => {
+    try {
+      const res = await centerService.approveStudent(studentId);
+      toast.success(res.message);
+      initData();
+    } catch (e) {
+      toast.error("حدث خطأ أثناء اعتماد الطالب.");
+    }
+  };
+
+  const handleReject = async (studentId: string) => {
+    if (!confirm("هل أنت متأكد من رفض هذا الطالب؟")) return;
+    try {
+      const res = await centerService.rejectStudent(studentId);
+      toast.success(res.message);
+      initData();
+    } catch (e) {
+      toast.error("حدث خطأ أثناء رفض الطالب.");
+    }
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
@@ -268,6 +289,7 @@ export default function StudentsDirectoryPage() {
                   <th className="py-3.5 px-4">الصف الدراسي</th>
                   <th className="py-3.5 px-4">هاتف الطالب</th>
                   <th className="py-3.5 px-4">هاتف ولي الأمر</th>
+                  <th className="py-3.5 px-4 text-center">الحالة</th>
                   <th className="py-3.5 px-4 text-center">إجراءات الطالب</th>
                 </tr>
               </thead>
@@ -293,12 +315,27 @@ export default function StudentsDirectoryPage() {
                     <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">{st.phone || "-"}</td>
                     <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">{st.father_phone || "-"}</td>
                     <td className="py-3.5 px-4 text-center">
+                      {st.user?.status === 'pending' && <span className="text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full text-[10px] font-bold border border-yellow-200">قيد المراجعة</span>}
+                      {st.user?.status === 'active' && <span className="text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full text-[10px] font-bold border border-emerald-200">نشط</span>}
+                      {st.user?.status === 'rejected' && <span className="text-red-600 bg-red-50 px-2 py-1 rounded-full text-[10px] font-bold border border-red-200">مرفوض</span>}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
                       <div className="flex items-center justify-center gap-2">
+                        {st.user?.status === 'pending' && (
+                          <>
+                            <Button size="sm" variant="outline" className="h-8 text-xs font-bold text-emerald-600 border-emerald-200 bg-emerald-50 hover:bg-emerald-100 px-2" onClick={() => handleApprove(st.id)}>
+                              <CheckCircle2 className="h-3.5 w-3.5 ml-1" /> اعتماد
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-8 text-xs font-bold text-red-600 border-red-200 bg-red-50 hover:bg-red-100 px-2" onClick={() => handleReject(st.id)}>
+                              رفض
+                            </Button>
+                          </>
+                        )}
                         <Button
                           size="sm"
                           variant="secondary"
                           onClick={() => setSelectedStudentId(st.id)}
-                          className="h-8 text-xs font-bold gap-1.5"
+                          className="h-8 text-xs font-bold gap-1.5 px-2"
                         >
                           <Eye className="h-3.5 w-3.5 text-primary" /> التقرير
                         </Button>
@@ -309,9 +346,9 @@ export default function StudentsDirectoryPage() {
                             setTransferStudent(st);
                             setTargetGroupId(st.group_id || groups[0]?.id || "");
                           }}
-                          className="h-8 text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
+                          className="h-8 text-xs font-bold gap-1 px-2 text-muted-foreground hover:text-foreground"
                         >
-                          <ArrowRightLeft className="h-3.5 w-3.5" /> نقل مجموعة
+                          <ArrowRightLeft className="h-3.5 w-3.5" /> نقل
                         </Button>
                       </div>
                     </td>
