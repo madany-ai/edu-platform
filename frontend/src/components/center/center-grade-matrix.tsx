@@ -184,11 +184,11 @@ export function CenterGradeMatrix({ exams, academicTrack, onGradesSaved }: Grade
               <thead>
                 <tr className="bg-muted/50 border-b border-border text-xs font-bold text-muted-foreground">
                   <th className="py-3.5 px-4">#</th>
-                  <th className="py-3.5 px-4">كود الطالب</th>
-                  <th className="py-3.5 px-4">اسم الطالب</th>
-                  <th className="py-3.5 px-4">الدرجة المكتسبة (من {exam?.total_marks})</th>
-                  <th className="py-3.5 px-4">النسبة المئوية</th>
-                  <th className="py-3.5 px-4">ملاحظات للمعلم / هاتف ولي الأمر</th>
+                  <th className="py-3.5 px-4 min-w-[120px]">كود الطالب</th>
+                  <th className="py-3.5 px-4 min-w-[150px]">اسم الطالب</th>
+                  <th className="py-3.5 px-4 min-w-[160px]">الدرجة المكتسبة (من {exam?.total_marks})</th>
+                  <th className="py-3.5 px-4 min-w-[120px]">النسبة المئوية</th>
+                  <th className="py-3.5 px-4 min-w-[250px]">ملاحظات للمعلم / هاتف ولي الأمر</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
@@ -238,7 +238,7 @@ export function CenterGradeMatrix({ exams, academicTrack, onGradesSaved }: Grade
                           placeholder="ملاحظات المدرس للطالب..."
                           value={g.notes || ""}
                           onChange={(e) => handleNotesChange(g.student_id, e.target.value)}
-                          className="h-9 text-xs"
+                          className="h-10 text-sm min-w-[200px] w-full"
                         />
                       </td>
                     </tr>
