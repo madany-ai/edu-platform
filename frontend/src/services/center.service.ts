@@ -222,7 +222,7 @@ export const centerService = {
   },
 
   // Students & Student Report Card
-  getStudents: async (params?: { search?: string; group_id?: string; academic_year_id?: string; academic_year?: string; term?: string; academic_track?: string; page?: number }): Promise<any> => {
+  getStudents: async (params?: { search?: string; group_id?: string; academic_year_id?: string; academic_year?: string; term?: string; academic_track?: string; page?: number, sort_by_date?: boolean }): Promise<any> => {
     const { data } = await api.get("/center/staff/students", { params });
     return data;
   },

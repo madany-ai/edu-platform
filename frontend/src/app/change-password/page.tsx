@@ -15,7 +15,11 @@ import { AuthGuard } from "@/components/layout/auth-guard";
 
 const changePasswordSchema = z
   .object({
-    password: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل"),
+    password: z
+      .string()
+      .min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل")
+      .regex(/[a-zA-Z]/, "كلمة المرور يجب أن تحتوي على حرف إنجليزي واحد على الأقل")
+      .regex(/[0-9]/, "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل"),
     password_confirmation: z.string(),
   })
   .refine((data) => data.password === data.password_confirmation, {

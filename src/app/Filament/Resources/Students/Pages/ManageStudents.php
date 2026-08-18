@@ -35,7 +35,7 @@ class ManageStudents extends ManageRecords
                             'password' => \Illuminate\Support\Facades\Hash::make(!empty($data['password']) ? $data['password'] : $data['student_code']),
                             'status' => 'active',
                         ]);
-                        $user->must_change_password = empty($data['password']);
+                        $user->must_change_password = empty($data['password']) || $data['password'] === $data['student_code'];
                         $user->save();
                         
                         $user->assignRole('student');

@@ -120,11 +120,11 @@ class AuthController extends Controller
         if (!$user->must_change_password) {
             $validated = $request->validate([
                 'current_password' => 'required|current_password',
-                'password' => 'required|string|min:8|confirmed',
+                'password' => 'required|string|min:6|confirmed',
             ]);
         } else {
             $validated = $request->validate([
-                'password' => 'required|string|min:8|confirmed',
+                'password' => 'required|string|min:6|confirmed',
             ]);
         }
 

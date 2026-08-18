@@ -623,7 +623,13 @@ class CenterStaffController extends Controller
             });
         }
 
-        $students = $query->orderBy('first_name')->paginate(20);
+        if ($request->has('sort_by_date') && $request->query('sort_by_date') == 'false') {
+            $query->orderBy('first_name');
+        } else {
+            $query->orderByDesc('created_at');
+        }
+
+        $students = $query->paginate(20);
         return response()->json($students);
     }
 
@@ -720,17 +726,18 @@ class CenterStaffController extends Controller
             }
         }
 
-        do {
-            $studentCode = 'ST' . date('Y') . rand(10000, 99999);
-        } while (\App\Models\Student::where('student_code', $studentCode)->exists());
+        $tempStudent = new \App\Models\Student(['academic_year' => $validated['academic_year'], 'academic_track' => $validated['academic_track'] ?? null]);
+        $studentCode = app(\App\Services\CodeGeneratorService::class)->generateStudentCode($tempStudent);
 
         $user = \App\Models\User::create([
             'name' => "{$validated['first_name']} {$validated['last_name']}",
             'email' => strtolower($studentCode) . '@student.local',
-            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'password' => \Illuminate\Support\Facades\Hash::make($studentCode),
             'phone' => $phoneForUser,
             'status' => \App\Enums\UserStatus::Active,
         ]);
+        $user->must_change_password = true;
+        $user->save();
         $user->assignRole('student');
 
         $student = Student::create([

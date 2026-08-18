@@ -20,6 +20,10 @@ export default function StudentsDirectoryPage() {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [selectedStudents, setSelectedStudents] = useState<any[]>([]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [sortByDate, setSortByDate] = useState(true);
+
   const { selectedYearId, selectedGrade, selectedTerm } = useCenterFilters();
   const [academicTrack, setAcademicTrack] = useState("");
 
@@ -48,7 +52,7 @@ export default function StudentsDirectoryPage() {
 
   useEffect(() => {
     initData();
-  }, [selectedYearId, selectedGrade, selectedTerm, academicTrack]);
+  }, [selectedYearId, selectedGrade, selectedTerm, academicTrack, currentPage, sortByDate]);
 
   const initData = async () => {
     setLoading(true);
@@ -60,6 +64,8 @@ export default function StudentsDirectoryPage() {
           academic_year: selectedGrade,
           term: selectedTerm,
           academic_track: selectedGrade === 'sec_3' ? academicTrack : undefined,
+          page: currentPage,
+          sort_by_date: sortByDate,
         }),
         centerService.getGroups({
           academic_year_id: selectedYearId,
@@ -68,6 +74,7 @@ export default function StudentsDirectoryPage() {
         }),
       ]);
       setStudents(studentsRes.data || []);
+      setTotalPages(studentsRes.last_page || 1);
       setGroups(groupsData);
       setSelectedGradeLevel(selectedGrade || GRADE_LEVELS[0].id);
       if (groupsData.length > 0) setSelectedGroupId(groupsData[0].id);
@@ -80,6 +87,7 @@ export default function StudentsDirectoryPage() {
 
   const handleSearch = async () => {
     setLoading(true);
+    setCurrentPage(1); // Reset to first page on search
     try {
       const res = await centerService.getStudents({
         search: searchQuery,
@@ -87,8 +95,11 @@ export default function StudentsDirectoryPage() {
         academic_year: selectedGrade,
         term: selectedTerm,
         academic_track: selectedGrade === 'sec_3' ? academicTrack : undefined,
+        page: 1,
+        sort_by_date: sortByDate,
       });
       setStudents(res.data || []);
+      setTotalPages(res.last_page || 1);
     } catch (e) {
     } finally {
       setLoading(false);
@@ -257,6 +268,13 @@ export default function StudentsDirectoryPage() {
         <Button onClick={handleSearch} className="h-11 px-6 font-bold gap-2">
           <Search className="h-4 w-4" /> بحث
         </Button>
+        <Button 
+          variant={!sortByDate ? "default" : "outline"}
+          onClick={() => setSortByDate(!sortByDate)} 
+          className="h-11 px-4 font-bold gap-2"
+        >
+          {!sortByDate ? "إلغاء الفرز الأبجدي" : "فرز أبجدي (حسب الاسم)"}
+        </Button>
       </div>
 
       {/* Students Directory Table */}
@@ -359,6 +377,29 @@ export default function StudentsDirectoryPage() {
           </div>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1 || loading}
+          >
+            السابق
+          </Button>
+          <span className="text-sm font-semibold text-muted-foreground">
+            صفحة {currentPage} من {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages || loading}
+          >
+            التالي
+          </Button>
+        </div>
+      )}
 
       {/* Modal: Add New Student */}
       {showAddStudentModal && (

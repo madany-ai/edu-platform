@@ -168,7 +168,7 @@ class StudentResource extends Resource
                     ->label('كلمة المرور')
                     ->password()
                     ->revealable()
-                    ->minLength(8)
+                    ->minLength(6)
                     ->dehydrated(fn ($state) => filled($state))
                     ->helperText(fn (?Student $record) => $record !== null ? 'اتركه فارغاً إذا كنت لا تريد تغيير كلمة المرور.' : 'إذا تركته فارغاً، ستكون كلمة المرور هي كود الطالب.')
                     ->extraInputAttributes(['autocomplete' => 'new-password']),
@@ -258,6 +258,7 @@ class StudentResource extends Resource
                         if (!empty($data['password'])) {
                             $record->user->update([
                                 'password' => \Illuminate\Support\Facades\Hash::make($data['password']),
+                                'must_change_password' => $data['password'] === $record->student_code,
                             ]);
                         }
                     }),
