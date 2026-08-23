@@ -434,9 +434,13 @@ export default function LectureViewPage() {
                             <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
                               <FileText className="h-5 w-5" />
                             </div>
-                            <div>
+                            <div className="text-right">
                               <p className="text-sm font-medium group-hover:text-primary transition-colors">{file.type}</p>
-                              <p className="text-xs text-muted-foreground">ملف مرفق</p>
+                              {file.notes ? (
+                                <p className="text-xs text-muted-foreground mt-0.5">{file.notes}</p>
+                              ) : (
+                                <p className="text-xs text-muted-foreground mt-0.5">ملف مرفق</p>
+                              )}
                             </div>
                           </div>
                           <Download className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />

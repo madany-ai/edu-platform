@@ -231,6 +231,24 @@ class CenterStaffController extends Controller
         ], 201);
     }
 
+    public function updateSession(Request $request, string $id): JsonResponse
+    {
+        $session = AcademicSession::findOrFail($id);
+        
+        $validated = $request->validate([
+            'date' => 'sometimes|date',
+            'topic' => 'sometimes|string|max:255',
+            'notes' => 'nullable|string',
+        ]);
+
+        $session->update($validated);
+        
+        return response()->json([
+            'message' => 'تم تحديث الحصة بنجاح.',
+            'data' => $session
+        ]);
+    }
+
     public function getSessionAttendance(Request $request, string $sessionId): JsonResponse
     {
         $session = AcademicSession::with('group')->findOrFail($sessionId);

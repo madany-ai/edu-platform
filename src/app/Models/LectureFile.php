@@ -11,7 +11,7 @@ class LectureFile extends Model
 {
     use HasUuids, \App\Traits\ResolvesMinioUrls;
 
-    protected $fillable = ['lecture_id', 'type', 'file_path'];
+    protected $fillable = ['lecture_id', 'type', 'notes', 'file_path'];
 
     public function lecture(): BelongsTo
     {

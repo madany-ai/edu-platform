@@ -138,6 +138,9 @@ class LectureResource extends Resource
                                     ->label('نوع الملف')
                                     ->default('PDF')
                                     ->required(),
+                                TextInput::make('notes')
+                                    ->label('ملاحظات (مثال: واجب المحاضرة الأولى)')
+                                    ->maxLength(255),
                                 FileUpload::make('file_path')
                                     ->label('الملف')
                                     ->disk('public')

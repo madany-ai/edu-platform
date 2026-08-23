@@ -73,5 +73,6 @@ export interface LectureVideo {
 export interface LectureFile {
   id: string;
   type: string;
+  notes?: string;
   original_name?: string;
 }

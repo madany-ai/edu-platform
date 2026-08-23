@@ -166,6 +166,11 @@ export const centerService = {
     return data.data;
   },
 
+  updateSession: async (id: string, payload: Partial<AcademicSession>): Promise<AcademicSession> => {
+    const { data } = await api.put<{ data: AcademicSession }>(`/center/staff/sessions/${id}`, payload);
+    return data.data;
+  },
+
   getSessionAttendance: async (sessionId: string, params?: { academic_track?: string }): Promise<{ session: AcademicSession; attendance: AttendanceRecord[] }> => {
     const { data } = await api.get<{ session: AcademicSession; attendance: AttendanceRecord[] }>(
       `/center/staff/sessions/${sessionId}/attendance`,

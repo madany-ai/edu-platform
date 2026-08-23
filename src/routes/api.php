@@ -166,6 +166,7 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
 
         Route::get('sessions', [\App\Http\Controllers\Api\CenterStaffController::class, 'sessions']);
         Route::post('sessions', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeSession']);
+        Route::put('sessions/{id}', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateSession']);
         Route::get('sessions/{id}/attendance', [\App\Http\Controllers\Api\CenterStaffController::class, 'getSessionAttendance']);
         Route::post('sessions/{id}/attendance', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateAttendance']);
         Route::post('attendance/scan', [\App\Http\Controllers\Api\CenterStaffController::class, 'scanAttendance']);

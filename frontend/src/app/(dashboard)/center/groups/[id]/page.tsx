@@ -33,6 +33,8 @@ import {
   ArrowRightLeft,
   X,
   Phone,
+  Edit,
+  Save,
 } from "lucide-react";
 
 const GRADE_LEVELS = [
@@ -82,6 +84,15 @@ export default function GroupWorkspacePage({ params }: { params: Promise<{ id: s
   // New Exam Form
   const [newExamName, setNewExamName] = useState("");
   const [newExamMarks, setNewExamMarks] = useState("30");
+
+  // Edit Group Name
+  const [isEditingGroupName, setIsEditingGroupName] = useState(false);
+  const [editedGroupName, setEditedGroupName] = useState("");
+
+  // Edit Session
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editedSessionTopic, setEditedSessionTopic] = useState("");
+  const [editedSessionDate, setEditedSessionDate] = useState("");
 
   useEffect(() => {
     if (!authLoading) {
@@ -160,6 +171,28 @@ export default function GroupWorkspacePage({ params }: { params: Promise<{ id: s
     }
   };
 
+  const handleUpdateGroup = async () => {
+    if (!editedGroupName.trim() || !data?.group) return;
+    try {
+      await centerService.updateGroup(groupId, { name: editedGroupName });
+      setIsEditingGroupName(false);
+      loadGroupWorkspace();
+    } catch (e) {
+      alert("حدث خطأ أثناء تعديل اسم المجموعة");
+    }
+  };
+
+  const handleUpdateSession = async (sessionId: string) => {
+    if (!editedSessionTopic.trim()) return;
+    try {
+      await centerService.updateSession(sessionId, { topic: editedSessionTopic, date: editedSessionDate });
+      setEditingSessionId(null);
+      loadGroupWorkspace();
+    } catch (e) {
+      alert("حدث خطأ أثناء تعديل الحصة");
+    }
+  };
+
   if (authLoading || !data) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center gap-3">
@@ -190,7 +223,18 @@ export default function GroupWorkspacePage({ params }: { params: Promise<{ id: s
                   سعة المجموعة: {group.capacity} طالب (مسجل {students.length})
                 </span>
               </div>
-              <h1 className="text-3xl font-extrabold text-foreground">{group.name} 👥</h1>
+              {isEditingGroupName ? (
+                <div className="flex items-center gap-2">
+                  <Input value={editedGroupName} onChange={(e) => setEditedGroupName(e.target.value)} className="text-xl font-bold bg-background/50 h-10 max-w-[300px]" autoFocus onKeyDown={(e) => e.key === 'Enter' && handleUpdateGroup()} />
+                  <Button size="sm" onClick={handleUpdateGroup}><Save className="h-4 w-4" /></Button>
+                  <Button size="sm" variant="ghost" onClick={() => setIsEditingGroupName(false)}><X className="h-4 w-4" /></Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <h1 className="text-3xl font-extrabold text-foreground">{group.name} 👥</h1>
+                  <button onClick={() => { setEditedGroupName(group.name); setIsEditingGroupName(true); }} className="text-muted-foreground hover:text-primary transition-colors bg-background/50 p-2 rounded-full"><Edit className="h-4 w-4" /></button>
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">
                 ورشة العمل الكاملة للمجموعة: إضافة الطلاب، كشوف الحضور والغياب، رصد الامتحانات، والأوائل.
               </p>
@@ -352,15 +396,29 @@ export default function GroupWorkspacePage({ params }: { params: Promise<{ id: s
             ) : (
               sessions.map((s) => (
                 <div key={s.id} className="glass-card p-4 rounded-xl border border-border flex items-center justify-between">
-                  <div>
-                    <h4 className="font-bold text-sm text-foreground">{s.topic}</h4>
-                    <p className="text-xs text-muted-foreground font-mono mt-0.5">تاريخ الحصة: {s.date}</p>
-                  </div>
-                  <Link href={`/center/sessions?session_id=${s.id}`}>
-                    <Button size="sm" variant="outline" className="text-xs font-bold gap-1">
-                      <Calendar className="h-3.5 w-3.5 text-primary" /> عرض الكشف والغياب
-                    </Button>
-                  </Link>
+                  {editingSessionId === s.id ? (
+                    <div className="flex items-center gap-3 w-full max-w-md">
+                      <Input value={editedSessionTopic} onChange={(e) => setEditedSessionTopic(e.target.value)} className="h-8 text-sm" />
+                      <Input type="date" value={editedSessionDate} onChange={(e) => setEditedSessionDate(e.target.value)} className="h-8 text-sm w-36 shrink-0" />
+                      <Button size="sm" onClick={() => handleUpdateSession(s.id)} className="h-8 shrink-0"><Save className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingSessionId(null)} className="h-8 shrink-0"><X className="h-4 w-4" /></Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-3">
+                        <div>
+                          <h4 className="font-bold text-sm text-foreground">{s.topic}</h4>
+                          <p className="text-xs text-muted-foreground font-mono mt-0.5">تاريخ الحصة: {s.date}</p>
+                        </div>
+                        <button onClick={() => { setEditingSessionId(s.id); setEditedSessionTopic(s.topic); setEditedSessionDate(s.date); }} className="text-muted-foreground hover:text-primary transition-colors bg-background/50 p-1.5 rounded-full"><Edit className="h-3.5 w-3.5" /></button>
+                      </div>
+                      <Link href={`/center/sessions?session_id=${s.id}`}>
+                        <Button size="sm" variant="outline" className="text-xs font-bold gap-1">
+                          <Calendar className="h-3.5 w-3.5 text-primary" /> عرض الكشف والغياب
+                        </Button>
+                      </Link>
+                    </>
+                  )}
                 </div>
               ))
             )}
