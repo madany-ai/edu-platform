@@ -53,7 +53,7 @@ it('returns 401 for unauthenticated GET requests', function () {
 });
 
 it('returns 401 for unauthenticated POST requests', function () {
-    $this->postJson('/api/auth/logout')->assertStatus(401);
+    $this->postJson('/api/courses', ['title' => 'Test'])->assertStatus(401);
 });
 
 it('prevents student from creating a course', function () {

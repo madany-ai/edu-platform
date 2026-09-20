@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/select";
 import { AlertCircle, CheckCircle2, Loader2, Calculator } from "lucide-react";
 import { miscService, type GovernorateInfo, type GradeLevelInfo } from "@/services/misc.service";
-import { Turnstile } from "@marsidev/react-turnstile";
 import env from "@/config/env";
 
 interface FieldError {
@@ -70,8 +69,6 @@ export default function RegisterPage() {
 
   const [errors, setErrors] = useState<FieldError[]>([]);
   const [loading, setLoading] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState("");
-
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -178,7 +175,6 @@ export default function RegisterPage() {
         governorate_id: governorateId,
         academic_year: academicYear,
         academic_track: trackToSubmit,
-        "cf-turnstile-response": turnstileToken,
       });
       setSubmitted(true);
     } catch (err: unknown) {
@@ -544,14 +540,6 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <div className="flex justify-center my-4">
-                <Turnstile
-                  siteKey={env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-                  onSuccess={(token) => setTurnstileToken(token)}
-                  onError={() => setErrors([{ field: "general", message: "حدث خطأ في التحقق. يرجى إعادة تحميل الصفحة." }])}
-                  options={{ theme: "dark" }}
-                />
-              </div>
 
               <div className="flex gap-3 pt-2">
                 <Button type="button" variant="outline" className="flex-1 border-border/60 hover:bg-muted text-foreground" onClick={handleBack}>

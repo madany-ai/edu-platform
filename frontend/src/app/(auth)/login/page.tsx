@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2, Phone, KeyRound, Calculator } from "lucide-react";
-import { Turnstile } from "@marsidev/react-turnstile";
 import env from "@/config/env";
 
 export default function LoginPage() {
@@ -19,8 +18,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState("");
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -47,7 +44,7 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const loggedInUser = await login({ email: identifier, password, "cf-turnstile-response": turnstileToken });
+      const loggedInUser = await login({ email: identifier, password });
       const roles = loggedInUser?.roles || [];
       const isStaff = roles.some((r: any) => ["instructor", "assistant", "super_admin", "admin"].includes(typeof r === "string" ? r : r.name));
 
@@ -202,14 +199,6 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="flex justify-center my-4">
-            <Turnstile
-              siteKey={env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-              onSuccess={(token) => setTurnstileToken(token)}
-              onError={() => setError("حدث خطأ في التحقق. يرجى إعادة تحميل الصفحة.")}
-              options={{ theme: "dark" }}
-            />
-          </div>
 
           <Button
             type="submit"

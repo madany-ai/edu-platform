@@ -1,7 +1,6 @@
 import axios, { type AxiosError } from "axios";
 import env from "@/config/env";
 import type { ApiError } from "@/types";
-import { STORAGE_KEYS } from "@/lib/constants";
 
 const api = axios.create({
   baseURL: env.NEXT_PUBLIC_API_URL,
@@ -14,6 +13,22 @@ const api = axios.create({
   timeout: 30000,
 });
 
+let memoryAccessToken: string | null = null;
+
+export const setAccessToken = (token: string | null) => {
+  memoryAccessToken = token;
+};
+
+export const getAccessToken = () => memoryAccessToken;
+
+api.interceptors.request.use((config) => {
+  if (memoryAccessToken) {
+    config.headers.Authorization = `Bearer ${memoryAccessToken}`;
+  }
+  return config;
+});
+
+
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ApiError>) => {
@@ -23,30 +38,26 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       
       if (typeof window !== "undefined") {
-        const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
-        if (token && originalRequest.url !== "/auth/login" && originalRequest.url !== "/auth/refresh-token") {
+        if (originalRequest.url !== "/auth/login" && originalRequest.url !== "/auth/refresh-token") {
           try {
-            // Attempt to refresh the token using the existing Bearer token
+            // Attempt to refresh the token using HttpOnly Cookie (sent automatically)
             const { data } = await axios.post(
               `${env.NEXT_PUBLIC_API_URL}/auth/refresh-token`,
               {},
               {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  Accept: "application/json",
-                },
                 withCredentials: true,
+                headers: { Accept: "application/json" },
               }
             );
             
-            if (data?.token) {
-              localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
+            if (data?.access_token) {
+              setAccessToken(data.access_token);
               // Retry the original request
               return api(originalRequest);
             }
           } catch (refreshError) {
             // Refresh failed, clear everything and redirect to login
-            localStorage.removeItem(STORAGE_KEYS.TOKEN);
+            setAccessToken(null);
             document.cookie = "laravel_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             if (window.location.pathname !== "/login") {
@@ -56,7 +67,7 @@ api.interceptors.response.use(
           }
         } else {
           // No token or already trying to login/refresh, just clear cookies
-          localStorage.removeItem(STORAGE_KEYS.TOKEN);
+          setAccessToken(null);
           document.cookie = "laravel_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
           document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
           

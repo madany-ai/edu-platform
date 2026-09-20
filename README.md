@@ -206,6 +206,9 @@ frontend/src/
    ```
 
 ---
+docker compose up -d postgres redis app nginx
+docker compose stop
+
 
 ## Production Deployment
 

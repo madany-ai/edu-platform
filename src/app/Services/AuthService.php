@@ -23,7 +23,7 @@ class AuthService
     {
         $user = DB::transaction(function () use ($data) {
             $user = User::create([
-                'name' => $data['first_name'].' '.$data['last_name'],
+                'name' => $data['first_name'].' '.$data['second_name'],
                 'email' => $data['email'],
                 'phone' => $data['phone'],
                 'password' => Hash::make($data['password']),
@@ -107,25 +107,15 @@ class AuthService
 
         $user->update(['last_login_at' => now()]);
 
-        Auth::guard('web')->login($user);
-        if (request()->hasSession()) {
-            request()->session()->regenerate();
-        }
-
         return [
             'user' => $user,
-            'token' => $user->createToken('api')->plainTextToken,
+            'access_token' => $user->createToken('access_token', ['*'], now()->addMinutes(15))->plainTextToken,
+            'refresh_token' => $user->createToken('refresh_token', ['issue-access-token'], now()->addDays(30))->plainTextToken,
         ];
     }
 
     public function logout(User $user): void
     {
-        Auth::guard('web')->logout();
-        if (request()->hasSession()) {
-            request()->session()->invalidate();
-            request()->session()->regenerateToken();
-        }
-
         $token = $user->currentAccessToken();
         if ($token && method_exists($token, 'delete')) {
             $token->delete();

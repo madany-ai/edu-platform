@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\TurnstileRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class LoginRequest extends FormRequest
@@ -18,14 +17,6 @@ class LoginRequest extends FormRequest
         return [
             'email' => 'required|string',
             'password' => 'required|string',
-            'cf-turnstile-response' => app()->environment('local', 'testing') ? ['nullable'] : ['required', 'string', new TurnstileRule],
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'cf-turnstile-response.required' => 'يرجى التحقق من أنك لست روبوت لإكمال تسجيل الدخول.',
         ];
     }
 }

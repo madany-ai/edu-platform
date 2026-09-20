@@ -24,7 +24,6 @@ function validRegistrationData(array $overrides = []): array
         'birth_date' => '2000-01-01',
         'governorate_id' => test()->governorate->id,
         'academic_year' => 'sec_3',
-        'cf-turnstile-response' => 'dummy-token',
     ], $overrides);
 }
 
@@ -38,7 +37,7 @@ it('registers a new student with pending status', function () {
 
     $this->assertDatabaseHas('users', [
         'email' => 'test@example.com',
-        'name' => 'Test User',
+        'name' => 'Test Second',
         'status' => 'pending',
     ]);
 });
@@ -81,13 +80,14 @@ it('allows login with correct credentials', function () {
     $response = $this->postJson('/api/auth/login', [
         'email' => 'test@example.com',
         'password' => 'password123',
-        'cf-turnstile-response' => 'dummy-token',
     ]);
 
     $response->assertStatus(200)
         ->assertJsonStructure([
             'user' => ['id', 'name', 'email'],
-        ]);
+            'access_token',
+        ])
+        ->assertCookie('refresh_token');
 });
 
 it('rejects login for pending user', function () {
@@ -100,7 +100,6 @@ it('rejects login for pending user', function () {
     $response = $this->postJson('/api/auth/login', [
         'email' => 'pending@test.com',
         'password' => 'password123',
-        'cf-turnstile-response' => 'dummy-token',
     ]);
 
     $response->assertStatus(403)
@@ -119,7 +118,6 @@ it('rejects login for rejected user', function () {
     $response = $this->postJson('/api/auth/login', [
         'email' => 'rejected@test.com',
         'password' => 'password123',
-        'cf-turnstile-response' => 'dummy-token',
     ]);
 
     $response->assertStatus(403)
@@ -137,7 +135,6 @@ it('rejects login with wrong password', function () {
     $response = $this->postJson('/api/auth/login', [
         'email' => 'test@example.com',
         'password' => 'wrong-password',
-        'cf-turnstile-response' => 'dummy-token',
     ]);
 
     $response->assertStatus(401)
@@ -170,10 +167,40 @@ it('allows user to logout', function () {
         ->postJson('/api/auth/logout');
 
     $response->assertStatus(200)
-        ->assertJson(['message' => 'Logged out']);
+        ->assertJson(['message' => 'Logged out'])
+        ->assertCookieExpired('refresh_token');
 });
 
-it('rejects unauthenticated logout', function () {
+it('allows logout with expired access token but valid cookie', function () {
     $this->postJson('/api/auth/logout')
+        ->assertStatus(200);
+});
+
+it('refreshes token successfully using valid refresh cookie', function () {
+    $user = User::factory()->create(['status' => 'active']);
+    
+    // First login to get the refresh cookie
+    $loginResponse = $this->postJson('/api/auth/login', [
+        'email' => $user->email,
+        'password' => 'password', // Default factory password
+    ]);
+    
+    $loginResponse->assertStatus(200);
+    $refreshCookie = $loginResponse->getCookie('refresh_token');
+    
+    expect($refreshCookie)->not->toBeNull();
+
+    // Now call refresh-token using the cookie, without CSRF token
+    $refreshResponse = $this->withCookies([
+        'refresh_token' => $refreshCookie->getValue(),
+    ])->postJson('/api/auth/refresh-token');
+
+    $refreshResponse->assertStatus(200)
+        ->assertJsonStructure(['access_token'])
+        ->assertCookie('refresh_token');
+});
+
+it('rejects refresh token request without valid cookie', function () {
+    $this->postJson('/api/auth/refresh-token')
         ->assertStatus(401);
 });

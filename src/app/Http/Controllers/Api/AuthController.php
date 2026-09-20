@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -50,39 +51,49 @@ class AuthController extends Controller
             ], 403);
         }
 
-        return response()->json($result);
+        return response()->json([
+            'user' => $result['user'],
+            'access_token' => $result['access_token']
+        ])->cookie('refresh_token', $result['refresh_token'], 60 * 24 * 30, '/', null, true, true, false, 'Strict');
     }
 
-    public function logout(): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
-        $this->authService->logout(request()->user());
+        if ($request->user()) {
+            $this->authService->logout($request->user());
+        }
 
-        return response()->json(['message' => 'Logged out']);
+        if ($refreshTokenString = $request->cookie('refresh_token')) {
+            if ($token = PersonalAccessToken::findToken($refreshTokenString)) {
+                $token->delete();
+            }
+        }
+
+        return response()->json(['message' => 'Logged out'])->withoutCookie('refresh_token');
     }
 
     public function refreshToken(Request $request): JsonResponse
     {
-        $user = $request->user();
-
-        // Delete the current token being used
-        $token = $request->user()->currentAccessToken();
-        if ($token) {
-            $token->delete();
+        $refreshTokenString = $request->cookie('refresh_token');
+        if (!$refreshTokenString) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        // Create a new token
-        $newToken = $user->createToken('auth_token')->plainTextToken;
-
-        // Regenerate the session cookie so SPA requests continue to work
-        Auth::guard('web')->login($user);
-        if (request()->hasSession()) {
-            request()->session()->regenerate();
+        $token = PersonalAccessToken::findToken($refreshTokenString);
+        if (!$token || $token->expires_at < now() || !$token->can('issue-access-token')) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
         }
+
+        $user = $token->tokenable;
+        $token->delete();
+
+        $accessToken = $user->createToken('access_token', ['*'], now()->addMinutes(15))->plainTextToken;
+        $newRefreshToken = $user->createToken('refresh_token', ['issue-access-token'], now()->addDays(30))->plainTextToken;
 
         return response()->json([
-            'token' => $newToken,
+            'access_token' => $accessToken,
             'message' => 'Token refreshed successfully',
-        ]);
+        ])->cookie('refresh_token', $newRefreshToken, 60 * 24 * 30, '/', null, true, true, false, 'Strict');
     }
 
     public function me(): JsonResponse
