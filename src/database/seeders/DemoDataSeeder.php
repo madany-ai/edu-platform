@@ -13,14 +13,13 @@ use App\Models\User;
 use App\Services\CodeGeneratorService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class DemoDataSeeder extends Seeder
 {
     public function run(): void
     {
         $instructor = User::whereHas('roles', fn ($q) => $q->where('name', 'instructor'))->first();
-        if (!$instructor) {
+        if (! $instructor) {
             $instructor = User::firstOrCreate(
                 ['email' => 'mrhefni@mrhifnimuhammad.tech'],
                 [
@@ -35,7 +34,7 @@ class DemoDataSeeder extends Seeder
         $codeService = app(CodeGeneratorService::class);
         $statuses = ['present', 'absent', 'late', 'excused'];
         $years = ['sec_1', 'sec_2', 'sec_3'];
-        
+
         $studentCounter = 1;
 
         foreach ($years as $year) {
@@ -69,13 +68,13 @@ class DemoDataSeeder extends Seeder
             // 3. Seed Students
             $students = [];
             $names = ['أحمد', 'محمد', 'محمود', 'مصطفى', 'علي', 'عمر', 'كريم', 'خالد', 'طارق', 'يوسف'];
-            
+
             foreach ($names as $index => $firstName) {
                 $user = User::firstOrCreate(
-                    ['email' => 'student' . $studentCounter . '@demo.com'],
+                    ['email' => 'student'.$studentCounter.'@demo.com'],
                     [
-                        'name' => $firstName . ' أحمد محمود ' . $year,
-                        'phone' => '010' . rand(10000000, 99999999),
+                        'name' => $firstName.' أحمد محمود '.$year,
+                        'phone' => '010'.rand(10000000, 99999999),
                         'password' => Hash::make('password'),
                         'status' => 'active',
                     ]
@@ -89,7 +88,7 @@ class DemoDataSeeder extends Seeder
                     'third_name' => 'محمود',
                     'last_name' => 'إبراهيم',
                     'phone' => $user->phone,
-                    'father_phone' => '011' . rand(10000000, 99999999),
+                    'father_phone' => '011'.rand(10000000, 99999999),
                     'academic_year' => $year,
                     'group_id' => $groups[$index % 2]->id,
                     'gender' => 'male',
@@ -107,12 +106,12 @@ class DemoDataSeeder extends Seeder
             // 4. Seed Academic Sessions & Attendance
             foreach ($groups as $group) {
                 $groupStudents = array_filter($students, fn ($s) => $s->group_id === $group->id);
-                
+
                 for ($i = 0; $i < 3; $i++) {
                     $session = AcademicSession::create([
                         'group_id' => $group->id,
                         'date' => now()->subDays($i * 7),
-                        'topic' => 'محاضرة رقم ' . ($i + 1),
+                        'topic' => 'محاضرة رقم '.($i + 1),
                         'created_by' => $instructor->id,
                     ]);
 
@@ -130,10 +129,10 @@ class DemoDataSeeder extends Seeder
             // 5. Seed Center Exams & Grades
             foreach ($groups as $group) {
                 $groupStudents = array_filter($students, fn ($s) => $s->group_id === $group->id);
-                
+
                 for ($i = 1; $i <= 2; $i++) {
                     $exam = CenterExam::create([
-                        'name' => 'امتحان شامل ' . $i . ' - ' . $year,
+                        'name' => 'امتحان شامل '.$i.' - '.$year,
                         'total_marks' => 100,
                         'date' => now()->subDays($i * 14),
                         'group_id' => $group->id,

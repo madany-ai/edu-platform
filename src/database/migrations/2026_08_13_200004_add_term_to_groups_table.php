@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('groups', function (Blueprint $table) {
-            if (!Schema::hasColumn('groups', 'term')) {
+            if (! Schema::hasColumn('groups', 'term')) {
                 $table->string('term')->default('term_1')->after('academic_year');
             }
         });

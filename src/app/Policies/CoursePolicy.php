@@ -12,6 +12,7 @@ class CoursePolicy
         if ($user->hasRole('super_admin')) {
             return true;
         }
+
         return null;
     }
 

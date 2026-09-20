@@ -2,20 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
+use App\Jobs\NotifyParentJob;
 use App\Models\AcademicSession;
 use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\CenterExam;
 use App\Models\CenterGrade;
-use App\Models\GradeLevel;
 use App\Models\Group;
 use App\Models\Student;
+use App\Models\User;
+use App\Services\CodeGeneratorService;
 use App\Services\NotificationService;
 use App\Services\RankingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class CenterStaffController extends Controller
 {
@@ -27,6 +30,7 @@ class CenterStaffController extends Controller
     public function academicYears(): JsonResponse
     {
         $years = AcademicYear::orderByDesc('created_at')->get();
+
         return response()->json(['data' => $years]);
     }
 
@@ -40,6 +44,7 @@ class CenterStaffController extends Controller
         ]);
 
         $year = AcademicYear::create($validated);
+
         return response()->json(['message' => 'تم إضافة السنة الدراسية بنجاح.', 'data' => $year], 201);
     }
 
@@ -54,18 +59,19 @@ class CenterStaffController extends Controller
         ]);
 
         $year->update($validated);
+
         return response()->json(['message' => 'تم تحديث السنة الدراسية بنجاح.', 'data' => $year]);
     }
 
     // ─── Stats ───
     public function stats(Request $request): JsonResponse
     {
-        $totalStudentsQuery = \App\Models\Student::query();
+        $totalStudentsQuery = Student::query();
         if ($request->has('academic_year')) {
             $totalStudentsQuery->where('academic_year', $request->query('academic_year'));
         }
 
-        $activeGroupsQuery = \App\Models\Group::where('is_active', true);
+        $activeGroupsQuery = Group::where('is_active', true);
         if ($request->has('academic_year')) {
             $activeGroupsQuery->where('academic_year', $request->query('academic_year'));
         }
@@ -98,6 +104,7 @@ class CenterStaffController extends Controller
         }
 
         $groups = $query->orderByDesc('created_at')->get();
+
         return response()->json(['data' => $groups]);
     }
 
@@ -131,6 +138,7 @@ class CenterStaffController extends Controller
         ]);
 
         $group = Group::create($validated);
+
         return response()->json(['message' => 'تم إضافة المجموعة بنجاح.', 'data' => $group], 201);
     }
 
@@ -148,6 +156,7 @@ class CenterStaffController extends Controller
         ]);
 
         $group->update($validated);
+
         return response()->json(['message' => 'تم تحديث المجموعة بنجاح.', 'data' => $group]);
     }
 
@@ -157,8 +166,9 @@ class CenterStaffController extends Controller
 
         if ($group->sessions()->exists()) {
             $group->update(['is_active' => false]);
+
             return response()->json([
-                'message' => 'تم أرشفة المجموعة بنجاح (تعطيل المجموعة بدلاً من الحذف للحفاظ على سجلات الحضور والدرجات).'
+                'message' => 'تم أرشفة المجموعة بنجاح (تعطيل المجموعة بدلاً من الحذف للحفاظ على سجلات الحضور والدرجات).',
             ]);
         }
 
@@ -176,13 +186,20 @@ class CenterStaffController extends Controller
             $query->where('group_id', $request->query('group_id'));
         } elseif ($request->has('academic_year') || $request->has('academic_year_id') || $request->has('term')) {
             $query->whereHas('group', function ($q) use ($request) {
-                if ($request->has('academic_year')) $q->where('academic_year', $request->query('academic_year'));
-                if ($request->has('academic_year_id')) $q->where('academic_year_id', $request->query('academic_year_id'));
-                if ($request->has('term')) $q->where('term', $request->query('term'));
+                if ($request->has('academic_year')) {
+                    $q->where('academic_year', $request->query('academic_year'));
+                }
+                if ($request->has('academic_year_id')) {
+                    $q->where('academic_year_id', $request->query('academic_year_id'));
+                }
+                if ($request->has('term')) {
+                    $q->where('term', $request->query('term'));
+                }
             });
         }
 
         $sessions = $query->orderByDesc('date')->orderByDesc('created_at')->get();
+
         return response()->json(['data' => $sessions]);
     }
 
@@ -201,11 +218,11 @@ class CenterStaffController extends Controller
         $createdSessions = [];
         $userId = $request->user()->id;
 
-        if (!empty($validated['group_ids'])) {
+        if (! empty($validated['group_ids'])) {
             $groupIds = $validated['group_ids'];
-        } elseif (!empty($validated['academic_year'])) {
+        } elseif (! empty($validated['academic_year'])) {
             $groupIds = Group::where('academic_year', $validated['academic_year'])->pluck('id')->toArray();
-        } elseif (!empty($validated['group_id'])) {
+        } elseif (! empty($validated['group_id'])) {
             $groupIds = [$validated['group_id']];
         } else {
             return response()->json(['message' => 'يرجى اختيار مجموعة أو صف دراسي.'], 422);
@@ -224,8 +241,8 @@ class CenterStaffController extends Controller
 
         return response()->json([
             'message' => count($createdSessions) > 1
-                ? "تم إضافة الحصة وتعميمها بنجاح على " . count($createdSessions) . " مجموعات لهذا الصف الدراسي! 🌟"
-                : "تم إنشاء الحصة بنجاح.",
+                ? 'تم إضافة الحصة وتعميمها بنجاح على '.count($createdSessions).' مجموعات لهذا الصف الدراسي! 🌟'
+                : 'تم إنشاء الحصة بنجاح.',
             'data' => $createdSessions[0] ?? null,
             'sessions' => $createdSessions,
         ], 201);
@@ -234,7 +251,7 @@ class CenterStaffController extends Controller
     public function updateSession(Request $request, string $id): JsonResponse
     {
         $session = AcademicSession::findOrFail($id);
-        
+
         $validated = $request->validate([
             'date' => 'sometimes|date',
             'topic' => 'sometimes|string|max:255',
@@ -242,10 +259,10 @@ class CenterStaffController extends Controller
         ]);
 
         $session->update($validated);
-        
+
         return response()->json([
             'message' => 'تم تحديث الحصة بنجاح.',
-            'data' => $session
+            'data' => $session,
         ]);
     }
 
@@ -314,7 +331,7 @@ class CenterStaffController extends Controller
             ->get();
 
         foreach ($guestAttendances as $guest) {
-            if ($guest->student && !$result->pluck('student_id')->contains($guest->student_id)) {
+            if ($guest->student && ! $result->pluck('student_id')->contains($guest->student_id)) {
                 $result->push([
                     'student_id' => $guest->student->id,
                     'student_code' => $guest->student->student_code,
@@ -347,7 +364,9 @@ class CenterStaffController extends Controller
 
         foreach ($validated['records'] as $item) {
             $student = Student::find($item['student_id']);
-            if (!$student) continue;
+            if (! $student) {
+                continue;
+            }
 
             $isGuest = $student->group_id !== $session->group_id;
 
@@ -399,7 +418,7 @@ class CenterStaffController extends Controller
             })
             ->first();
 
-        if (!$student) {
+        if (! $student) {
             return response()->json([
                 'status' => 'error',
                 'message' => "لم يتم العثور على طالب بالكود أو الرقم ({$code}).",
@@ -413,7 +432,7 @@ class CenterStaffController extends Controller
         if ($existingAtt) {
             return response()->json([
                 'status' => 'error',
-                'message' => "تم تسجيل حضور هذا الطالب مسبقاً في هذه الحصة!",
+                'message' => 'تم تسجيل حضور هذا الطالب مسبقاً في هذه الحصة!',
             ], 409);
         }
 
@@ -436,11 +455,12 @@ class CenterStaffController extends Controller
                 $session->topic,
                 $session->date->format('Y-m-d')
             );
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         return response()->json([
             'status' => 'success',
-            'message' => "تم تسجيل " . ($status === 'present' ? 'حضور' : ($status === 'late' ? 'تأخير' : 'حضور كضيف')) . " الطالب بنجاح! 🟢",
+            'message' => 'تم تسجيل '.($status === 'present' ? 'حضور' : ($status === 'late' ? 'تأخير' : 'حضور كضيف')).' الطالب بنجاح! 🟢',
             'student' => [
                 'id' => $student->id,
                 'code' => $student->student_code,
@@ -450,7 +470,7 @@ class CenterStaffController extends Controller
                 'status' => $status,
                 'is_guest' => $isGuest,
                 'original_group' => $student->group ? $student->group->name : null,
-            ]
+            ],
         ]);
     }
 
@@ -463,13 +483,20 @@ class CenterStaffController extends Controller
             $query->where('group_id', $request->query('group_id'));
         } elseif ($request->has('academic_year') || $request->has('academic_year_id') || $request->has('term')) {
             $query->whereHas('group', function ($q) use ($request) {
-                if ($request->has('academic_year')) $q->where('academic_year', $request->query('academic_year'));
-                if ($request->has('academic_year_id')) $q->where('academic_year_id', $request->query('academic_year_id'));
-                if ($request->has('term')) $q->where('term', $request->query('term'));
+                if ($request->has('academic_year')) {
+                    $q->where('academic_year', $request->query('academic_year'));
+                }
+                if ($request->has('academic_year_id')) {
+                    $q->where('academic_year_id', $request->query('academic_year_id'));
+                }
+                if ($request->has('term')) {
+                    $q->where('term', $request->query('term'));
+                }
             });
         }
 
         $exams = $query->orderByDesc('date')->orderByDesc('created_at')->get();
+
         return response()->json(['data' => $exams]);
     }
 
@@ -511,6 +538,7 @@ class CenterStaffController extends Controller
 
         $result = $students->map(function ($student) use ($gradesMap) {
             $g = $gradesMap->get($student->id);
+
             return [
                 'student_id' => $student->id,
                 'student_code' => $student->student_code,
@@ -536,13 +564,15 @@ class CenterStaffController extends Controller
         $validated = $request->validate([
             'grades' => 'required|array',
             'grades.*.student_id' => 'required|uuid|exists:students,id',
-            'grades.*.score' => 'required|numeric|min:0|max:' . $exam->total_marks,
+            'grades.*.score' => 'required|numeric|min:0|max:'.$exam->total_marks,
             'grades.*.notes' => 'nullable|string',
         ]);
 
         foreach ($validated['grades'] as $item) {
             $student = Student::find($item['student_id']);
-            if (!$student) continue;
+            if (! $student) {
+                continue;
+            }
 
             CenterGrade::updateOrCreate(
                 [
@@ -557,13 +587,14 @@ class CenterStaffController extends Controller
 
             // Notify parent asynchronously
             try {
-                \App\Jobs\NotifyParentJob::dispatch(
+                NotifyParentJob::dispatch(
                     $student,
                     $exam->name,
                     (float) $item['score'],
                     (float) $exam->total_marks
                 );
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
 
         return response()->json(['message' => 'تم حفظ درجات الامتحان بنجاح وصدرت الإشعارات لأولياء الأمور.']);
@@ -579,10 +610,16 @@ class CenterStaffController extends Controller
             $rankings = RankingService::getGroupRankings($groupId);
         } elseif ($academicYear || $request->has('academic_year_id') || $request->has('term')) {
             $query = Group::where('is_active', true);
-            if ($academicYear) $query->where('academic_year', $academicYear);
-            if ($request->has('academic_year_id')) $query->where('academic_year_id', $request->query('academic_year_id'));
-            if ($request->has('term')) $query->where('term', $request->query('term'));
-            
+            if ($academicYear) {
+                $query->where('academic_year', $academicYear);
+            }
+            if ($request->has('academic_year_id')) {
+                $query->where('academic_year_id', $request->query('academic_year_id'));
+            }
+            if ($request->has('term')) {
+                $query->where('term', $request->query('term'));
+            }
+
             $groups = $query->pluck('id')->toArray();
             if (empty($groups)) {
                 $rankings = collect();
@@ -609,10 +646,10 @@ class CenterStaffController extends Controller
             $search = $request->query('search');
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'LIKE', "%{$search}%")
-                  ->orWhere('second_name', 'LIKE', "%{$search}%")
-                  ->orWhere('last_name', 'LIKE', "%{$search}%")
-                  ->orWhere('student_code', 'LIKE', "%{$search}%")
-                  ->orWhere('phone', 'LIKE', "%{$search}%");
+                    ->orWhere('second_name', 'LIKE', "%{$search}%")
+                    ->orWhere('last_name', 'LIKE', "%{$search}%")
+                    ->orWhere('student_code', 'LIKE', "%{$search}%")
+                    ->orWhere('phone', 'LIKE', "%{$search}%");
             });
         }
 
@@ -631,12 +668,18 @@ class CenterStaffController extends Controller
                         $subQ->where('academic_year', $request->query('academic_year'));
                     }
                 });
-                
+
                 // 2. أو الطلاب الموجودين بالفعل في مجموعات تطابق جميع الفلاتر (العام والترم والصف)
                 $q->orWhereHas('group', function ($gq) use ($request) {
-                    if ($request->has('academic_year')) $gq->where('academic_year', $request->query('academic_year'));
-                    if ($request->has('academic_year_id')) $gq->where('academic_year_id', $request->query('academic_year_id'));
-                    if ($request->has('term')) $gq->where('term', $request->query('term'));
+                    if ($request->has('academic_year')) {
+                        $gq->where('academic_year', $request->query('academic_year'));
+                    }
+                    if ($request->has('academic_year_id')) {
+                        $gq->where('academic_year_id', $request->query('academic_year_id'));
+                    }
+                    if ($request->has('term')) {
+                        $gq->where('term', $request->query('term'));
+                    }
                 });
             });
         }
@@ -648,6 +691,7 @@ class CenterStaffController extends Controller
         }
 
         $students = $query->paginate(20);
+
         return response()->json($students);
     }
 
@@ -690,7 +734,7 @@ class CenterStaffController extends Controller
                 'late_count' => $attendances->where('status', 'late')->count(),
                 'total_exams' => $grades->count(),
                 'percentage' => $percentage,
-            ]
+            ],
         ]);
     }
 
@@ -702,6 +746,7 @@ class CenterStaffController extends Controller
         ]);
 
         $student->update(['group_id' => $validated['group_id']]);
+
         return response()->json(['message' => 'تم نقل الطالب للمجموعة بنجاح.', 'student' => $student->load('group')]);
     }
 
@@ -717,7 +762,7 @@ class CenterStaffController extends Controller
             ->update(['group_id' => $validated['group_id']]);
 
         return response()->json([
-            'message' => 'تم نقل الطلاب المحددين للمجموعة بنجاح.'
+            'message' => 'تم نقل الطلاب المحددين للمجموعة بنجاح.',
         ]);
     }
 
@@ -737,22 +782,22 @@ class CenterStaffController extends Controller
 
         // Check duplicate phone in users table — if exists, skip setting phone on user
         $phoneForUser = null;
-        if (!empty($validated['phone'])) {
-            $phoneAlreadyUsed = \App\Models\User::where('phone', $validated['phone'])->exists();
-            if (!$phoneAlreadyUsed) {
+        if (! empty($validated['phone'])) {
+            $phoneAlreadyUsed = User::where('phone', $validated['phone'])->exists();
+            if (! $phoneAlreadyUsed) {
                 $phoneForUser = $validated['phone'];
             }
         }
 
-        $tempStudent = new \App\Models\Student(['academic_year' => $validated['academic_year'], 'academic_track' => $validated['academic_track'] ?? null]);
-        $studentCode = app(\App\Services\CodeGeneratorService::class)->generateStudentCode($tempStudent);
+        $tempStudent = new Student(['academic_year' => $validated['academic_year'], 'academic_track' => $validated['academic_track'] ?? null]);
+        $studentCode = app(CodeGeneratorService::class)->generateStudentCode($tempStudent);
 
-        $user = \App\Models\User::create([
+        $user = User::create([
             'name' => "{$validated['first_name']} {$validated['last_name']}",
-            'email' => strtolower($studentCode) . '@student.local',
-            'password' => \Illuminate\Support\Facades\Hash::make($studentCode),
+            'email' => strtolower($studentCode).'@student.local',
+            'password' => Hash::make($studentCode),
             'phone' => $phoneForUser,
-            'status' => \App\Enums\UserStatus::Active,
+            'status' => UserStatus::Active,
         ]);
         $user->must_change_password = true;
         $user->save();
@@ -774,13 +819,14 @@ class CenterStaffController extends Controller
 
         return response()->json([
             'message' => "تم إضافة الطالب بنجاح! كود الطالب: {$studentCode}",
-            'student' => $student->load(['group'])
+            'student' => $student->load(['group']),
         ], 201);
     }
+
     public function approveStudent(string $id): JsonResponse
     {
         $student = Student::with('user')->findOrFail($id);
-        
+
         if ($student->user) {
             $student->user->update(['status' => 'active']);
         }
@@ -792,18 +838,19 @@ class CenterStaffController extends Controller
                 'تم اعتماد حسابك',
                 'تم اعتماد حسابك في المنصة. يمكنك الآن تسجيل الدخول والبدء في التعلم.'
             );
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         return response()->json([
             'message' => 'تم اعتماد الطالب بنجاح.',
-            'student' => $student->fresh(['user', 'group'])
+            'student' => $student->fresh(['user', 'group']),
         ]);
     }
 
     public function rejectStudent(string $id): JsonResponse
     {
         $student = Student::with('user')->findOrFail($id);
-        
+
         if ($student->user) {
             $student->user->update(['status' => 'rejected']);
         }
@@ -814,11 +861,12 @@ class CenterStaffController extends Controller
                 'لم يتم اعتماد حسابك',
                 'نأسف، لم يتم اعتماد حسابك في المنصة. يرجى التواصل مع الإدارة لمزيد من التفاصيل.'
             );
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         return response()->json([
             'message' => 'تم رفض الطالب بنجاح.',
-            'student' => $student->fresh(['user', 'group'])
+            'student' => $student->fresh(['user', 'group']),
         ]);
     }
 }

@@ -8,6 +8,7 @@ function createInstructor(): User
 {
     $user = User::factory()->create(['status' => 'active']);
     $user->assignRole('instructor');
+
     return $user;
 }
 
@@ -37,6 +38,7 @@ function createAssistant(?User $user = null): User
 {
     $user ??= User::factory()->create(['status' => 'active']);
     $user->assignRole('assistant');
+
     return $user;
 }
 

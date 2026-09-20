@@ -5,8 +5,10 @@ namespace App\Filament\Resources\Lectures;
 use App\Filament\Resources\Lectures\Pages\CreateLecture;
 use App\Filament\Resources\Lectures\Pages\EditLecture;
 use App\Filament\Resources\Lectures\Pages\ListLectures;
-use App\Models\Lecture;
+use App\Models\Bundle;
 use App\Models\CourseSection;
+use App\Models\Lecture;
+use App\Models\Product;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -16,14 +18,16 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Section as FormSection;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section as FormSection;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -108,7 +112,7 @@ class LectureResource extends Resource
 
                         Select::make('bundles')
                             ->label('إضافة إلى الباقات (Bundles)')
-                            ->options(fn () => \App\Models\Bundle::pluck('name', 'id'))
+                            ->options(fn () => Bundle::pluck('name', 'id'))
                             ->multiple()
                             ->preload()
                             ->helperText('اختر الباقات التي ترغب في إدراج هذه المحاضرة ضمنها تلقائياً.'),
@@ -228,10 +232,10 @@ class LectureResource extends Resource
                                                     ->label('إجابة صحيحة'),
                                             ])
                                             ->hidden(fn ($get): bool => $get('type') === 'essay')
-                                            ->columns(2)
+                                            ->columns(2),
                                     ])
                                     ->collapsible()
-                                    ->columnSpanFull()
+                                    ->columnSpanFull(),
                             ])
                             ->orderColumn('sort_order')
                             ->reorderableWithButtons()
@@ -313,10 +317,10 @@ class LectureResource extends Resource
                                                     ->label('إجابة صحيحة'),
                                             ])
                                             ->hidden(fn ($get): bool => $get('type') === 'essay')
-                                            ->columns(2)
+                                            ->columns(2),
                                     ])
                                     ->collapsible()
-                                    ->columnSpanFull()
+                                    ->columnSpanFull(),
                             ])
                             ->orderColumn('sort_order')
                             ->reorderableWithButtons()
@@ -354,9 +358,16 @@ class LectureResource extends Resource
                     ->state(function (Lecture $record): string {
                         $hasSection = (bool) $record->section_id;
                         $hasProduct = $record->products()->where('is_active', true)->exists();
-                        if ($hasSection && $hasProduct) return 'كورس + منفردة';
-                        if ($hasSection) return 'داخل كورس';
-                        if ($hasProduct) return 'منفردة (مدفوعة)';
+                        if ($hasSection && $hasProduct) {
+                            return 'كورس + منفردة';
+                        }
+                        if ($hasSection) {
+                            return 'داخل كورس';
+                        }
+                        if ($hasProduct) {
+                            return 'منفردة (مدفوعة)';
+                        }
+
                         return 'منفردة (مجانية)';
                     })
                     ->badge()
@@ -383,10 +394,10 @@ class LectureResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                \Filament\Tables\Filters\SelectFilter::make('course')
+                SelectFilter::make('course')
                     ->label('الفلترة حسب الدورة')
                     ->relationship('section.course', 'title'),
-                \Filament\Tables\Filters\SelectFilter::make('placement')
+                SelectFilter::make('placement')
                     ->label('نوع الموضع')
                     ->options([
                         'standalone' => 'محاضرات منفردة فقط',
@@ -409,26 +420,27 @@ class LectureResource extends Resource
                     ->form([
                         Select::make('bundles')
                             ->label('اختر الباقات المشمولة')
-                            ->options(fn () => \App\Models\Bundle::pluck('name', 'id'))
+                            ->options(fn () => Bundle::pluck('name', 'id'))
                             ->multiple()
                             ->preload()
                             ->default(function (Lecture $record): array {
-                                $product = \App\Models\Product::where('sellable_id', $record->id)
+                                $product = Product::where('sellable_id', $record->id)
                                     ->where('sellable_type', Lecture::class)
                                     ->first();
+
                                 return $product ? $product->bundles()->pluck('bundles.id')->toArray() : [];
                             }),
                     ])
                     ->action(function (Lecture $record, array $data): void {
                         $instructorId = $record->resolveInstructorId() ?? auth()->id();
-                        $product = \App\Models\Product::updateOrCreate(
+                        $product = Product::updateOrCreate(
                             [
                                 'sellable_id' => $record->id,
                                 'sellable_type' => Lecture::class,
                             ],
                             [
                                 'instructor_id' => $instructorId,
-                                'name' => 'محاضرة: ' . $record->title,
+                                'name' => 'محاضرة: '.$record->title,
                                 'price' => $record->price ?? 0,
                                 'is_active' => true,
                             ]
@@ -438,7 +450,7 @@ class LectureResource extends Resource
                             $product->bundles()->sync($data['bundles']);
                         }
 
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('تم ربط المحاضرة بالباقات بنجاح')
                             ->success()
                             ->send();
@@ -471,7 +483,7 @@ class LectureResource extends Resource
                 if ($user->hasRole('instructor')) {
                     $query->where(function ($q) use ($user) {
                         $q->whereHas('section.course', fn ($c) => $c->where('instructor_id', $user->id))
-                          ->orWhere('instructor_id', $user->id);
+                            ->orWhere('instructor_id', $user->id);
                     });
                 } elseif ($user->hasRole('assistant')) {
                     $query->whereHas('section.course.assistants', fn ($q) => $q->where('user_id', $user->id));

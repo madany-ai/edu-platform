@@ -2,11 +2,15 @@
 
 namespace App\Filament\Resources\Courses\RelationManagers;
 
+use App\Models\User;
+use Filament\Actions\AttachAction;
+use Filament\Actions\DetachAction;
 use Filament\Forms\Components\Select;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class AssistantsRelationManager extends RelationManager
 {
@@ -24,7 +28,7 @@ class AssistantsRelationManager extends RelationManager
             ->schema([
                 Select::make('id')
                     ->label('المستخدم')
-                    ->options(fn () => \App\Models\User::whereHas('roles', fn ($q) => $q->where('name', 'assistant'))->pluck('name', 'id'))
+                    ->options(fn () => User::whereHas('roles', fn ($q) => $q->where('name', 'assistant'))->pluck('name', 'id'))
                     ->searchable()
                     ->required(),
             ]);
@@ -47,12 +51,12 @@ class AssistantsRelationManager extends RelationManager
                     ->searchable(),
             ])
             ->headerActions([
-                \Filament\Actions\AttachAction::make()
+                AttachAction::make()
                     ->preloadRecordSelect()
-                    ->recordSelectOptionsQuery(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->role('assistant')),
+                    ->recordSelectOptionsQuery(fn (Builder $query) => $query->role('assistant')),
             ])
             ->recordActions([
-                \Filament\Actions\DetachAction::make(),
+                DetachAction::make(),
             ]);
     }
 }

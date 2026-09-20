@@ -4,8 +4,6 @@ namespace App\Filament\Resources\Pricing;
 
 use App\Filament\Resources\Pricing\Pages\ManageProducts;
 use App\Models\Course;
-use App\Models\CourseSection;
-use App\Models\Lecture;
 use App\Models\Product;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -20,8 +18,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -128,13 +126,16 @@ class ProductResource extends Resource
                 TextColumn::make('sellable.sellable_name')
                     ->label('المرتبط بـ')
                     ->formatStateUsing(function (Product $record): string {
-                        if ($record->sellable instanceof Course) return $record->sellable->title;
+                        if ($record->sellable instanceof Course) {
+                            return $record->sellable->title;
+                        }
+
                         return '-';
                     }),
 
                 TextColumn::make('price')
                     ->label('السعر')
-                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' ج.م'),
+                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2).' ج.م'),
 
                 IconColumn::make('is_active')
                     ->label('نشط')

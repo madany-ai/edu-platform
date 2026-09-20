@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\EnrollmentSource;
 use App\Models\Course;
 use App\Models\Enrollment;
 use Filament\Tables;
@@ -43,7 +44,7 @@ class RecentEnrollmentsWidget extends TableWidget
 
                 Tables\Columns\TextColumn::make('source')
                     ->label('المصدر')
-                    ->formatStateUsing(fn ($state): string => match ($state instanceof \App\Enums\EnrollmentSource ? $state->value : $state) {
+                    ->formatStateUsing(fn ($state): string => match ($state instanceof EnrollmentSource ? $state->value : $state) {
                         'manual' => 'يدوي',
                         'purchase' => 'شراء',
                         default => (string) $state,

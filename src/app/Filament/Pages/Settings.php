@@ -4,19 +4,21 @@ namespace App\Filament\Pages;
 
 use BackedEnum;
 use Filament\Actions\Action;
-use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\FileUpload;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Artisan;
 
 class Settings extends Page implements HasForms
 {
     use InteractsWithForms;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
     protected static ?int $navigationSort = 99;
@@ -49,7 +51,7 @@ class Settings extends Page implements HasForms
         ]);
     }
 
-    public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    public function form(Schema $schema): Schema
     {
         return $schema
             ->columns(2)
@@ -136,7 +138,7 @@ class Settings extends Page implements HasForms
         $envFile = base_path('.env');
         $appName = $data['instance_name'] ?? config('app.name');
         if (str_contains($appName, ' ')) {
-            $appName = '"' . $appName . '"';
+            $appName = '"'.$appName.'"';
         }
 
         $replacements = [
@@ -166,7 +168,7 @@ class Settings extends Page implements HasForms
         }
         file_put_contents($envFile, $envContent);
 
-        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        Artisan::call('optimize:clear');
 
         Notification::make()
             ->title('تم حفظ الإعدادات')
@@ -182,9 +184,10 @@ class Settings extends Page implements HasForms
                 ->color('danger')
                 ->icon('heroicon-o-arrow-right-on-rectangle')
                 ->action(function () {
-                    \Filament\Facades\Filament::auth()->logout();
+                    Filament::auth()->logout();
                     request()->session()->invalidate();
                     request()->session()->regenerateToken();
+
                     return redirect('/admin/login');
                 }),
         ];

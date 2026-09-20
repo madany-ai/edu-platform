@@ -2,12 +2,13 @@
 
 namespace App\Services\Payment;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Services\GrantEntitlementService;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
-use App\Services\Payment\DTOs\CheckoutResult;
 use App\Services\Payment\Drivers\FawryGateway;
 use App\Services\Payment\Drivers\PaymobGateway;
+use App\Services\Payment\DTOs\CheckoutResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,8 +22,8 @@ class PaymentService
     public function getDriver(?string $gatewayName = 'paymob'): PaymentGatewayInterface
     {
         return match (strtolower((string) $gatewayName)) {
-            'fawry' => new FawryGateway(),
-            default => new PaymobGateway(),
+            'fawry' => new FawryGateway,
+            default => new PaymobGateway,
         };
     }
 
@@ -52,14 +53,15 @@ class PaymentService
             ->orWhere('id', $payload->gatewayReference)
             ->first();
 
-        if (!$order) {
+        if (! $order) {
             Log::warning("PaymentService Webhook: Order not found for gateway reference {$payload->gatewayReference}");
-            throw new \RuntimeException("الطلب المرجعي غير موجود في النظام.");
+            throw new \RuntimeException('الطلب المرجعي غير موجود في النظام.');
         }
 
         // Idempotency: Ignore if order is already completed
-        if ($order->status === \App\Enums\OrderStatus::Completed) {
+        if ($order->status === OrderStatus::Completed) {
             Log::info("PaymentService Webhook: Order {$order->id} is already completed.");
+
             return $order;
         }
 
@@ -68,9 +70,10 @@ class PaymentService
                 if ($payload->amountCents !== (int) $order->amount_cents) {
                     Log::error("Webhook Amount Mismatch for Order {$order->id}", [
                         'expected' => $order->amount_cents,
-                        'received' => $payload->amountCents
+                        'received' => $payload->amountCents,
                     ]);
-                    $order->update(['status' => \App\Enums\OrderStatus::Failed->value]);
+                    $order->update(['status' => OrderStatus::Failed->value]);
+
                     return;
                 }
 
@@ -79,7 +82,7 @@ class PaymentService
 
                 // 2. Mark order as completed
                 $order->update([
-                    'status' => \App\Enums\OrderStatus::Completed->value,
+                    'status' => OrderStatus::Completed->value,
                     'transaction_id' => $payload->transactionId ?? $order->transaction_id,
                     'payment_gateway' => $gatewayName,
                     'paid_at' => now(),
@@ -89,15 +92,15 @@ class PaymentService
                 Log::info("PaymentService Webhook: Successfully completed Order {$order->id}");
             } elseif ($payload->status === 'failed') {
                 $order->update([
-                    'status' => \App\Enums\OrderStatus::Failed->value,
+                    'status' => OrderStatus::Failed->value,
                     'failure_reason' => 'فشلت عملية الدفع عبر البوابة.',
                     'metadata' => array_merge($order->metadata ?? [], ['webhook' => $payload->rawPayload]),
                 ]);
             } elseif ($payload->status === 'refunded') {
                 $this->grantService->revoke($order);
                 $order->update([
-                    'status' => \App\Enums\OrderStatus::Refunded->value,
-                    'refunded_at' => now()
+                    'status' => OrderStatus::Refunded->value,
+                    'refunded_at' => now(),
                 ]);
             }
         });

@@ -1,13 +1,9 @@
 <?php
 
 use App\Models\Course;
-use App\Models\CourseSection;
 use App\Models\Enrollment;
-use App\Models\Lecture;
 use App\Models\Notification;
 use App\Models\Student;
-use App\Models\StudentActivity;
-use App\Models\StudentStatistic;
 use App\Models\User;
 
 beforeEach(function () {

@@ -2,8 +2,7 @@
 
 use App\Models\Choice;
 use App\Models\Course;
-use App\Models\CourseSection;
-use App\Models\Entitlement;
+use App\Models\Enrollment;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
 use App\Models\Lecture;
@@ -13,10 +12,11 @@ use App\Models\Question;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\VideoAccessService;
+use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
-    \Illuminate\Support\Facades\Http::fake([
-        'https://accept.paymob.com/*' => \Illuminate\Support\Facades\Http::response([
+    Http::fake([
+        'https://accept.paymob.com/*' => Http::response([
             'token' => 'fake_token',
             'id' => 12345,
         ], 201),
@@ -68,7 +68,7 @@ beforeEach(function () {
         'sort_order' => 1,
     ]);
 
-    \App\Models\Enrollment::create([
+    Enrollment::create([
         'student_id' => $this->student->id,
         'course_id' => $this->course->id,
         'status' => 'active',
@@ -230,7 +230,7 @@ it('course price zero check for free course enrollment path', function () {
     $accessService = app(VideoAccessService::class);
 
     // Enrolled student can access free course lectures
-    \App\Models\Enrollment::create([
+    Enrollment::create([
         'student_id' => $this->student->id,
         'course_id' => $freeCourse->id,
         'status' => 'active',

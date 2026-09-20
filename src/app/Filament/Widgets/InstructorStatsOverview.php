@@ -2,9 +2,15 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Bundle;
 use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\Exam;
+use App\Models\ExamAttempt;
+use App\Models\Lecture;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\QuestionsPost;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -28,7 +34,7 @@ class InstructorStatsOverview extends StatsOverviewWidget
             ->where('created_at', '>=', now()->subDays(7))->count();
         $totalRevenue = 0;
         $completedOrdersCount = 0;
-        
+
         $examsCount = 0;
         $assignmentsCount = 0;
         $attemptsCount = 0;
@@ -37,22 +43,24 @@ class InstructorStatsOverview extends StatsOverviewWidget
         if ($user->hasRole('super_admin')) {
             $totalRevenue = Order::where('status', 'completed')->sum('amount_cents') / 100;
             $completedOrdersCount = Order::where('status', 'completed')->count();
-            $examsCount = \App\Models\Exam::where('is_assignment', false)->count();
-            $assignmentsCount = \App\Models\Exam::where('is_assignment', true)->count();
-            $attemptsCount = \App\Models\ExamAttempt::count();
-            $questionsCount = \App\Models\QuestionsPost::count();
+            $examsCount = Exam::where('is_assignment', false)->count();
+            $assignmentsCount = Exam::where('is_assignment', true)->count();
+            $attemptsCount = ExamAttempt::count();
+            $questionsCount = QuestionsPost::count();
         } else {
             $orders = Order::where('status', 'completed')->with('purchasable')->get();
             foreach ($orders as $order) {
                 $purchasable = $order->purchasable;
-                if (!$purchasable) continue;
+                if (! $purchasable) {
+                    continue;
+                }
 
-                if ($purchasable instanceof \App\Models\Product) {
+                if ($purchasable instanceof Product) {
                     if ($purchasable->instructor_id === $user->id) {
                         $totalRevenue += ($order->amount_cents / 100);
                         $completedOrdersCount++;
                     }
-                } elseif ($purchasable instanceof \App\Models\Bundle) {
+                } elseif ($purchasable instanceof Bundle) {
                     $purchasable->loadMissing('products');
                     $totalBundlePrice = (float) $purchasable->products->sum('price');
                     $instructorProductsPrice = (float) $purchasable->products
@@ -66,17 +74,17 @@ class InstructorStatsOverview extends StatsOverviewWidget
                     }
                 }
             }
-            
-            $lectureIds = \App\Models\Lecture::whereHas('section', function($q) use ($courseIds) {
+
+            $lectureIds = Lecture::whereHas('section', function ($q) use ($courseIds) {
                 $q->whereIn('course_id', $courseIds);
             })->pluck('id')->toArray();
-            
-            $examsCount = \App\Models\Exam::where('is_assignment', false)->whereIn('lecture_id', $lectureIds)->count();
-            $assignmentsCount = \App\Models\Exam::where('is_assignment', true)->whereIn('lecture_id', $lectureIds)->count();
-            $attemptsCount = \App\Models\ExamAttempt::whereHas('exam', function($q) use ($lectureIds) {
+
+            $examsCount = Exam::where('is_assignment', false)->whereIn('lecture_id', $lectureIds)->count();
+            $assignmentsCount = Exam::where('is_assignment', true)->whereIn('lecture_id', $lectureIds)->count();
+            $attemptsCount = ExamAttempt::whereHas('exam', function ($q) use ($lectureIds) {
                 $q->whereIn('lecture_id', $lectureIds);
             })->count();
-            $questionsCount = \App\Models\QuestionsPost::whereIn('lecture_id', $lectureIds)->count();
+            $questionsCount = QuestionsPost::whereIn('lecture_id', $lectureIds)->count();
         }
 
         $averageOrderValue = $completedOrdersCount > 0 ? $totalRevenue / $completedOrdersCount : 0;
@@ -92,7 +100,7 @@ class InstructorStatsOverview extends StatsOverviewWidget
                 ->descriptionIcon('heroicon-o-users')
                 ->color('success'),
 
-            Stat::make('الإيرادات', number_format((float) $totalRevenue, 2) . ' ج.م')
+            Stat::make('الإيرادات', number_format((float) $totalRevenue, 2).' ج.م')
                 ->description('إجمالي مبيعات الدورات')
                 ->descriptionIcon('heroicon-o-banknotes')
                 ->color('warning'),
@@ -102,7 +110,7 @@ class InstructorStatsOverview extends StatsOverviewWidget
                 ->descriptionIcon('heroicon-o-shopping-bag')
                 ->color('success'),
 
-            Stat::make('متوسط قيمة الطلب', number_format((float) $averageOrderValue, 2) . ' ج.م')
+            Stat::make('متوسط قيمة الطلب', number_format((float) $averageOrderValue, 2).' ج.م')
                 ->description('متوسط سلة الشراء للطالب')
                 ->descriptionIcon('heroicon-o-calculator')
                 ->color('primary'),
@@ -111,22 +119,22 @@ class InstructorStatsOverview extends StatsOverviewWidget
                 ->description('إجمالي المحاضرات في جميع الدورات')
                 ->descriptionIcon('heroicon-o-play')
                 ->color('info'),
-                
+
             Stat::make('الامتحانات', $examsCount)
                 ->description('إجمالي الامتحانات')
                 ->descriptionIcon('heroicon-o-document-text')
                 ->color('gray'),
-                
+
             Stat::make('الواجبات', $assignmentsCount)
                 ->description('إجمالي الواجبات')
                 ->descriptionIcon('heroicon-o-clipboard-document-list')
                 ->color('gray'),
-                
+
             Stat::make('إجابات الطلاب', $attemptsCount)
                 ->description('إجمالي محاولات الامتحانات والواجبات')
                 ->descriptionIcon('heroicon-o-pencil-square')
                 ->color('gray'),
-                
+
             Stat::make('الأسئلة والاستفسارات', $questionsCount)
                 ->description('إجمالي الأسئلة في المحاضرات')
                 ->descriptionIcon('heroicon-o-chat-bubble-left-right')

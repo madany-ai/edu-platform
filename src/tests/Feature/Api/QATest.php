@@ -2,11 +2,9 @@
 
 use App\Models\Course;
 use App\Models\CourseAssistant;
-use App\Models\CourseSection;
 use App\Models\Enrollment;
-use App\Models\Lecture;
-use App\Models\QuestionsPost;
 use App\Models\QuestionReply;
+use App\Models\QuestionsPost;
 use App\Models\Student;
 use App\Models\User;
 

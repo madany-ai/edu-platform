@@ -2,72 +2,88 @@
 
 namespace App\Services;
 
+use App\Enums\UserStatus;
+use App\Models\CourseAssistant;
+use App\Models\Enrollment;
 use App\Models\Entitlement;
+use App\Models\Exam;
+use App\Models\ExamAttempt;
 use App\Models\Lecture;
 use App\Models\Student;
 use App\Models\User;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Crypt;
 
 class VideoAccessService
 {
     protected array $studentCache = [];
+
     protected array $courseBlockingExams = [];
+
     protected array $studentPassedExams = [];
+
     protected array $courseAssistants = [];
+
     protected array $enrollmentsCache = [];
+
     protected array $entitlementsCache = [];
 
     protected function getStudent(User $user): ?Student
     {
-        if (app()->runningUnitTests() || !array_key_exists($user->id, $this->studentCache)) {
+        if (app()->runningUnitTests() || ! array_key_exists($user->id, $this->studentCache)) {
             $this->studentCache[$user->id] = Student::where('user_id', $user->id)->first();
         }
+
         return $this->studentCache[$user->id];
     }
 
     protected function isAssistantForCourse(User $user, string $courseId): bool
     {
-        $cacheKey = $user->id . '-' . $courseId;
-        if (app()->runningUnitTests() || !isset($this->courseAssistants[$cacheKey])) {
-            $this->courseAssistants[$cacheKey] = \App\Models\CourseAssistant::where('user_id', $user->id)
+        $cacheKey = $user->id.'-'.$courseId;
+        if (app()->runningUnitTests() || ! isset($this->courseAssistants[$cacheKey])) {
+            $this->courseAssistants[$cacheKey] = CourseAssistant::where('user_id', $user->id)
                 ->where('course_id', $courseId)
                 ->exists();
         }
+
         return $this->courseAssistants[$cacheKey];
     }
 
-    protected function getBlockingExams(string $courseId): \Illuminate\Database\Eloquent\Collection
+    protected function getBlockingExams(string $courseId): Collection
     {
-        if (app()->runningUnitTests() || !isset($this->courseBlockingExams[$courseId])) {
-            $this->courseBlockingExams[$courseId] = \App\Models\Exam::where('is_blocking', true)
+        if (app()->runningUnitTests() || ! isset($this->courseBlockingExams[$courseId])) {
+            $this->courseBlockingExams[$courseId] = Exam::where('is_blocking', true)
                 ->whereHas('lecture.section', function ($q) use ($courseId) {
                     $q->where('course_id', $courseId);
                 })
                 ->with(['lecture.section'])
                 ->get();
         }
+
         return $this->courseBlockingExams[$courseId];
     }
 
     protected function loadStudentPassedExams(Student $student, string $courseId): void
     {
-        if (app()->runningUnitTests() || !isset($this->studentPassedExams[$student->id])) {
-            $attempts = \App\Models\ExamAttempt::where('student_id', $student->id)
+        if (app()->runningUnitTests() || ! isset($this->studentPassedExams[$student->id])) {
+            $attempts = ExamAttempt::where('student_id', $student->id)
                 ->whereNotNull('submitted_at')
                 ->whereHas('exam.lecture.section', function ($q) use ($courseId) {
                     $q->where('course_id', $courseId);
                 })
                 ->with('exam')
                 ->get();
-            
+
             $passedExamIds = [];
             $groupedByExam = $attempts->groupBy('exam_id');
-            
+
             foreach ($groupedByExam as $examId => $examAttempts) {
                 $exam = $examAttempts->first()->exam;
                 $maxAttempts = $exam->max_attempts ?? 3;
-                
-                $hasPassed = $examAttempts->contains(fn($attempt) => $attempt->score >= ($exam->pass_percentage ?? 0));
-                
+
+                $hasPassed = $examAttempts->contains(fn ($attempt) => $attempt->score >= ($exam->pass_percentage ?? 0));
+
                 if ($hasPassed || $examAttempts->count() >= $maxAttempts) {
                     $passedExamIds[] = $examId;
                 }
@@ -84,17 +100,18 @@ class VideoAccessService
 
     protected function isEnrolled(Student $student, string $courseId): bool
     {
-        $cacheKey = $student->id . '-' . $courseId;
-        if (app()->runningUnitTests() || !isset($this->enrollmentsCache[$cacheKey])) {
-            $this->enrollmentsCache[$cacheKey] = \App\Models\Enrollment::where('student_id', $student->id)
+        $cacheKey = $student->id.'-'.$courseId;
+        if (app()->runningUnitTests() || ! isset($this->enrollmentsCache[$cacheKey])) {
+            $this->enrollmentsCache[$cacheKey] = Enrollment::where('student_id', $student->id)
                 ->where('course_id', $courseId)
                 ->where('status', 'active')
                 ->where(function ($q) {
                     $q->whereNull('expires_at')
-                      ->orWhere('expires_at', '>', now());
+                        ->orWhere('expires_at', '>', now());
                 })
                 ->exists();
         }
+
         return $this->enrollmentsCache[$cacheKey];
     }
 
@@ -104,7 +121,7 @@ class VideoAccessService
             ->where('lecture_id', $lectureId)
             ->where(function ($q) {
                 $q->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
+                    ->orWhere('expires_at', '>', now());
             })
             ->exists();
     }
@@ -131,12 +148,13 @@ class VideoAccessService
             }
             $lecture->loadMissing('section.course');
             $courseId = $lecture->section?->course?->id;
+
             return $courseId ? $this->isAssistantForCourse($user, $courseId) : false;
         }
 
         // 4. Students must have a valid Entitlement OR be enrolled in the course
         $student = $this->getStudent($user);
-        if (!$student) {
+        if (! $student) {
             return false;
         }
 
@@ -146,6 +164,7 @@ class VideoAccessService
             if ($this->isBlockedByExam($user, $lecture, 'video')) {
                 return false;
             }
+
             return true;
         }
 
@@ -157,6 +176,7 @@ class VideoAccessService
                 if ($this->isBlockedByExam($user, $lecture, 'video')) {
                     return false;
                 }
+
                 return true;
             }
         }
@@ -173,14 +193,14 @@ class VideoAccessService
         if ($user->hasRole('super_admin') || $user->hasRole('admin')) {
             return false;
         }
-        
-        if ($lecture->isStandalone() || !$lecture->section) {
+
+        if ($lecture->isStandalone() || ! $lecture->section) {
             return false;
         }
 
         $lecture->loadMissing('section.course');
         $course = $lecture->section?->course;
-        if (!$course) {
+        if (! $course) {
             return false;
         }
 
@@ -189,14 +209,14 @@ class VideoAccessService
         }
 
         $student = $this->getStudent($user);
-        if (!$student) {
+        if (! $student) {
             return true; // Block by default if student record not found
         }
 
         // Determine target sort order
         $targetSortOrder = 0; // Default for video/lecture_access
         if (($itemType === 'exam' || $itemType === 'assignment') && $itemId) {
-            $currentExam = \App\Models\Exam::find($itemId);
+            $currentExam = Exam::find($itemId);
             if ($currentExam) {
                 $targetSortOrder = $currentExam->sort_order;
             }
@@ -218,7 +238,7 @@ class VideoAccessService
             $examSection = $examLecture->section;
             $currentSection = $lecture->section;
 
-            if (!$examSection || !$currentSection) {
+            if (! $examSection || ! $currentSection) {
                 continue;
             }
 
@@ -242,7 +262,7 @@ class VideoAccessService
 
             if ($precedes) {
                 // Check if student passed this exam
-                if (!$this->hasPassedExam($student, $exam->id)) {
+                if (! $this->hasPassedExam($student, $exam->id)) {
                     return true; // Blocked!
                 }
             }
@@ -263,7 +283,7 @@ class VideoAccessService
             'expires_at' => now()->addMinutes(5)->timestamp, // 5 minutes expiration
         ];
 
-        return \Illuminate\Support\Facades\Crypt::encrypt($payload);
+        return Crypt::encrypt($payload);
     }
 
     /**
@@ -272,13 +292,13 @@ class VideoAccessService
     public function validateToken(string $token, Lecture $lecture, string $ip): bool
     {
         try {
-            $payload = \Illuminate\Support\Facades\Crypt::decrypt($token);
+            $payload = Crypt::decrypt($token);
 
-            if (!is_array($payload)) {
+            if (! is_array($payload)) {
                 return false;
             }
 
-            if (!isset($payload['user_id']) || !isset($payload['lecture_id']) || !isset($payload['ip']) || !isset($payload['expires_at'])) {
+            if (! isset($payload['user_id']) || ! isset($payload['lecture_id']) || ! isset($payload['ip']) || ! isset($payload['expires_at'])) {
                 return false;
             }
 
@@ -295,18 +315,18 @@ class VideoAccessService
             }
 
             $user = User::find($payload['user_id']);
-            if (!$user) {
+            if (! $user) {
                 return false;
             }
 
             // Check if user is still active and has access to the lecture
-            if ($user->status !== \App\Enums\UserStatus::Active) {
+            if ($user->status !== UserStatus::Active) {
                 return false;
             }
 
             return $this->canAccess($user, $lecture);
 
-        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+        } catch (DecryptException $e) {
             return false;
         }
     }

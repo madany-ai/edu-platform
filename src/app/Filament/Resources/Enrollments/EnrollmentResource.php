@@ -5,8 +5,8 @@ namespace App\Filament\Resources\Enrollments;
 use App\Enums\EnrollmentSource;
 use App\Enums\EnrollmentStatus;
 use App\Filament\Resources\Enrollments\Pages\ManageEnrollments;
-use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\Student;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -15,11 +15,11 @@ use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rules\Unique;
 
 class EnrollmentResource extends Resource
 {
@@ -43,9 +43,9 @@ class EnrollmentResource extends Resource
                 Select::make('student_id')
                     ->label('الطالب')
                     ->options(function () {
-                        return \App\Models\Student::with('user')
+                        return Student::with('user')
                             ->get()
-                            ->mapWithKeys(fn ($s) => [$s->id => ($s->student_code ? "{$s->student_code} - " : "") . ($s->user?->name ?? 'غير معروف')]);
+                            ->mapWithKeys(fn ($s) => [$s->id => ($s->student_code ? "{$s->student_code} - " : '').($s->user?->name ?? 'غير معروف')]);
                     })
                     ->searchable()
                     ->required(),
@@ -55,7 +55,7 @@ class EnrollmentResource extends Resource
                     ->relationship('course', 'title')
                     ->searchable()
                     ->required()
-                    ->unique(ignoreRecord: true, modifyRuleUsing: function (\Illuminate\Validation\Rules\Unique $rule, $get) {
+                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule, $get) {
                         return $rule->where('student_id', $get('student_id'));
                     })
                     ->validationMessages([
@@ -98,13 +98,13 @@ class EnrollmentResource extends Resource
                 TextColumn::make('status')
                     ->label('الحالة')
                     ->badge()
-                    ->color(fn ($state): string => match ($state instanceof \App\Enums\EnrollmentStatus ? $state->value : $state) {
+                    ->color(fn ($state): string => match ($state instanceof EnrollmentStatus ? $state->value : $state) {
                         'active' => 'success',
                         'expired' => 'danger',
                         'suspended' => 'warning',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn ($state): string => match ($state instanceof \App\Enums\EnrollmentStatus ? $state->value : $state) {
+                    ->formatStateUsing(fn ($state): string => match ($state instanceof EnrollmentStatus ? $state->value : $state) {
                         'active' => 'نشط',
                         'expired' => 'منتهي',
                         'suspended' => 'معلق',
@@ -113,7 +113,7 @@ class EnrollmentResource extends Resource
 
                 TextColumn::make('source')
                     ->label('المصدر')
-                    ->formatStateUsing(fn ($state): string => match ($state instanceof \App\Enums\EnrollmentSource ? $state->value : $state) {
+                    ->formatStateUsing(fn ($state): string => match ($state instanceof EnrollmentSource ? $state->value : $state) {
                         'manual' => 'يدوي',
                         'purchase' => 'شراء',
                         default => (string) $state,

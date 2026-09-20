@@ -3,8 +3,12 @@
 namespace App\Filament\Resources\Students\Pages;
 
 use App\Filament\Resources\Students\StudentResource;
+use App\Models\Student;
+use App\Models\User;
+use App\Services\CodeGeneratorService;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
+use Illuminate\Support\Facades\Hash;
 
 class ManageStudents extends ManageRecords
 {
@@ -16,28 +20,28 @@ class ManageStudents extends ManageRecords
             CreateAction::make()
                 ->mutateFormDataUsing(function (array $data): array {
                     if (empty($data['student_code'])) {
-                        $tempStudent = new \App\Models\Student(['academic_year' => $data['academic_year'] ?? null]);
-                        $data['student_code'] = app(\App\Services\CodeGeneratorService::class)->generateStudentCode($tempStudent);
+                        $tempStudent = new Student(['academic_year' => $data['academic_year'] ?? null]);
+                        $data['student_code'] = app(CodeGeneratorService::class)->generateStudentCode($tempStudent);
                     }
 
                     if (empty($data['user_id'])) {
                         $email = $data['email'] ?? null;
-                        if (!$email) {
+                        if (! $email) {
                             throw new \Exception('البريد الإلكتروني مطلوب لإنشاء مستخدم جديد.');
                         }
 
-                        $fullName = trim(($data['first_name'] ?? '') . ' ' . ($data['second_name'] ?? ''));
+                        $fullName = trim(($data['first_name'] ?? '').' '.($data['second_name'] ?? ''));
 
-                        $user = \App\Models\User::create([
+                        $user = User::create([
                             'name' => $fullName,
                             'email' => $email,
                             'phone' => $data['phone'] ?? null,
-                            'password' => \Illuminate\Support\Facades\Hash::make(!empty($data['password']) ? $data['password'] : $data['student_code']),
+                            'password' => Hash::make(! empty($data['password']) ? $data['password'] : $data['student_code']),
                             'status' => 'active',
                         ]);
                         $user->must_change_password = empty($data['password']) || $data['password'] === $data['student_code'];
                         $user->save();
-                        
+
                         $user->assignRole('student');
 
                         $data['user_id'] = $user->id;
@@ -45,6 +49,7 @@ class ManageStudents extends ManageRecords
 
                     unset($data['email']);
                     unset($data['password']);
+
                     return $data;
                 }),
         ];

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\OrderStatus;
 use App\Models\Bundle;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -19,13 +20,13 @@ class OrderResource extends JsonResource
 
         $purchasableName = $this->purchasable?->name ?? 'محتوى غير متاح';
 
-        $statusValue = $this->status instanceof \App\Enums\OrderStatus 
-            ? $this->status->value 
+        $statusValue = $this->status instanceof OrderStatus
+            ? $this->status->value
             : (string) $this->status;
 
-        $statusLabel = $this->status instanceof \App\Enums\OrderStatus 
-            ? $this->status->label() 
-            : (\App\Enums\OrderStatus::tryFrom((string) $this->status)?->label() ?? (string) $this->status);
+        $statusLabel = $this->status instanceof OrderStatus
+            ? $this->status->label()
+            : (OrderStatus::tryFrom((string) $this->status)?->label() ?? (string) $this->status);
 
         return [
             'id' => $this->id,

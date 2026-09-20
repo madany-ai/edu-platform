@@ -1,13 +1,15 @@
 <?php
 
+use App\Enums\UserStatus;
 use App\Models\Course;
 use App\Models\CourseSection;
+use App\Models\Entitlement;
 use App\Models\Lecture;
+use App\Models\LectureFile;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Student;
 use App\Models\User;
-use App\Models\Entitlement;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -17,14 +19,14 @@ beforeEach(function () {
         'name' => 'Instructor User',
         'email' => 'instructor_p1@test.com',
         'password' => bcrypt('password'),
-        'status' => \App\Enums\UserStatus::Active,
+        'status' => UserStatus::Active,
     ]);
 
     $this->studentUser = User::create([
         'name' => 'Student User',
         'email' => 'student_p1@test.com',
         'password' => bcrypt('password'),
-        'status' => \App\Enums\UserStatus::Active,
+        'status' => UserStatus::Active,
     ]);
 
     $this->student = Student::create([
@@ -132,7 +134,7 @@ test('1.7 CheckEnrollment blocks non-instructors from accessing draft course lec
 });
 
 test('1.8 downloadFile rejects disallowed file extensions', function () {
-    $file = \App\Models\LectureFile::create([
+    $file = LectureFile::create([
         'lecture_id' => $this->lecture->id,
         'type' => 'document',
         'file_path' => 'lectures/files/script.sh',
@@ -173,8 +175,8 @@ test('1.9 Student can fetch list of orders via GET /api/orders without leaking t
         'data' => [
             'data' => [
                 '*' => ['id', 'purchasable_type', 'purchasable_name', 'amount', 'currency', 'status'],
-            ]
-        ]
+            ],
+        ],
     ]);
 });
 

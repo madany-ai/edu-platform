@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserStatus;
 use App\Models\Course;
 use App\Models\CourseSection;
 use App\Models\Entitlement;
@@ -15,14 +16,14 @@ beforeEach(function () {
         'name' => 'Instructor User',
         'email' => 'inst_exp@test.com',
         'password' => bcrypt('password'),
-        'status' => \App\Enums\UserStatus::Active,
+        'status' => UserStatus::Active,
     ]);
 
     $this->studentUser = User::create([
         'name' => 'Student User',
         'email' => 'student_exp@test.com',
         'password' => bcrypt('password'),
-        'status' => \App\Enums\UserStatus::Active,
+        'status' => UserStatus::Active,
     ]);
 
     $this->student = Student::create([

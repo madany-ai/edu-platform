@@ -4,11 +4,11 @@ namespace Database\Seeders;
 
 use App\Models\Course;
 use App\Models\CourseSection;
+use App\Models\Enrollment;
 use App\Models\Lecture;
 use App\Models\LectureVideo;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class YouTubeCourseSeeder extends Seeder
 {
@@ -16,8 +16,8 @@ class YouTubeCourseSeeder extends Seeder
     {
         // Get an instructor
         $instructor = User::whereHas('roles', fn ($q) => $q->where('name', 'instructor'))->first();
-        
-        if (!$instructor) {
+
+        if (! $instructor) {
             $instructor = User::factory()->create([
                 'name' => 'Instructor Ahmed',
                 'email' => 'instructor@example.com',
@@ -78,11 +78,11 @@ class YouTubeCourseSeeder extends Seeder
                 'duration' => 600, // 600 seconds
             ]);
         }
-        
+
         // Enroll current student if there is one
         $student = User::whereHas('roles', fn ($q) => $q->where('name', 'student'))->first();
         if ($student && $student->student) {
-            \App\Models\Enrollment::firstOrCreate([
+            Enrollment::firstOrCreate([
                 'student_id' => $student->student->id,
                 'course_id' => $course->id,
             ], [

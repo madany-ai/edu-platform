@@ -2,16 +2,18 @@
 
 use App\Models\Bundle;
 use App\Models\Course;
-use App\Models\Entitlement;
+use App\Models\CourseSection;
+use App\Models\Lecture;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\GrantEntitlementService;
+use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
-    \Illuminate\Support\Facades\Http::fake([
-        'https://accept.paymob.com/*' => \Illuminate\Support\Facades\Http::response([
+    Http::fake([
+        'https://accept.paymob.com/*' => Http::response([
             'token' => 'fake_token',
             'id' => 12345,
         ], 201),
@@ -55,7 +57,7 @@ it('order store creates pending order without entitlements', function () {
         'instructor_id' => $this->instructor->id,
         'name' => 'Lecture Product',
         'sellable_id' => $this->lecture->id,
-        'sellable_type' => \App\Models\Lecture::class,
+        'sellable_type' => Lecture::class,
         'price' => 50,
         'is_active' => true,
     ]);
@@ -85,7 +87,7 @@ it('order store creates order with correct amount from product price', function 
         'instructor_id' => $this->instructor->id,
         'name' => 'Priced Product',
         'sellable_id' => $this->lecture->id,
-        'sellable_type' => \App\Models\Lecture::class,
+        'sellable_type' => Lecture::class,
         'price' => 7550,
         'is_active' => true,
     ]);
@@ -108,7 +110,7 @@ it('order store does not set paid_at on creation', function () {
         'instructor_id' => $this->instructor->id,
         'name' => 'Product',
         'sellable_id' => $this->lecture->id,
-        'sellable_type' => \App\Models\Lecture::class,
+        'sellable_type' => Lecture::class,
         'price' => 10,
         'is_active' => true,
     ]);
@@ -135,7 +137,7 @@ it('order store does not grant entitlements for bundle', function () {
         'instructor_id' => $this->instructor->id,
         'name' => 'Bundle Product',
         'sellable_id' => $this->lecture->id,
-        'sellable_type' => \App\Models\Lecture::class,
+        'sellable_type' => Lecture::class,
         'price' => 50,
         'is_active' => true,
     ]);
@@ -186,7 +188,7 @@ it('order store creates order for section product as pending', function () {
         'instructor_id' => $this->instructor->id,
         'name' => 'Section Product',
         'sellable_id' => $this->section->id,
-        'sellable_type' => \App\Models\CourseSection::class,
+        'sellable_type' => CourseSection::class,
         'price' => 100,
         'is_active' => true,
     ]);
@@ -212,7 +214,7 @@ it('confirming pending order grants entitlements', function () {
         'instructor_id' => $this->instructor->id,
         'name' => 'Product',
         'sellable_id' => $this->lecture->id,
-        'sellable_type' => \App\Models\Lecture::class,
+        'sellable_type' => Lecture::class,
         'price' => 50,
         'is_active' => true,
     ]);

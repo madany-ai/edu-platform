@@ -18,7 +18,7 @@ class AcademicYearScope implements Scope
         if ($user && $user->hasRole('student')) {
             $student = $user->student;
             if ($student && $student->academic_year) {
-                $builder->where($model->getTable() . '.academic_year', $student->academic_year);
+                $builder->where($model->getTable().'.academic_year', $student->academic_year);
             }
         }
     }

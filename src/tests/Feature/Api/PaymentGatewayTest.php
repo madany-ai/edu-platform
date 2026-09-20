@@ -1,13 +1,13 @@
 <?php
 
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Lecture;
+use App\Enums\UserStatus;
 use App\Models\Course;
 use App\Models\CourseSection;
+use App\Models\Lecture;
+use App\Models\Order;
+use App\Models\Product;
 use App\Models\Student;
 use App\Models\User;
-use App\Services\Payment\PaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -17,14 +17,14 @@ beforeEach(function () {
         'name' => 'Instructor User',
         'email' => 'instructor_pay@test.com',
         'password' => bcrypt('password'),
-        'status' => \App\Enums\UserStatus::Active,
+        'status' => UserStatus::Active,
     ]);
 
     $this->studentUser = User::create([
         'name' => 'Student User',
         'email' => 'student_pay@test.com',
         'password' => bcrypt('password'),
-        'status' => \App\Enums\UserStatus::Active,
+        'status' => UserStatus::Active,
     ]);
 
     $this->student = Student::create([
@@ -126,7 +126,9 @@ test('Paymob Webhook verifies signature, updates order to completed and grants e
     $concat = '';
     foreach ($keys as $k) {
         $v = data_get($payloadObj, $k);
-        if (is_bool($v)) $v = $v ? 'true' : 'false';
+        if (is_bool($v)) {
+            $v = $v ? 'true' : 'false';
+        }
         $concat .= $v;
     }
     $hmac = hash_hmac('sha512', $concat, 'test_hmac_secret');

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\EnrollmentSource;
+use App\Enums\CourseStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\EnrollmentResource;
 use App\Models\Course;
@@ -31,7 +31,7 @@ class EnrollmentController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $entitlements
+            'data' => $entitlements,
         ]);
     }
 
@@ -43,22 +43,22 @@ class EnrollmentController extends Controller
         if (! $student || ! $student->is_verified) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'عفواً، يجب تفعيل حسابك أولاً قبل التسجيل في أي دورة.'
+                'message' => 'عفواً، يجب تفعيل حسابك أولاً قبل التسجيل في أي دورة.',
             ], 403);
         }
 
-        $isPublished = $course->status === \App\Enums\CourseStatus::Published || $course->status === 'published';
+        $isPublished = $course->status === CourseStatus::Published || $course->status === 'published';
         if (! $isPublished) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'هذه الدورة غير متاحة للتسجيل حالياً.'
+                'message' => 'هذه الدورة غير متاحة للتسجيل حالياً.',
             ], 403);
         }
 
         if ((float) $course->price > 0) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'هذه الدورة مدفوعة، يرجى الشراء عبر إنشاء طلب رسمياً.'
+                'message' => 'هذه الدورة مدفوعة، يرجى الشراء عبر إنشاء طلب رسمياً.',
             ], 403);
         }
 

@@ -97,7 +97,7 @@ class NotificationService
         try {
             Http::timeout(3)->post($webhookUrl, $payload);
         } catch (\Throwable $e) {
-            Log::warning("Failed to dispatch n8n webhook: " . $e->getMessage());
+            Log::warning('Failed to dispatch n8n webhook: '.$e->getMessage());
         }
     }
 }

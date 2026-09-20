@@ -49,8 +49,8 @@ class ProductResource extends JsonResource
                 ]);
             } elseif ($this->sellable instanceof Lecture) {
                 $sellableSummary['description'] = $this->sellable->description;
-                $sellableSummary['duration'] = $this->sellable->relationLoaded('video') && $this->sellable->video 
-                    ? $this->sellable->video->duration 
+                $sellableSummary['duration'] = $this->sellable->relationLoaded('video') && $this->sellable->video
+                    ? $this->sellable->video->duration
                     : $this->sellable->duration;
                 $sellableSummary['instructor'] = $this->sellable->relationLoaded('instructor') && $this->sellable->instructor ? [
                     'name' => $this->sellable->instructor->name,
@@ -58,9 +58,9 @@ class ProductResource extends JsonResource
                 $sellableSummary['course'] = $this->sellable->relationLoaded('section') && $this->sellable->section && $this->sellable->section->relationLoaded('course') ? [
                     'title' => $this->sellable->section->course->title,
                 ] : null;
-                $sellableSummary['exams'] = $this->sellable->relationLoaded('exams') ? $this->sellable->exams->map(fn($e) => ['id' => $e->id, 'title' => $e->title, 'duration' => $e->duration]) : [];
-                $sellableSummary['assignments'] = $this->sellable->relationLoaded('assignments') ? $this->sellable->assignments->map(fn($a) => ['id' => $a->id, 'title' => $a->title]) : [];
-                $sellableSummary['files'] = $this->sellable->relationLoaded('files') ? $this->sellable->files->map(fn($f) => ['id' => $f->id]) : [];
+                $sellableSummary['exams'] = $this->sellable->relationLoaded('exams') ? $this->sellable->exams->map(fn ($e) => ['id' => $e->id, 'title' => $e->title, 'duration' => $e->duration]) : [];
+                $sellableSummary['assignments'] = $this->sellable->relationLoaded('assignments') ? $this->sellable->assignments->map(fn ($a) => ['id' => $a->id, 'title' => $a->title]) : [];
+                $sellableSummary['files'] = $this->sellable->relationLoaded('files') ? $this->sellable->files->map(fn ($f) => ['id' => $f->id]) : [];
             }
         }
 

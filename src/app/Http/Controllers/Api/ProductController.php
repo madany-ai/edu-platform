@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Resources\ProductResource;
-use App\Http\Resources\BundleResource;
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Http\Resources\BundleResource;
+use App\Http\Resources\ProductResource;
 use App\Models\Bundle;
+use App\Models\Course;
+use App\Models\CourseSection;
+use App\Models\Lecture;
+use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -19,9 +22,9 @@ class ProductController extends Controller
         // Filter by type if provided (lecture, section, course)
         if ($type = $request->query('type')) {
             $classMap = [
-                'course' => \App\Models\Course::class,
-                'section' => \App\Models\CourseSection::class,
-                'lecture' => \App\Models\Lecture::class,
+                'course' => Course::class,
+                'section' => CourseSection::class,
+                'lecture' => Lecture::class,
             ];
             if (isset($classMap[$type])) {
                 $query->where('sellable_type', $classMap[$type]);
@@ -54,11 +57,11 @@ class ProductController extends Controller
 
     public function show(Product $product): JsonResponse
     {
-        if ($product->sellable_type === \App\Models\CourseSection::class) {
+        if ($product->sellable_type === CourseSection::class) {
             $product->load('sellable.lectures');
-        } elseif ($product->sellable_type === \App\Models\Course::class) {
+        } elseif ($product->sellable_type === Course::class) {
             $product->load('sellable.sections.lectures', 'sellable.instructor');
-        } elseif ($product->sellable_type === \App\Models\Lecture::class) {
+        } elseif ($product->sellable_type === Lecture::class) {
             $product->load(['sellable.instructor', 'sellable.video', 'sellable.section.course', 'sellable.exams', 'sellable.assignments', 'sellable.files']);
         } else {
             $product->load('sellable');
@@ -66,17 +69,17 @@ class ProductController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => new ProductResource($product)
+            'data' => new ProductResource($product),
         ]);
     }
 
     public function showBundle(Bundle $bundle): JsonResponse
     {
         $bundle->load(['products.sellable']);
-        
+
         return response()->json([
             'status' => 'success',
-            'data' => new BundleResource($bundle)
+            'data' => new BundleResource($bundle),
         ]);
     }
 }

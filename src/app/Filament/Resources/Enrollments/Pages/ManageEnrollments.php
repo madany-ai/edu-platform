@@ -3,15 +3,16 @@
 namespace App\Filament\Resources\Enrollments\Pages;
 
 use App\Filament\Resources\Enrollments\EnrollmentResource;
-use Filament\Actions\CreateAction;
-use Filament\Resources\Pages\ManageRecords;
-use Filament\Actions\Action;
-use Filament\Forms\Components\Select;
-use App\Models\Product;
 use App\Models\Bundle;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\Student;
 use App\Services\GrantEntitlementService;
+use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
+use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
+use Filament\Resources\Pages\ManageRecords;
 
 class ManageEnrollments extends ManageRecords
 {
@@ -30,9 +31,9 @@ class ManageEnrollments extends ManageRecords
                     Select::make('student_id')
                         ->label('الطالب')
                         ->options(function () {
-                            return \App\Models\Student::with('user')
+                            return Student::with('user')
                                 ->get()
-                                ->mapWithKeys(fn ($s) => [$s->id => $s->student_code . ' - ' . ($s->user?->name ?? 'غير معروف')]);
+                                ->mapWithKeys(fn ($s) => [$s->id => $s->student_code.' - '.($s->user?->name ?? 'غير معروف')]);
                         })
                         ->searchable()
                         ->required(),
@@ -59,6 +60,7 @@ class ManageEnrollments extends ManageRecords
                             if ($user && ! $user->hasRole('super_admin') && $user->hasRole('instructor')) {
                                 $query->where('instructor_id', $user->id);
                             }
+
                             return $query->pluck('name', 'id');
                         })
                         ->searchable()

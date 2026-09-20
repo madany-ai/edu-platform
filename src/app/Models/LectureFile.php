@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-use App\Models\Lecture;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LectureFile extends Model
 {
-    use HasUuids, \App\Traits\ResolvesMinioUrls;
+    use \App\Traits\ResolvesMinioUrls, HasUuids;
 
     protected $fillable = ['lecture_id', 'type', 'notes', 'file_path'];
 
@@ -23,6 +22,7 @@ class LectureFile extends Model
         if (request()->is('api/*')) {
             return $this->resolveMinioUrl($value);
         }
+
         return $value;
     }
 }

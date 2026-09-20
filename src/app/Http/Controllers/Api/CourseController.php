@@ -2,27 +2,39 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\CourseStatus;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\SaveLectureRequest;
+use App\Http\Requests\SaveSectionRequest;
+use App\Http\Requests\StoreCourseRequest;
+use App\Http\Requests\UpdateProgressRequest;
+use App\Http\Resources\CourseResource;
+use App\Http\Resources\LectureResource;
 use App\Models\Course;
 use App\Models\CourseSection;
+use App\Models\ExamAttempt;
 use App\Models\Lecture;
-use App\Http\Requests\StoreCourseRequest;
-use App\Http\Resources\CourseResource;
+use App\Models\LectureFile;
+use App\Models\Scopes\AcademicYearScope;
+use App\Models\Student;
+use App\Models\StudentActivity;
 use App\Services\CourseService;
-use App\Http\Controllers\Controller;
+use App\Services\ProgressService;
+use App\Services\VideoAccessService;
+use App\Traits\ResolvesStudent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-
-use App\Http\Requests\SaveSectionRequest;
-use App\Http\Requests\SaveLectureRequest;
-use App\Http\Requests\UpdateProgressRequest;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
 {
-    use \App\Traits\ResolvesStudent;
+    use ResolvesStudent;
+
     public function __construct(
         private readonly CourseService $courseService,
-        private readonly \App\Services\ProgressService $progressService
+        private readonly ProgressService $progressService
     ) {}
 
     public function index(Request $request): AnonymousResourceCollection
@@ -34,10 +46,10 @@ class CourseController extends Controller
 
     public function show(string $course): CourseResource
     {
-        $course = Course::withoutGlobalScope(\App\Models\Scopes\AcademicYearScope::class)->findOrFail($course);
-        
+        $course = Course::withoutGlobalScope(AcademicYearScope::class)->findOrFail($course);
+
         $user = auth('sanctum')->user();
-        $isPublished = $course->status === \App\Enums\CourseStatus::Published || $course->status === 'published';
+        $isPublished = $course->status === CourseStatus::Published || $course->status === 'published';
 
         if (! $isPublished) {
             if (! $user || (! $user->hasRole('super_admin') && ! $user->hasRole('admin') && $user->id !== $course->instructor_id)) {
@@ -50,29 +62,29 @@ class CourseController extends Controller
 
         $user = auth('sanctum')->user();
         if ($user) {
-            $student = \App\Models\Student::where('user_id', $user->id)->first();
+            $student = Student::where('user_id', $user->id)->first();
             if ($student) {
-                $lectureIds = $course->sections->flatMap(fn($s) => $s->lectures->pluck('id'))->toArray();
-                $progressMap = \App\Models\StudentActivity::where('student_id', $student->id)
+                $lectureIds = $course->sections->flatMap(fn ($s) => $s->lectures->pluck('id'))->toArray();
+                $progressMap = StudentActivity::where('student_id', $student->id)
                     ->where('type', 'video_progress')
-                    ->where('entity_type', \App\Models\Lecture::class)
+                    ->where('entity_type', Lecture::class)
                     ->whereIn('entity_id', $lectureIds)
                     ->get()
                     ->keyBy('entity_id')
-                    ->map(fn($a) => $a->metadata)
+                    ->map(fn ($a) => $a->metadata)
                     ->toArray();
 
                 $course->setAttribute('progress_map', $progressMap);
 
-                $examIds = $course->sections->flatMap(fn($s) => $s->lectures->flatMap(fn($l) => $l->exams->pluck('id')->concat($l->assignments->pluck('id'))))->toArray();
-                $allAttempts = \App\Models\ExamAttempt::where('student_id', $student->id)
+                $examIds = $course->sections->flatMap(fn ($s) => $s->lectures->flatMap(fn ($l) => $l->exams->pluck('id')->concat($l->assignments->pluck('id'))))->toArray();
+                $allAttempts = ExamAttempt::where('student_id', $student->id)
                     ->whereIn('exam_id', $examIds)
                     ->whereNotNull('submitted_at')
                     ->get()
                     ->groupBy('exam_id');
 
-                $attemptsMap = $allAttempts->map(fn($group) => $group->sortByDesc('submitted_at')->first())->all();
-                $attemptsCountMap = $allAttempts->map(fn($group) => $group->count())->all();
+                $attemptsMap = $allAttempts->map(fn ($group) => $group->sortByDesc('submitted_at')->first())->all();
+                $attemptsCountMap = $allAttempts->map(fn ($group) => $group->count())->all();
 
                 $course->setAttribute('attempts_map', $attemptsMap);
                 $course->setAttribute('attempts_count_map', $attemptsCountMap);
@@ -114,17 +126,17 @@ class CourseController extends Controller
         return response()->json(['message' => 'Course deleted']);
     }
 
-    public function showLecture(\App\Models\Lecture $lecture): \App\Http\Resources\LectureResource
+    public function showLecture(Lecture $lecture): LectureResource
     {
         $lecture->load(['video', 'files', 'section.course', 'exams', 'assignments']);
 
         $user = auth('sanctum')->user();
         if ($user) {
-            $student = \App\Models\Student::where('user_id', $user->id)->first();
+            $student = Student::where('user_id', $user->id)->first();
             if ($student) {
-                $progress = \App\Models\StudentActivity::where('student_id', $student->id)
+                $progress = StudentActivity::where('student_id', $student->id)
                     ->where('type', 'video_progress')
-                    ->where('entity_type', \App\Models\Lecture::class)
+                    ->where('entity_type', Lecture::class)
                     ->where('entity_id', $lecture->id)
                     ->first();
                 if ($progress) {
@@ -133,10 +145,11 @@ class CourseController extends Controller
             }
         }
 
-        $resource = new \App\Http\Resources\LectureResource($lecture);
+        $resource = new LectureResource($lecture);
         if ($student) {
             $resource->setStudent($student);
         }
+
         return $resource;
     }
 
@@ -158,7 +171,7 @@ class CourseController extends Controller
         return response()->json($section, 201);
     }
 
-    public function updateSection(SaveSectionRequest $request, Course $course, \App\Models\CourseSection $section): JsonResponse
+    public function updateSection(SaveSectionRequest $request, Course $course, CourseSection $section): JsonResponse
     {
         if ($section->course_id !== $course->id) {
             abort(404, 'القسم غير موجود في هذا الكورس.');
@@ -173,7 +186,7 @@ class CourseController extends Controller
         return response()->json($section);
     }
 
-    public function destroySection(Course $course, \App\Models\CourseSection $section): JsonResponse
+    public function destroySection(Course $course, CourseSection $section): JsonResponse
     {
         if ($section->course_id !== $course->id) {
             abort(404, 'القسم غير موجود في هذا الكورس.');
@@ -186,15 +199,15 @@ class CourseController extends Controller
         return response()->json(['message' => 'تم حذف القسم بنجاح.']);
     }
 
-    public function storeLecture(SaveLectureRequest $request, \App\Models\CourseSection $section): JsonResponse
+    public function storeLecture(SaveLectureRequest $request, CourseSection $section): JsonResponse
     {
         $this->authorize('create', [Lecture::class, $section]);
 
         $validated = $request->validated();
 
-        $lecture = $section->lectures()->create(\Illuminate\Support\Arr::except($validated, ['youtube_url']));
+        $lecture = $section->lectures()->create(Arr::except($validated, ['youtube_url']));
 
-        if (!empty($validated['youtube_url'])) {
+        if (! empty($validated['youtube_url'])) {
             $lecture->video()->create([
                 'video_path' => $validated['youtube_url'],
                 'status' => 'completed',
@@ -206,7 +219,7 @@ class CourseController extends Controller
         return response()->json($lecture->load('video'), 201);
     }
 
-    public function updateLecture(SaveLectureRequest $request, \App\Models\CourseSection $section, \App\Models\Lecture $lecture): JsonResponse
+    public function updateLecture(SaveLectureRequest $request, CourseSection $section, Lecture $lecture): JsonResponse
     {
         if ($lecture->section_id !== $section->id) {
             abort(404, 'المحاضرة غير موجودة في هذا القسم.');
@@ -216,9 +229,9 @@ class CourseController extends Controller
 
         $validated = $request->validated();
 
-        $lecture->update(\Illuminate\Support\Arr::except($validated, ['youtube_url']));
+        $lecture->update(Arr::except($validated, ['youtube_url']));
 
-        if (!empty($validated['youtube_url'])) {
+        if (! empty($validated['youtube_url'])) {
             $lecture->video()->updateOrCreate(
                 ['lecture_id' => $lecture->id],
                 [
@@ -233,7 +246,7 @@ class CourseController extends Controller
         return response()->json($lecture->load('video'));
     }
 
-    public function destroyLecture(\App\Models\CourseSection $section, \App\Models\Lecture $lecture): JsonResponse
+    public function destroyLecture(CourseSection $section, Lecture $lecture): JsonResponse
     {
         if ($lecture->section_id !== $section->id) {
             abort(404, 'المحاضرة غير موجودة في هذا القسم.');
@@ -246,7 +259,7 @@ class CourseController extends Controller
         return response()->json(['message' => 'تم حذف المحاضرة بنجاح.']);
     }
 
-    public function downloadFile(Request $request, \App\Models\Lecture $lecture, \App\Models\LectureFile $file)
+    public function downloadFile(Request $request, Lecture $lecture, LectureFile $file)
     {
         if ($file->lecture_id !== $lecture->id) {
             return response()->json(['message' => 'الملف غير موجود.'], 404);
@@ -257,13 +270,13 @@ class CourseController extends Controller
         $extension = strtolower(pathinfo($storagePath, PATHINFO_EXTENSION));
         $allowedExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'zip', 'rar', 'txt', 'jpg', 'jpeg', 'png'];
 
-        if (!in_array($extension, $allowedExtensions, true)) {
+        if (! in_array($extension, $allowedExtensions, true)) {
             return response()->json(['message' => 'نوع الملف غير مسموح بتحميله.'], 403);
         }
 
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        $disk = Storage::disk('public');
 
-        if (!$disk->exists($storagePath)) {
+        if (! $disk->exists($storagePath)) {
             return response()->json(['message' => 'الملف غير موجود على السيرفر.'], 404);
         }
 
@@ -277,20 +290,20 @@ class CourseController extends Controller
                 fclose($stream);
             }
         }, 200, [
-            'Content-Type'        => $mimeType,
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Cache-Control'       => 'private, max-age=3600',
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Cache-Control' => 'private, max-age=3600',
         ]);
     }
 
-    public function updateProgress(UpdateProgressRequest $request, \App\Models\Lecture $lecture): JsonResponse
+    public function updateProgress(UpdateProgressRequest $request, Lecture $lecture): JsonResponse
     {
         $validated = $request->validated();
 
         $user = $request->user();
         $student = $this->resolveStudent($user);
 
-        if (!$student) {
+        if (! $student) {
             return response()->json(['message' => 'Student record not found.'], 404);
         }
 
@@ -302,31 +315,31 @@ class CourseController extends Controller
         ]);
     }
 
-    public function streamKey(Request $request, \App\Models\Lecture $lecture)
+    public function streamKey(Request $request, Lecture $lecture)
     {
         $token = $request->query('token');
 
-        if (!$token) {
+        if (! $token) {
             return response()->json(['message' => 'Missing token'], 400);
         }
 
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
-        $accessService = app(\App\Services\VideoAccessService::class);
-        
-        if (!$accessService->canAccess($user, $lecture)) {
+        $accessService = app(VideoAccessService::class);
+
+        if (! $accessService->canAccess($user, $lecture)) {
             return response()->json(['message' => 'Unauthorized access to lecture'], 403);
         }
 
-        if (!$accessService->validateToken($token, $lecture, $request->ip())) {
+        if (! $accessService->validateToken($token, $lecture, $request->ip())) {
             return response()->json(['message' => 'Invalid or expired token'], 403);
         }
 
         $video = $lecture->video;
-        if (!$video || !$video->encryption_key) {
+        if (! $video || ! $video->encryption_key) {
             abort(404, 'Video key not found.');
         }
 
@@ -347,6 +360,6 @@ class CourseController extends Controller
             ->latest()
             ->paginate($request->get('per_page', 15));
 
-        return \App\Http\Resources\LectureResource::collection($lectures);
+        return LectureResource::collection($lectures);
     }
 }

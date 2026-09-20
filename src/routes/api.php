@@ -1,14 +1,20 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CenterStaffController;
+use App\Http\Controllers\Api\CenterStudentController;
 use App\Http\Controllers\Api\CourseController;
-use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\ExamController;
+use App\Http\Controllers\Api\MiscController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\PaymentWebhookController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\QAController;
+use App\Http\Controllers\Api\VideoStreamController;
+use App\Http\Middleware\CheckEnrollment;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -22,21 +28,19 @@ Route::post('auth/reset-password', [PasswordResetController::class, 'resetPasswo
     ->middleware('throttle:login');
 Route::get('courses', [CourseController::class, 'index']);
 Route::get('courses/{course}', [CourseController::class, 'show']);
-Route::get('governorates', [\App\Http\Controllers\Api\MiscController::class, 'governorates']);
-Route::get('grade-levels', [\App\Http\Controllers\Api\MiscController::class, 'gradeLevels']);
+Route::get('governorates', [MiscController::class, 'governorates']);
+Route::get('grade-levels', [MiscController::class, 'gradeLevels']);
 Route::get('standalone-lectures', [CourseController::class, 'standaloneIndex']);
 
 // ─── Payment Webhooks ───
-Route::post('webhooks/{gateway}', [\App\Http\Controllers\Api\PaymentWebhookController::class, 'handle'])
+Route::post('webhooks/{gateway}', [PaymentWebhookController::class, 'handle'])
     ->where('gateway', 'paymob|fawry');
-Route::get('video/{videoId}/playlist', [\App\Http\Controllers\Api\VideoStreamController::class, 'playlist'])
+Route::get('video/{videoId}/playlist', [VideoStreamController::class, 'playlist'])
     ->name('video.playlist')
     ->middleware('throttle:120,1');
-Route::get('video/{videoId}/segment', [\App\Http\Controllers\Api\VideoStreamController::class, 'segment'])
+Route::get('video/{videoId}/segment', [VideoStreamController::class, 'segment'])
     ->name('video.segment')
     ->middleware('throttle:600,1');
-
-
 
 // Authenticated routes
 Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
@@ -75,14 +79,14 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     });
 
     Route::get('lectures/{lecture}', [CourseController::class, 'showLecture'])
-        ->middleware(\App\Http\Middleware\CheckEnrollment::class);
+        ->middleware(CheckEnrollment::class);
     Route::get('lectures/{lecture}/files/{file}', [CourseController::class, 'downloadFile'])
-        ->middleware(\App\Http\Middleware\CheckEnrollment::class)
+        ->middleware(CheckEnrollment::class)
         ->name('lectures.downloadFile');
     Route::post('lectures/{lecture}/progress', [CourseController::class, 'updateProgress'])
-        ->middleware(\App\Http\Middleware\CheckEnrollment::class);
+        ->middleware(CheckEnrollment::class);
     Route::get('lectures/{lecture}/assignment', [ExamController::class, 'show'])
-        ->middleware(\App\Http\Middleware\CheckEnrollment::class);
+        ->middleware(CheckEnrollment::class);
 
     // Enrollments
     Route::get('my-enrollments', [EnrollmentController::class, 'myEnrollments']);
@@ -125,9 +129,9 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
 
     // Q&A — Student
     Route::post('lectures/{lecture}/questions', [QAController::class, 'store'])
-        ->middleware(\App\Http\Middleware\CheckEnrollment::class);
+        ->middleware(CheckEnrollment::class);
     Route::get('lectures/{lecture}/questions', [QAController::class, 'index'])
-        ->middleware(\App\Http\Middleware\CheckEnrollment::class);
+        ->middleware(CheckEnrollment::class);
     Route::get('questions/{question}', [QAController::class, 'show']);
     Route::post('questions/{question}/replies', [QAController::class, 'reply']);
     Route::get('my-questions', [QAController::class, 'myQuestions']);
@@ -142,47 +146,47 @@ Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
     Route::get('assistant/questions', [QAController::class, 'staffQuestions'])
         ->middleware('role:assistant');
     // Video stream key (token-based auth — rate-limited)
-    Route::get('lectures/{lecture}/key', [\App\Http\Controllers\Api\CourseController::class, 'streamKey'])
+    Route::get('lectures/{lecture}/key', [CourseController::class, 'streamKey'])
         ->middleware('throttle:10,1');
 
     // ─── Center Management (Student) ───
-    Route::get('center/my-attendance', [\App\Http\Controllers\Api\CenterStudentController::class, 'myAttendance']);
-    Route::get('center/my-grades', [\App\Http\Controllers\Api\CenterStudentController::class, 'myGrades']);
-    Route::get('center/my-group', [\App\Http\Controllers\Api\CenterStudentController::class, 'myGroup']);
-    Route::get('center/my-report', [\App\Http\Controllers\Api\CenterStudentController::class, 'myReport']);
+    Route::get('center/my-attendance', [CenterStudentController::class, 'myAttendance']);
+    Route::get('center/my-grades', [CenterStudentController::class, 'myGrades']);
+    Route::get('center/my-group', [CenterStudentController::class, 'myGroup']);
+    Route::get('center/my-report', [CenterStudentController::class, 'myReport']);
 
     // ─── Center Management (Staff: Instructor & Assistant) ───
     Route::middleware('role:instructor|assistant|admin|super_admin')->prefix('center/staff')->group(function () {
-        Route::get('stats', [\App\Http\Controllers\Api\CenterStaffController::class, 'stats']);
-        Route::get('academic-years', [\App\Http\Controllers\Api\CenterStaffController::class, 'academicYears']);
-        Route::post('academic-years', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeAcademicYear']);
-        Route::put('academic-years/{id}', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateAcademicYear']);
+        Route::get('stats', [CenterStaffController::class, 'stats']);
+        Route::get('academic-years', [CenterStaffController::class, 'academicYears']);
+        Route::post('academic-years', [CenterStaffController::class, 'storeAcademicYear']);
+        Route::put('academic-years/{id}', [CenterStaffController::class, 'updateAcademicYear']);
 
-        Route::get('groups', [\App\Http\Controllers\Api\CenterStaffController::class, 'groups']);
-        Route::get('groups/{id}', [\App\Http\Controllers\Api\CenterStaffController::class, 'showGroup']);
-        Route::post('groups', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeGroup']);
-        Route::put('groups/{id}', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateGroup']);
-        Route::delete('groups/{id}', [\App\Http\Controllers\Api\CenterStaffController::class, 'destroyGroup']);
+        Route::get('groups', [CenterStaffController::class, 'groups']);
+        Route::get('groups/{id}', [CenterStaffController::class, 'showGroup']);
+        Route::post('groups', [CenterStaffController::class, 'storeGroup']);
+        Route::put('groups/{id}', [CenterStaffController::class, 'updateGroup']);
+        Route::delete('groups/{id}', [CenterStaffController::class, 'destroyGroup']);
 
-        Route::get('sessions', [\App\Http\Controllers\Api\CenterStaffController::class, 'sessions']);
-        Route::post('sessions', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeSession']);
-        Route::put('sessions/{id}', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateSession']);
-        Route::get('sessions/{id}/attendance', [\App\Http\Controllers\Api\CenterStaffController::class, 'getSessionAttendance']);
-        Route::post('sessions/{id}/attendance', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateAttendance']);
-        Route::post('attendance/scan', [\App\Http\Controllers\Api\CenterStaffController::class, 'scanAttendance']);
+        Route::get('sessions', [CenterStaffController::class, 'sessions']);
+        Route::post('sessions', [CenterStaffController::class, 'storeSession']);
+        Route::put('sessions/{id}', [CenterStaffController::class, 'updateSession']);
+        Route::get('sessions/{id}/attendance', [CenterStaffController::class, 'getSessionAttendance']);
+        Route::post('sessions/{id}/attendance', [CenterStaffController::class, 'updateAttendance']);
+        Route::post('attendance/scan', [CenterStaffController::class, 'scanAttendance']);
 
-        Route::get('exams', [\App\Http\Controllers\Api\CenterStaffController::class, 'exams']);
-        Route::post('exams', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeExam']);
-        Route::get('exams/{id}/grades', [\App\Http\Controllers\Api\CenterStaffController::class, 'getExamGrades']);
-        Route::post('exams/{id}/grades', [\App\Http\Controllers\Api\CenterStaffController::class, 'saveExamGrades']);
+        Route::get('exams', [CenterStaffController::class, 'exams']);
+        Route::post('exams', [CenterStaffController::class, 'storeExam']);
+        Route::get('exams/{id}/grades', [CenterStaffController::class, 'getExamGrades']);
+        Route::post('exams/{id}/grades', [CenterStaffController::class, 'saveExamGrades']);
 
-        Route::get('rankings', [\App\Http\Controllers\Api\CenterStaffController::class, 'rankings']);
-        Route::get('students', [\App\Http\Controllers\Api\CenterStaffController::class, 'students']);
-        Route::post('students', [\App\Http\Controllers\Api\CenterStaffController::class, 'storeStudent']);
-        Route::put('students/bulk-group', [\App\Http\Controllers\Api\CenterStaffController::class, 'bulkUpdateStudentGroup']);
-        Route::put('students/{id}/group', [\App\Http\Controllers\Api\CenterStaffController::class, 'updateStudentGroup']);
-        Route::put('students/{id}/approve', [\App\Http\Controllers\Api\CenterStaffController::class, 'approveStudent']);
-        Route::put('students/{id}/reject', [\App\Http\Controllers\Api\CenterStaffController::class, 'rejectStudent']);
-        Route::get('students/{id}/report', [\App\Http\Controllers\Api\CenterStaffController::class, 'studentReport']);
+        Route::get('rankings', [CenterStaffController::class, 'rankings']);
+        Route::get('students', [CenterStaffController::class, 'students']);
+        Route::post('students', [CenterStaffController::class, 'storeStudent']);
+        Route::put('students/bulk-group', [CenterStaffController::class, 'bulkUpdateStudentGroup']);
+        Route::put('students/{id}/group', [CenterStaffController::class, 'updateStudentGroup']);
+        Route::put('students/{id}/approve', [CenterStaffController::class, 'approveStudent']);
+        Route::put('students/{id}/reject', [CenterStaffController::class, 'rejectStudent']);
+        Route::get('students/{id}/report', [CenterStaffController::class, 'studentReport']);
     });
 });

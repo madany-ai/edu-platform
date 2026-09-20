@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Bundles\RelationManagers;
 
+use Filament\Actions\AttachAction;
+use Filament\Actions\DetachAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -33,19 +35,19 @@ class ProductsRelationManager extends RelationManager
 
                 TextColumn::make('price')
                     ->label('السعر')
-                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' ج.م'),
+                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2).' ج.م'),
 
                 TextColumn::make('access_duration_days')
                     ->label('مدة الوصول')
                     ->formatStateUsing(fn ($state): string => $state ? "{$state} يوم" : 'دائم'),
             ])
             ->headerActions([
-                \Filament\Actions\AttachAction::make()
+                AttachAction::make()
                     ->preloadRecordSelect()
                     ->multiple(),
             ])
             ->recordActions([
-                \Filament\Actions\DetachAction::make(),
+                DetachAction::make(),
             ]);
     }
 }

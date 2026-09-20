@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\TurnstileRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterRequest extends FormRequest
@@ -28,7 +29,7 @@ class RegisterRequest extends FormRequest
             'governorate_id' => 'required|uuid|exists:governorates,id',
             'academic_year' => 'required|string|in:prep_1,prep_2,prep_3,sec_1,sec_2,sec_3',
             'academic_track' => 'nullable|string|in:general,science,math,literary',
-            'cf-turnstile-response' => ['required', 'string', new \App\Rules\TurnstileRule],
+            'cf-turnstile-response' => ['required', 'string', new TurnstileRule],
         ];
     }
 

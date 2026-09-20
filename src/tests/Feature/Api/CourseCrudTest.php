@@ -1,9 +1,7 @@
 <?php
 
 use App\Models\Course;
-use App\Models\CourseSection;
 use App\Models\Lecture;
-use App\Models\Student;
 use App\Models\User;
 
 beforeEach(function () {

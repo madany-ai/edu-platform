@@ -6,8 +6,9 @@ use App\Enums\EnrollmentSource;
 use App\Enums\EnrollmentStatus;
 use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\Entitlement;
+use App\Models\Scopes\AcademicYearScope;
 use App\Models\Student;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 
 class EnrollmentService
@@ -24,6 +25,7 @@ class EnrollmentService
                 'source' => $source->value,
                 'started_at' => now(),
             ]);
+
             return $enrollment;
         }
 
@@ -39,6 +41,7 @@ class EnrollmentService
     public function enrollByUserId(Course $course, string $userId, EnrollmentSource $source = EnrollmentSource::Manual): Enrollment
     {
         $student = Student::where('user_id', $userId)->firstOrFail();
+
         return $this->enrollStudent($course, $student, $source);
     }
 
@@ -78,9 +81,8 @@ class EnrollmentService
             return collect();
         }
 
-
         return Enrollment::with(['course' => function ($query) {
-            $query->withoutGlobalScope(\App\Models\Scopes\AcademicYearScope::class)->with(['instructor', 'sections']);
+            $query->withoutGlobalScope(AcademicYearScope::class)->with(['instructor', 'sections']);
         }])
             ->where('student_id', $student->id)
             ->latest()
@@ -90,15 +92,15 @@ class EnrollmentService
     public function getStudentEntitlements(string $userId): \Illuminate\Support\Collection
     {
         $student = Student::where('user_id', $userId)->first();
-        if (!$student) {
+        if (! $student) {
             return collect();
         }
 
-        return \App\Models\Entitlement::with(['lecture.instructor', 'lecture.video', 'lecture.section.course'])
+        return Entitlement::with(['lecture.instructor', 'lecture.video', 'lecture.section.course'])
             ->where('student_id', $student->id)
             ->where(function ($q) {
                 $q->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
+                    ->orWhere('expires_at', '>', now());
             })
             ->latest()
             ->get();

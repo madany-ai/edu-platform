@@ -2,32 +2,45 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Exam;
+use App\Models\ExamAttempt;
+use App\Models\Student;
+use App\Services\BunnyStreamService;
+use App\Services\VideoAccessService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class LectureResource extends JsonResource
 {
     private ?array $progressMap = null;
+
     private ?array $attemptsMap = null;
+
     private ?array $attemptsCountMap = null;
+
     private $student = null;
+
     private bool $hasStudentBeenSet = false;
 
     public function setProgressMap(?array $map): self
     {
         $this->progressMap = $map;
+
         return $this;
     }
 
     public function setAttemptsMap(?array $map): self
     {
         $this->attemptsMap = $map;
+
         return $this;
     }
 
     public function setAttemptsCountMap(?array $map): self
     {
         $this->attemptsCountMap = $map;
+
         return $this;
     }
 
@@ -35,27 +48,28 @@ class LectureResource extends JsonResource
     {
         $this->student = $student;
         $this->hasStudentBeenSet = true;
+
         return $this;
     }
 
     public function toArray(Request $request): array
     {
         $user = auth('sanctum')->user();
-        
+
         if ($this->hasStudentBeenSet) {
             $student = $this->student;
         } else {
-            $student = $user ? \App\Models\Student::where('user_id', $user->id)->first() : null;
+            $student = $user ? Student::where('user_id', $user->id)->first() : null;
         }
-        
-        $accessService = app(\App\Services\VideoAccessService::class);
+
+        $accessService = app(VideoAccessService::class);
         $hasAccess = $user ? $accessService->canAccess($user, $this->resource) : false;
 
         $videoData = null;
         if ($this->relationLoaded('video') && $this->video) {
             $videoPath = $this->video->video_path;
             $status = $this->video->status;
-            
+
             // YouTube videos are always completed immediately
             if ($videoPath && (str_contains($videoPath, 'youtube.com') || str_contains($videoPath, 'youtu.be'))) {
                 $status = 'completed';
@@ -76,19 +90,19 @@ class LectureResource extends JsonResource
                         // YouTube videos
                         $videoData['stream_url'] = $videoPath;
                         $videoData['stream_type'] = 'video/youtube';
-                    } else if ($this->video->bunny_video_id) {
+                    } elseif ($this->video->bunny_video_id) {
                         // Bunny Stream — signed embed URL
-                        $bunnyService = app(\App\Services\BunnyStreamService::class);
+                        $bunnyService = app(BunnyStreamService::class);
                         $videoData['stream_url'] = $bunnyService->getSignedPlaybackUrl($this->video->bunny_video_id);
                         $videoData['stream_type'] = 'application/x-mpegURL';
-                    } else if ($videoPath && str_ends_with(strtolower($videoPath), '.mp4')) {
+                    } elseif ($videoPath && str_ends_with(strtolower($videoPath), '.mp4')) {
                         // Legacy MP4 files — direct MinIO temporary URL
-                        $url = \Illuminate\Support\Facades\Storage::disk('public')
+                        $url = Storage::disk('public')
                             ->temporaryUrl($videoPath, now()->addHours(2));
                         $minioEndpoint = rtrim(config('filesystems.disks.minio.endpoint', 'http://minio:9000'), '/');
                         $publicUrl = config('filesystems.disks.minio.url', 'http://localhost:9000/lms-videos');
                         $parsed = parse_url($publicUrl);
-                        $publicHost = ($parsed['scheme'] ?? 'http') . '://' . ($parsed['host'] ?? 'localhost') . (isset($parsed['port']) ? ':' . $parsed['port'] : '');
+                        $publicHost = ($parsed['scheme'] ?? 'http').'://'.($parsed['host'] ?? 'localhost').(isset($parsed['port']) ? ':'.$parsed['port'] : '');
                         $videoData['stream_url'] = str_replace($minioEndpoint, $publicHost, $url);
                         $videoData['stream_type'] = 'video/mp4';
                     }
@@ -100,19 +114,19 @@ class LectureResource extends JsonResource
         if ($this->relationLoaded('exams')) {
             $examsFormatted = $this->exams->map(function ($exam) use ($student) {
                 $attemptsCount = 0;
-                
+
                 if ($this->attemptsMap && array_key_exists($exam->id, $this->attemptsMap)) {
                     $latestAttempt = $this->attemptsMap[$exam->id];
                     $attemptsCount = $this->attemptsCountMap[$exam->id] ?? 0;
                 } else {
-                    $latestAttempt = $student ? \App\Models\ExamAttempt::where('exam_id', $exam->id)
+                    $latestAttempt = $student ? ExamAttempt::where('exam_id', $exam->id)
                         ->where('student_id', $student->id)
                         ->whereNotNull('submitted_at')
                         ->latest('submitted_at')
                         ->first() : null;
-                        
+
                     if ($student) {
-                        $attemptsCount = \App\Models\ExamAttempt::where('exam_id', $exam->id)
+                        $attemptsCount = ExamAttempt::where('exam_id', $exam->id)
                             ->where('student_id', $student->id)
                             ->whereNotNull('submitted_at')
                             ->count();
@@ -144,19 +158,19 @@ class LectureResource extends JsonResource
         if ($this->relationLoaded('assignments')) {
             $assignmentsFormatted = $this->assignments->map(function ($assignment) use ($student) {
                 $attemptsCount = 0;
-                
+
                 if ($this->attemptsMap && array_key_exists($assignment->id, $this->attemptsMap)) {
                     $latestAttempt = $this->attemptsMap[$assignment->id];
                     $attemptsCount = $this->attemptsCountMap[$assignment->id] ?? 0;
                 } else {
-                    $latestAttempt = $student ? \App\Models\ExamAttempt::where('exam_id', $assignment->id)
+                    $latestAttempt = $student ? ExamAttempt::where('exam_id', $assignment->id)
                         ->where('student_id', $student->id)
                         ->whereNotNull('submitted_at')
                         ->latest('submitted_at')
                         ->first() : null;
-                        
+
                     if ($student) {
-                        $attemptsCount = \App\Models\ExamAttempt::where('exam_id', $assignment->id)
+                        $attemptsCount = ExamAttempt::where('exam_id', $assignment->id)
                             ->where('student_id', $student->id)
                             ->whereNotNull('submitted_at')
                             ->count();
@@ -195,8 +209,8 @@ class LectureResource extends JsonResource
             'progress' => ($this->progressMap && array_key_exists($this->id, $this->progressMap))
                 ? $this->progressMap[$this->id]
                 : $this->progress,
-            'has_exam' => $this->relationLoaded('exams') ? $this->exams->isNotEmpty() : \App\Models\Exam::where('lecture_id', $this->id)->where('is_assignment', false)->exists(),
-            'has_assignment' => $this->relationLoaded('assignments') ? $this->assignments->isNotEmpty() : \App\Models\Exam::where('lecture_id', $this->id)->where('is_assignment', true)->exists(),
+            'has_exam' => $this->relationLoaded('exams') ? $this->exams->isNotEmpty() : Exam::where('lecture_id', $this->id)->where('is_assignment', false)->exists(),
+            'has_assignment' => $this->relationLoaded('assignments') ? $this->assignments->isNotEmpty() : Exam::where('lecture_id', $this->id)->where('is_assignment', true)->exists(),
             'exams' => $examsFormatted,
             'assignments' => $assignmentsFormatted,
             'is_locked' => $user ? $accessService->isBlockedByExam($user, $this->resource, 'lecture_access') : false,

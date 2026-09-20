@@ -1,10 +1,5 @@
 <?php
 
-use App\Filament\Resources\Courses\CourseResource;
-use App\Filament\Resources\Lectures\LectureResource;
-use App\Filament\Resources\Exams\ExamResource;
-use App\Filament\Resources\Assignments\AssignmentResource;
-
 it('course thumbnail FileUpload has acceptedFileTypes in source', function () {
     $source = file_get_contents(app_path('Filament/Resources/Courses/CourseResource.php'));
     expect($source)->toContain('acceptedFileTypes');
@@ -57,7 +52,7 @@ it('all FileUpload components have either acceptedFileTypes or image constraint'
         $source = file_get_contents(app_path($file));
         preg_match_all('/FileUpload::make\(([^)]+)\)/', $source, $matches);
         foreach ($matches[1] as $name) {
-            $pattern = '/FileUpload::make\(' . preg_quote(trim($name, "'\"")) . '\).*?(?=FileUpload::make|$)/s';
+            $pattern = '/FileUpload::make\('.preg_quote(trim($name, "'\"")).'\).*?(?=FileUpload::make|$)/s';
             preg_match($pattern, $source, $block);
             if ($block) {
                 $hasTypes = str_contains($block[0], 'acceptedFileTypes');

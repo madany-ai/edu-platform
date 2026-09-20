@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\Course;
-use App\Models\CourseSection;
-use App\Models\Lecture;
+use App\Models\Governorate;
+use App\Models\GradeLevel;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\CodeGeneratorService;
@@ -14,8 +14,8 @@ beforeEach(function () {
 });
 
 it('returns governorates list', function () {
-    \App\Models\Governorate::create(['name' => 'القاهرة']);
-    \App\Models\Governorate::create(['name' => 'الإسكندرية']);
+    Governorate::create(['name' => 'القاهرة']);
+    Governorate::create(['name' => 'الإسكندرية']);
 
     $response = $this->getJson('/api/governorates');
 
@@ -25,8 +25,8 @@ it('returns governorates list', function () {
 });
 
 it('returns grade levels list sorted by sort_order', function () {
-    \App\Models\GradeLevel::create(['name' => 'الثالث', 'sort_order' => 3]);
-    \App\Models\GradeLevel::create(['name' => 'الأول', 'sort_order' => 1]);
+    GradeLevel::create(['name' => 'الثالث', 'sort_order' => 3]);
+    GradeLevel::create(['name' => 'الأول', 'sort_order' => 1]);
 
     $response = $this->getJson('/api/grade-levels');
 
@@ -39,7 +39,7 @@ it('returns grade levels list sorted by sort_order', function () {
 });
 
 it('code generator produces unique student codes', function () {
-    $service = new CodeGeneratorService();
+    $service = new CodeGeneratorService;
 
     $student1 = Student::create([
         'user_id' => User::factory()->create()->id,
@@ -75,8 +75,8 @@ it('code generator produces unique student codes', function () {
 });
 
 it('code generator produces unique course codes', function () {
-    $code1 = (new CodeGeneratorService())->generateCourseCode();
-    $code2 = (new CodeGeneratorService())->generateCourseCode();
+    $code1 = (new CodeGeneratorService)->generateCourseCode();
+    $code2 = (new CodeGeneratorService)->generateCourseCode();
 
     expect($code1)->not->toBe($code2);
     expect($code1)->toStartWith('CR');
@@ -84,8 +84,8 @@ it('code generator produces unique course codes', function () {
 });
 
 it('code generator produces unique assistant codes', function () {
-    $code1 = (new CodeGeneratorService())->generateAssistantCode();
-    $code2 = (new CodeGeneratorService())->generateAssistantCode();
+    $code1 = (new CodeGeneratorService)->generateAssistantCode();
+    $code2 = (new CodeGeneratorService)->generateAssistantCode();
 
     expect($code1)->not->toBe($code2);
     expect($code1)->toStartWith('TA');

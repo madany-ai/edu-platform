@@ -10,7 +10,7 @@ class UserMeResource extends JsonResource
     public function toArray(Request $request): array
     {
         $roles = $this->roles->pluck('name');
-        
+
         $studentData = null;
         if ($this->relationLoaded('student') && $this->student) {
             $studentData = [

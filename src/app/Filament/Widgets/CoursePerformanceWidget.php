@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\CourseStatus;
 use App\Models\Course;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -39,13 +40,13 @@ class CoursePerformanceWidget extends TableWidget
                 Tables\Columns\TextColumn::make('status')
                     ->label('الحالة')
                     ->badge()
-                    ->color(fn ($state): string => match ($state instanceof \App\Enums\CourseStatus ? $state->value : $state) {
+                    ->color(fn ($state): string => match ($state instanceof CourseStatus ? $state->value : $state) {
                         'draft' => 'gray',
                         'published' => 'success',
                         'archived' => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn ($state): string => match ($state instanceof \App\Enums\CourseStatus ? $state->value : $state) {
+                    ->formatStateUsing(fn ($state): string => match ($state instanceof CourseStatus ? $state->value : $state) {
                         'draft' => 'مسودة',
                         'published' => 'منشور',
                         'archived' => 'مؤرشف',
@@ -64,7 +65,7 @@ class CoursePerformanceWidget extends TableWidget
 
                 Tables\Columns\TextColumn::make('price')
                     ->label('السعر')
-                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' ج.م'),
+                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2).' ج.م'),
             ])
             ->defaultSort('enrollments_count', 'desc');
     }

@@ -87,7 +87,7 @@ it('grants entitlement for single lecture product', function () {
         'status' => 'completed',
     ]);
 
-    (new GrantEntitlementService())->handle($order);
+    (new GrantEntitlementService)->handle($order);
 
     $this->assertDatabaseHas('entitlements', [
         'student_id' => $this->student->id,
@@ -123,7 +123,7 @@ it('grants entitlement for section product', function () {
         'status' => 'completed',
     ]);
 
-    (new GrantEntitlementService())->handle($order);
+    (new GrantEntitlementService)->handle($order);
 
     $this->assertDatabaseHas('entitlements', [
         'student_id' => $this->student->id,
@@ -179,7 +179,7 @@ it('grants entitlement for bundle', function () {
         'status' => 'completed',
     ]);
 
-    (new GrantEntitlementService())->handle($order);
+    (new GrantEntitlementService)->handle($order);
 
     $this->assertDatabaseHas('entitlements', [
         'student_id' => $this->student->id,

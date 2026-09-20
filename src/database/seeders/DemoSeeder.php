@@ -2,21 +2,21 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Student;
+use App\Models\Bundle;
+use App\Models\Choice;
 use App\Models\Course;
 use App\Models\CourseSection;
-use App\Models\Lecture;
 use App\Models\Enrollment;
-use App\Models\Notification;
-use App\Models\Role;
-use App\Models\Product;
-use App\Models\Bundle;
 use App\Models\Exam;
-use App\Models\Question;
-use App\Models\Choice;
 use App\Models\Governorate;
 use App\Models\GradeLevel;
+use App\Models\Lecture;
+use App\Models\Notification;
+use App\Models\Product;
+use App\Models\Question;
+use App\Models\Role;
+use App\Models\Student;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -26,6 +26,7 @@ class DemoSeeder extends Seeder
     {
         if (app()->environment('production')) {
             $this->command->error('⛔ DemoSeeder cannot be executed in production environment!');
+
             return;
         }
         // ═══════════════════════════════════════════════════════════════
@@ -120,7 +121,7 @@ class DemoSeeder extends Seeder
         foreach ($studentData as $i => $s) {
             $user = User::create([
                 'name' => "{$s['first']} {$s['last']}",
-                'email' => 'student' . ($i + 1) . '@demo.com',
+                'email' => 'student'.($i + 1).'@demo.com',
                 'password' => Hash::make('password'),
                 'status' => 'active',
             ]);
@@ -132,12 +133,12 @@ class DemoSeeder extends Seeder
                 'second_name' => $s['second'],
                 'third_name' => $s['third'],
                 'last_name' => $s['last'],
-                'phone' => '010' . str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
-                'father_phone' => '011' . str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
-                'mother_phone' => '012' . str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
+                'phone' => '010'.str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
+                'father_phone' => '011'.str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
+                'mother_phone' => '012'.str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
                 'guardian_job' => $s['job'],
                 'gender' => $s['gender'],
-                'birth_date' => '2008-' . str_pad(mt_rand(1, 12), 2, '0', STR_PAD_LEFT) . '-' . str_pad(mt_rand(1, 28), 2, '0', STR_PAD_LEFT),
+                'birth_date' => '2008-'.str_pad(mt_rand(1, 12), 2, '0', STR_PAD_LEFT).'-'.str_pad(mt_rand(1, 28), 2, '0', STR_PAD_LEFT),
                 'is_verified' => true,
                 'governorate_id' => $dbGovs[array_rand($dbGovs)]->id,
                 'academic_year' => 'prep_3',

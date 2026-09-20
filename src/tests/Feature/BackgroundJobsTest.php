@@ -4,6 +4,7 @@ use App\Jobs\ProcessVideoHLS;
 use App\Models\Course;
 use App\Models\Governorate;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Queue;
 
 it('sends notification to instructors on student registration', function () {
@@ -40,7 +41,7 @@ it('sends notification to instructors on student registration', function () {
 it('creates notification in database correctly', function () {
     $user = User::factory()->create(['status' => 'active']);
 
-    $notification = app(\App\Services\NotificationService::class)->send(
+    $notification = app(NotificationService::class)->send(
         $user,
         'اختبار إشعار',
         'محتوى الإشعار التجريبي'
@@ -57,7 +58,7 @@ it('creates notification in database correctly', function () {
 it('creates notification with correct structure', function () {
     $user = User::factory()->create(['status' => 'active']);
 
-    $notification = app(\App\Services\NotificationService::class)->send(
+    $notification = app(NotificationService::class)->send(
         $user,
         'تم الشراء',
         'تم شراء المحاضرة بنجاح'

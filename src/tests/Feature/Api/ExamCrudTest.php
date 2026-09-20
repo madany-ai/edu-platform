@@ -2,9 +2,8 @@
 
 use App\Models\Choice;
 use App\Models\Course;
-use App\Models\CourseSection;
+use App\Models\Enrollment;
 use App\Models\Exam;
-use App\Models\Lecture;
 use App\Models\Question;
 use App\Models\Student;
 use App\Models\User;
@@ -45,7 +44,7 @@ beforeEach(function () {
         'sort_order' => 1,
     ]);
 
-    \App\Models\Enrollment::create([
+    Enrollment::create([
         'student_id' => $this->student->id,
         'course_id' => $this->course->id,
         'status' => 'active',

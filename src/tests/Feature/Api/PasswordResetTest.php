@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 
 beforeEach(function () {
@@ -75,7 +76,7 @@ it('resets password with valid token', function () {
     ]);
 
     // New password should work
-    $this->assertTrue(\Illuminate\Support\Facades\Hash::check('newpassword123', $this->user->fresh()->password));
+    $this->assertTrue(Hash::check('newpassword123', $this->user->fresh()->password));
 });
 
 it('rejects reset with invalid token', function () {
@@ -92,7 +93,7 @@ it('rejects reset with invalid token', function () {
         ]);
 
     // Password should still be old
-    $this->assertTrue(\Illuminate\Support\Facades\Hash::check('oldpassword123', $this->user->fresh()->password));
+    $this->assertTrue(Hash::check('oldpassword123', $this->user->fresh()->password));
 });
 
 it('rejects reset with mismatched email and token', function () {

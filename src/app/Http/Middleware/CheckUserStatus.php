@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\UserStatus;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,7 +13,7 @@ class CheckUserStatus
     {
         $user = $request->user();
 
-        if ($user && $user->status !== \App\Enums\UserStatus::Active) {
+        if ($user && $user->status !== UserStatus::Active) {
             return response()->json([
                 'message' => 'حسابك غير نشط. يرجى التواصل مع الإدارة.',
             ], 403);

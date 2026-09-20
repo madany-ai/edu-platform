@@ -2,19 +2,23 @@
 
 namespace App\Filament\Pages\Auth;
 
+use App\Models\User;
+use Filament\Actions\Action;
 use Filament\Auth\Pages\Login as BaseLogin;
-use Filament\Schemas\Components\Component;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Component;
+use Illuminate\Contracts\Support\Htmlable;
 use SensitiveParameter;
 
 class Login extends BaseLogin
 {
-    public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable
+    public function getTitle(): string|Htmlable
     {
         return 'تسجيل الدخول';
     }
 
-    public function getHeading(): string|\Illuminate\Contracts\Support\Htmlable
+    public function getHeading(): string|Htmlable
     {
         return 'تسجيل الدخول';
     }
@@ -39,11 +43,11 @@ class Login extends BaseLogin
 
     protected function getRememberFormComponent(): Component
     {
-        return \Filament\Forms\Components\Checkbox::make('remember')
+        return Checkbox::make('remember')
             ->label('تذكرني');
     }
 
-    protected function getAuthenticateFormAction(): \Filament\Actions\Action
+    protected function getAuthenticateFormAction(): Action
     {
         return parent::getAuthenticateFormAction()
             ->label('تسجيل الدخول');
@@ -54,7 +58,7 @@ class Login extends BaseLogin
         $login = $data['email'];
 
         // Find user by email, phone, or assistant_code
-        $user = \App\Models\User::where('email', $login)
+        $user = User::where('email', $login)
             ->orWhere('phone', $login)
             ->orWhere('assistant_code', $login)
             ->first();

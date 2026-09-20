@@ -2,11 +2,37 @@
 
 namespace App\Providers;
 
+use App\Models\Attendance;
+use App\Models\CenterExam;
 use App\Models\Course;
+use App\Models\CourseSection;
+use App\Models\Exam;
+use App\Models\ExamAttempt;
+use App\Models\Group;
+use App\Models\Lecture;
+use App\Models\Order;
+use App\Models\PersonalAccessToken;
+use App\Models\Product;
+use App\Models\Student;
+use App\Policies\AttendancePolicy;
+use App\Policies\CenterExamPolicy;
 use App\Policies\CoursePolicy;
-use Illuminate\Support\ServiceProvider;
-use Opcodes\LogViewer\Facades\LogViewer;
+use App\Policies\ExamAttemptPolicy;
+use App\Policies\ExamPolicy;
+use App\Policies\GroupPolicy;
+use App\Policies\LecturePolicy;
+use App\Policies\OrderPolicy;
+use App\Policies\ProductPolicy;
+use App\Policies\SectionPolicy;
+use App\Policies\StudentPolicy;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
+use Laravel\Sanctum\Sanctum;
+use Opcodes\LogViewer\Facades\LogViewer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,32 +48,32 @@ class AppServiceProvider extends ServiceProvider
         });
 
         if (config('app.env') === 'production') {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
+            URL::forceScheme('https');
         }
 
         Gate::policy(Course::class, CoursePolicy::class);
-        Gate::policy(\App\Models\Lecture::class, \App\Policies\LecturePolicy::class);
-        Gate::policy(\App\Models\CourseSection::class, \App\Policies\SectionPolicy::class);
-        Gate::policy(\App\Models\Exam::class, \App\Policies\ExamPolicy::class);
-        Gate::policy(\App\Models\ExamAttempt::class, \App\Policies\ExamAttemptPolicy::class);
-        Gate::policy(\App\Models\Student::class, \App\Policies\StudentPolicy::class);
-        Gate::policy(\App\Models\Order::class, \App\Policies\OrderPolicy::class);
-        Gate::policy(\App\Models\Group::class, \App\Policies\GroupPolicy::class);
-        Gate::policy(\App\Models\Attendance::class, \App\Policies\AttendancePolicy::class);
-        Gate::policy(\App\Models\CenterExam::class, \App\Policies\CenterExamPolicy::class);
-        Gate::policy(\App\Models\Product::class, \App\Policies\ProductPolicy::class);
-        \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(\App\Models\PersonalAccessToken::class);
+        Gate::policy(Lecture::class, LecturePolicy::class);
+        Gate::policy(CourseSection::class, SectionPolicy::class);
+        Gate::policy(Exam::class, ExamPolicy::class);
+        Gate::policy(ExamAttempt::class, ExamAttemptPolicy::class);
+        Gate::policy(Student::class, StudentPolicy::class);
+        Gate::policy(Order::class, OrderPolicy::class);
+        Gate::policy(Group::class, GroupPolicy::class);
+        Gate::policy(Attendance::class, AttendancePolicy::class);
+        Gate::policy(CenterExam::class, CenterExamPolicy::class);
+        Gate::policy(Product::class, ProductPolicy::class);
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
 
-        \Illuminate\Support\Facades\RateLimiter::for('api', function (\Illuminate\Http\Request $request) {
-            return \Illuminate\Cache\RateLimiting\Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
-        \Illuminate\Support\Facades\RateLimiter::for('login', function (\Illuminate\Http\Request $request) {
-            return \Illuminate\Cache\RateLimiting\Limit::perMinute(5)->by($request->ip());
+        RateLimiter::for('login', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
         });
 
-        \Illuminate\Support\Facades\RateLimiter::for('video', function (\Illuminate\Http\Request $request) {
-            return \Illuminate\Cache\RateLimiting\Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
+        RateLimiter::for('video', function (Request $request) {
+            return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
         });
     }
 }

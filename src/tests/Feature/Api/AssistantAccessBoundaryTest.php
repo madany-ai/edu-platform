@@ -2,7 +2,6 @@
 
 use App\Models\Course;
 use App\Models\CourseAssistant;
-use App\Models\Lecture;
 use App\Models\User;
 
 beforeEach(function () {

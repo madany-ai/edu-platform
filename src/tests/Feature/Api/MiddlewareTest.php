@@ -1,9 +1,9 @@
 <?php
 
 use App\Models\Course;
-use App\Models\CourseSection;
 use App\Models\Enrollment;
-use App\Models\Lecture;
+use App\Models\Entitlement;
+use App\Models\Order;
 use App\Models\Student;
 use App\Models\User;
 
@@ -120,7 +120,7 @@ it('CheckEnrollment blocks suspended enrollment', function () {
 });
 
 it('CheckEnrollment allows student with valid entitlement', function () {
-    $order = \App\Models\Order::create([
+    $order = Order::create([
         'student_id' => $this->student->id,
         'purchasable_id' => $this->course->id,
         'purchasable_type' => Course::class,
@@ -129,7 +129,7 @@ it('CheckEnrollment allows student with valid entitlement', function () {
         'paid_at' => now(),
     ]);
 
-    \App\Models\Entitlement::create([
+    Entitlement::create([
         'student_id' => $this->student->id,
         'lecture_id' => $this->lecture->id,
         'order_id' => $order->id,
@@ -141,7 +141,7 @@ it('CheckEnrollment allows student with valid entitlement', function () {
 });
 
 it('CheckEnrollment blocks student with expired entitlement', function () {
-    $order = \App\Models\Order::create([
+    $order = Order::create([
         'student_id' => $this->student->id,
         'purchasable_id' => $this->course->id,
         'purchasable_type' => Course::class,
@@ -150,7 +150,7 @@ it('CheckEnrollment blocks student with expired entitlement', function () {
         'paid_at' => now(),
     ]);
 
-    \App\Models\Entitlement::create([
+    Entitlement::create([
         'student_id' => $this->student->id,
         'lecture_id' => $this->lecture->id,
         'order_id' => $order->id,

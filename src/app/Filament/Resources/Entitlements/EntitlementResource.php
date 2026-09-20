@@ -62,7 +62,7 @@ class EntitlementResource extends Resource
 
                 TextColumn::make('order.amount_cents')
                     ->label('المبلغ')
-                    ->formatStateUsing(fn ($state): string => $state > 0 ? number_format($state / 100, 2) . ' ج.م' : 'مجاني')
+                    ->formatStateUsing(fn ($state): string => $state > 0 ? number_format($state / 100, 2).' ج.م' : 'مجاني')
                     ->sortable(),
 
                 TextColumn::make('expires_at')

@@ -1,10 +1,16 @@
 <?php
 
+use App\Enums\EnrollmentSource;
+use App\Enums\EnrollmentStatus;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Entitlement;
+use App\Models\Order;
+use App\Models\Product;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\EnrollmentService;
+use App\Services\GrantEntitlementService;
 
 beforeEach(function () {
     $this->instructor = User::factory()->create(['status' => 'active']);
@@ -38,11 +44,11 @@ beforeEach(function () {
     $this->section = $this->course->sections()->create(['title' => 'S1', 'sort_order' => 1]);
     $this->lecture = $this->section->lectures()->create(['title' => 'L1', 'sort_order' => 1]);
 
-    $this->service = app(\App\Services\EnrollmentService::class);
+    $this->service = app(EnrollmentService::class);
 });
 
 it('getStudentEnrollments returns enrollment when course product is granted', function () {
-    $product = \App\Models\Product::create([
+    $product = Product::create([
         'instructor_id' => $this->instructor->id,
         'name' => 'Course Product',
         'sellable_id' => $this->course->id,
@@ -50,23 +56,23 @@ it('getStudentEnrollments returns enrollment when course product is granted', fu
         'price' => 100.00,
     ]);
 
-    $order = \App\Models\Order::create([
+    $order = Order::create([
         'student_id' => $this->student->id,
         'purchasable_id' => $product->id,
-        'purchasable_type' => \App\Models\Product::class,
+        'purchasable_type' => Product::class,
         'amount_cents' => 10000,
         'status' => 'completed',
         'paid_at' => now(),
     ]);
 
-    (new \App\Services\GrantEntitlementService())->handle($order);
+    (new GrantEntitlementService)->handle($order);
 
     $enrollments = $this->service->getStudentEnrollments($this->studentUser->id);
 
-    $enrollment = $enrollments->first(fn($e) => $e->course_id === $this->course->id);
+    $enrollment = $enrollments->first(fn ($e) => $e->course_id === $this->course->id);
     expect($enrollment)->not->toBeNull()
-        ->and($enrollment->status)->toBe(\App\Enums\EnrollmentStatus::Active)
-        ->and($enrollment->source)->toBe(\App\Enums\EnrollmentSource::Purchase);
+        ->and($enrollment->status)->toBe(EnrollmentStatus::Active)
+        ->and($enrollment->source)->toBe(EnrollmentSource::Purchase);
 });
 
 it('getStudentEnrollments does not duplicate synthetic when real enrollment exists', function () {
@@ -78,7 +84,7 @@ it('getStudentEnrollments does not duplicate synthetic when real enrollment exis
         'started_at' => now(),
     ]);
 
-    $order = \App\Models\Order::create([
+    $order = Order::create([
         'student_id' => $this->student->id,
         'purchasable_id' => $this->course->id,
         'purchasable_type' => Course::class,
@@ -96,7 +102,7 @@ it('getStudentEnrollments does not duplicate synthetic when real enrollment exis
 
     $enrollments = $this->service->getStudentEnrollments($this->studentUser->id);
 
-    $fakeEnrollments = $enrollments->filter(fn($e) => str_starts_with($e->id ?? '', 'entitlement-fake-'));
+    $fakeEnrollments = $enrollments->filter(fn ($e) => str_starts_with($e->id ?? '', 'entitlement-fake-'));
     expect($fakeEnrollments)->toHaveCount(0);
     expect($enrollments)->toHaveCount(1);
 });
@@ -177,7 +183,7 @@ it('getStudentEntitlements returns empty for user without student', function () 
 });
 
 it('getStudentEntitlements returns entitlements for student', function () {
-    $order = \App\Models\Order::create([
+    $order = Order::create([
         'student_id' => $this->student->id,
         'purchasable_id' => $this->course->id,
         'purchasable_type' => Course::class,

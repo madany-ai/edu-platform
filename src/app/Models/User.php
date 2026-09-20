@@ -2,29 +2,30 @@
 
 namespace App\Models;
 
+use App\Enums\UserStatus;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
-
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
+use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'email', 'password', 'status', 'assistant_code', 'phone', 'last_login_at', 'must_change_password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
-    use HasUuids;
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, Notifiable, LogsActivity;
+    use HasApiTokens, HasFactory, HasRoles, LogsActivity, Notifiable;
+
+    use HasUuids;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -58,9 +59,10 @@ class User extends Authenticatable implements FilamentUser
             ->withTimestamps();
     }
 
-    /** 
+    /**
      * Alias for assistedCourses used by Filament AttachAction
-     * @return BelongsToMany<Course, $this> 
+     *
+     * @return BelongsToMany<Course, $this>
      */
     public function courses(): BelongsToMany
     {
@@ -73,7 +75,7 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'status' => \App\Enums\UserStatus::class,
+            'status' => UserStatus::class,
             'must_change_password' => 'boolean',
         ];
     }

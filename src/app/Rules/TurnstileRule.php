@@ -5,13 +5,14 @@ namespace App\Rules;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Translation\PotentiallyTranslatedString;
 
 class TurnstileRule implements ValidationRule
 {
     /**
      * Run the validation rule.
      *
-     * @param  \Closure(string): \Illuminate\Translation\PotentiallyTranslatedString  $fail
+     * @param  Closure(string): PotentiallyTranslatedString  $fail
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
@@ -27,7 +28,7 @@ class TurnstileRule implements ValidationRule
             'remoteip' => request()->ip(),
         ]);
 
-        if (!$response->successful() || !$response->json('success')) {
+        if (! $response->successful() || ! $response->json('success')) {
             $fail('فشل التحقق האمني. يرجى التأكد من أنك لست برنامج روبوت.');
         }
     }

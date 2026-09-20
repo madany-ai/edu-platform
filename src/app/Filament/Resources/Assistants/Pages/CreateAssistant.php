@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Assistants\Pages;
 
 use App\Filament\Resources\Assistants\AssistantResource;
-use App\Models\User;
 use App\Services\CodeGeneratorService;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Hash;
@@ -17,6 +16,7 @@ class CreateAssistant extends CreateRecord
         unset($data['assigned_courses']);
         $data['password'] = Hash::make($data['password']);
         $data['status'] = 'active';
+
         return $data;
     }
 

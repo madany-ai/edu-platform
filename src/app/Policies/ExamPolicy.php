@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
-use App\Models\User;
-use App\Models\Lecture;
 use App\Models\Exam;
+use App\Models\Lecture;
+use App\Models\User;
 
 class ExamPolicy
 {
@@ -13,6 +13,7 @@ class ExamPolicy
         if ($user->hasRole('super_admin')) {
             return true;
         }
+
         return null;
     }
 
@@ -31,6 +32,7 @@ class ExamPolicy
         if ($lecture === null) {
             return $user->hasRole('instructor');
         }
+
         return $user->hasRole('instructor') && $user->id === $lecture->section?->course?->instructor_id;
     }
 
@@ -39,6 +41,7 @@ class ExamPolicy
         if ($exam->lecture === null) {
             return false;
         }
+
         return $user->hasRole('instructor') && $user->id === $exam->lecture->section?->course?->instructor_id;
     }
 
@@ -47,6 +50,7 @@ class ExamPolicy
         if ($exam->lecture === null) {
             return false;
         }
+
         return $user->hasRole('instructor') && $user->id === $exam->lecture->section?->course?->instructor_id;
     }
 }

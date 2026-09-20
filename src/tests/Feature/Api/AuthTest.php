@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserStatus;
 use App\Models\Governorate;
 use App\Models\User;
 
@@ -46,7 +47,7 @@ it('creates user with pending status and student role', function () {
     $this->postJson('/api/auth/register', validRegistrationData());
 
     $user = User::where('email', 'test@example.com')->first();
-    expect($user->status)->toBe(\App\Enums\UserStatus::Pending);
+    expect($user->status)->toBe(UserStatus::Pending);
     expect($user->hasRole('student'))->toBeTrue();
 });
 

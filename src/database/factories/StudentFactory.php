@@ -17,7 +17,7 @@ class StudentFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'student_code' => 'STU-' . $this->faker->unique()->randomNumber(5),
+            'student_code' => 'STU-'.$this->faker->unique()->randomNumber(5),
             'first_name' => $this->faker->firstName(),
             'last_name' => $this->faker->lastName(),
             'phone' => $this->faker->phoneNumber(),

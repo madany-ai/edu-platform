@@ -2,36 +2,25 @@
 
 namespace App\Models;
 
-use App\Models\AcademicTrack;
-use App\Models\City;
-use App\Models\Enrollment;
-use App\Models\ExamAttempt;
-use App\Models\GradeLevel;
-use App\Models\Governorate;
-use App\Models\QuestionsPost;
-use App\Models\School;
-use App\Models\Entitlement;
-use App\Models\StudentActivity;
-use App\Models\StudentStatistic;
-use App\Models\User;
 use App\Services\CodeGeneratorService;
+use Database\Factories\StudentFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Database\Factories\StudentFactory;
 
 class Student extends Model
 {
-    use HasUuids;
-    /** @use HasFactory<\Database\Factories\StudentFactory> */
+    /** @use HasFactory<StudentFactory> */
     use HasFactory;
 
-    protected static function newFactory(): \Database\Factories\StudentFactory
+    use HasUuids;
+
+    protected static function newFactory(): StudentFactory
     {
-        return \Database\Factories\StudentFactory::new();
+        return StudentFactory::new();
     }
 
     protected $fillable = [

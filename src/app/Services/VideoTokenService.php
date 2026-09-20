@@ -9,7 +9,7 @@ class VideoTokenService
     public function __construct()
     {
         // Derive a strong secret from the app key
-        $this->secret = hash('sha256', config('app.key') . 'video-stream-token');
+        $this->secret = hash('sha256', config('app.key').'video-stream-token');
     }
 
     /**
@@ -29,7 +29,7 @@ class VideoTokenService
         $payloadEncoded = rtrim(strtr(base64_encode(json_encode($payload)), '+/', '-_'), '=');
         $signature = hash_hmac('sha256', $payloadEncoded, $this->secret);
 
-        return $payloadEncoded . '.' . $signature;
+        return $payloadEncoded.'.'.$signature;
     }
 
     /**
@@ -46,12 +46,12 @@ class VideoTokenService
 
         // Constant-time comparison to prevent timing attacks
         $expectedSignature = hash_hmac('sha256', $payloadEncoded, $this->secret);
-        if (!hash_equals($expectedSignature, $signature)) {
+        if (! hash_equals($expectedSignature, $signature)) {
             return null;
         }
 
         $payload = json_decode(base64_decode(strtr($payloadEncoded, '-_', '+/')), true);
-        if (!is_array($payload)) {
+        if (! is_array($payload)) {
             return null;
         }
 

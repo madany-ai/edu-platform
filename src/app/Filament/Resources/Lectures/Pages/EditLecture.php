@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Lectures\Pages;
 use App\Filament\Resources\Lectures\LectureResource;
 use App\Models\Lecture;
 use App\Models\Product;
-use App\Models\Bundle;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
@@ -25,7 +24,7 @@ class EditLecture extends EditRecord
         /** @var Lecture $lecture */
         $lecture = $this->record;
 
-        if (!empty($data['video_path']) && (str_contains($data['video_path'], 'youtube.com') || str_contains($data['video_path'], 'youtu.be'))) {
+        if (! empty($data['video_path']) && (str_contains($data['video_path'], 'youtube.com') || str_contains($data['video_path'], 'youtu.be'))) {
             $data['youtube_url'] = $data['video_path'];
             $data['video_path'] = null;
         }
@@ -51,10 +50,11 @@ class EditLecture extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        if (!empty($data['youtube_url'])) {
+        if (! empty($data['youtube_url'])) {
             $data['video_path'] = $data['youtube_url'];
         }
         unset($data['youtube_url']);
+
         return $data;
     }
 
@@ -76,8 +76,8 @@ class EditLecture extends EditRecord
             );
         }
 
-        $isStandalone = !empty($data['is_standalone']);
-        $hasBundles = !empty($data['bundles']) && is_array($data['bundles']);
+        $isStandalone = ! empty($data['is_standalone']);
+        $hasBundles = ! empty($data['bundles']) && is_array($data['bundles']);
         $product = Product::where('sellable_id', $lecture->id)
             ->where('sellable_type', Lecture::class)
             ->first();
@@ -91,7 +91,7 @@ class EditLecture extends EditRecord
                 ],
                 [
                     'instructor_id' => $instructorId,
-                    'name' => 'محاضرة: ' . $lecture->title,
+                    'name' => 'محاضرة: '.$lecture->title,
                     'price' => $data['price'] ?? $lecture->price ?? 0,
                     'access_duration_days' => $data['access_duration_days'] ?? null,
                     'is_active' => true,
@@ -101,7 +101,7 @@ class EditLecture extends EditRecord
             if (isset($data['bundles']) && is_array($data['bundles'])) {
                 $product->bundles()->sync($data['bundles']);
             }
-        } elseif ($product && !$hasBundles && !$isStandalone) {
+        } elseif ($product && ! $hasBundles && ! $isStandalone) {
             $product->update(['is_active' => false]);
         }
     }

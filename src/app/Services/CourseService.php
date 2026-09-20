@@ -18,8 +18,8 @@ class CourseService
                 ->where('status', 'published');
 
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', '%' . $search . '%')
-                  ->orWhere('description', 'like', '%' . $search . '%');
+                $q->where('title', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%');
             });
 
             return $query->latest()->paginate(12);
@@ -56,6 +56,7 @@ class CourseService
     public function update(Course $course, array $data): Course
     {
         $course->update($data);
+
         return $course->fresh();
     }
 

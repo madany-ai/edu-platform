@@ -2,22 +2,21 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Student;
-use App\Models\Role;
-use App\Models\Course;
-use App\Models\CourseSection;
-use App\Models\Lecture;
-use App\Models\Enrollment;
-use App\Models\AcademicYear;
-use App\Models\Group;
 use App\Models\AcademicSession;
+use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\CenterExam;
 use App\Models\CenterGrade;
+use App\Models\Course;
+use App\Models\CourseSection;
+use App\Models\Enrollment;
+use App\Models\Group;
+use App\Models\Lecture;
+use App\Models\Role;
+use App\Models\Student;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class FakeDataSeeder extends Seeder
 {
@@ -25,6 +24,7 @@ class FakeDataSeeder extends Seeder
     {
         if (app()->environment('production')) {
             $this->command->error('⛔ FakeDataSeeder cannot be executed in production!');
+
             return;
         }
 
@@ -87,10 +87,10 @@ class FakeDataSeeder extends Seeder
                     'second_name' => $s['second'],
                     'third_name' => $s['third'],
                     'last_name' => $s['last'],
-                    'phone' => '010' . str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
-                    'father_phone' => '011' . str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
+                    'phone' => '010'.str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
+                    'father_phone' => '011'.str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
                     'gender' => $s['gender'],
-                    'birth_date' => '2008-' . str_pad(mt_rand(1, 12), 2, '0', STR_PAD_LEFT) . '-' . str_pad(mt_rand(1, 28), 2, '0', STR_PAD_LEFT),
+                    'birth_date' => '2008-'.str_pad(mt_rand(1, 12), 2, '0', STR_PAD_LEFT).'-'.str_pad(mt_rand(1, 28), 2, '0', STR_PAD_LEFT),
                     'academic_year' => $academicYears[$i],
                     'academic_track' => $tracks[$i],
                     'school_name' => 'مدرسة تجريبية',

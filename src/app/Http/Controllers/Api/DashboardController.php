@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CourseResource;
 use App\Http\Resources\EnrollmentResource;
+use App\Http\Resources\InstructorStudentResource;
+use App\Models\Course;
+use App\Models\Notification;
 use App\Models\Student;
 use App\Services\DashboardService;
 use Illuminate\Http\JsonResponse;
@@ -65,7 +68,7 @@ class DashboardController extends Controller
     {
         $userId = request()->user()->id;
 
-        $notifications = \App\Models\Notification::where('user_id', $userId)
+        $notifications = Notification::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -75,13 +78,13 @@ class DashboardController extends Controller
     public function instructorStudents(): AnonymousResourceCollection
     {
         $userId = request()->user()->id;
-        $courseIds = \App\Models\Course::where('instructor_id', $userId)->pluck('id');
+        $courseIds = Course::where('instructor_id', $userId)->pluck('id');
 
         $students = Student::whereHas('enrollments', function ($q) use ($courseIds) {
             $q->whereIn('course_id', $courseIds);
         })->with('user')->paginate(20);
 
-        return \App\Http\Resources\InstructorStudentResource::collection($students);
+        return InstructorStudentResource::collection($students);
     }
 
     public function student(): JsonResponse

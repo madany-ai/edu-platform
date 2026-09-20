@@ -2,12 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\ResolvesMinioUrls;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class EnrollmentResource extends JsonResource
 {
-    use \App\Traits\ResolvesMinioUrls;
+    use ResolvesMinioUrls;
 
     public function toArray(Request $request): array
     {

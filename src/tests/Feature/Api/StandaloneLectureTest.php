@@ -1,8 +1,6 @@
 <?php
 
 use App\Models\Bundle;
-use App\Models\Course;
-use App\Models\CourseSection;
 use App\Models\Entitlement;
 use App\Models\Lecture;
 use App\Models\Order;

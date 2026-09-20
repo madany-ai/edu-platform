@@ -19,7 +19,7 @@ class FawryGateway implements PaymentGatewayInterface
         $merchantRefNum = $order->id;
 
         $amountFormatted = number_format($order->amount_cents / 100, 2, '.', '');
-        $signatureString = $merchantCode . $merchantRefNum . $order->student_id . $amountFormatted . $securityKey;
+        $signatureString = $merchantCode.$merchantRefNum.$order->student_id.$amountFormatted.$securityKey;
         $signature = hash('sha256', $signatureString);
 
         // Fawry charge payload
@@ -40,8 +40,8 @@ class FawryGateway implements PaymentGatewayInterface
             : 'https://atfawry.fawry.com/ECommerceWeb/api/payments/charge';
 
         $response = Http::post($baseUrl, $payload);
-        
-        $paymentUrl = "https://atfawry.fawry.com/atfawry/plugin/atfawry.js?merchant=" . urlencode($merchantCode) . "&ref=" . urlencode($merchantRefNum);
+
+        $paymentUrl = 'https://atfawry.fawry.com/atfawry/plugin/atfawry.js?merchant='.urlencode($merchantCode).'&ref='.urlencode($merchantRefNum);
 
         return new CheckoutResult(
             paymentUrl: $paymentUrl,
@@ -60,10 +60,10 @@ class FawryGateway implements PaymentGatewayInterface
         $orderStatus = $request->input('orderStatus'); // PAID, CANCELLED, FAILED, REFUNDED
         $receivedSignature = $request->input('messageSignature');
 
-        $concatenated = $fawryRefNumber . $merchantRefNum . $orderAmount . $orderStatus . $securityKey;
+        $concatenated = $fawryRefNumber.$merchantRefNum.$orderAmount.$orderStatus.$securityKey;
         $calculatedSignature = hash('sha256', $concatenated);
 
-        if (!$receivedSignature || !hash_equals(strtolower($calculatedSignature), strtolower($receivedSignature))) {
+        if (! $receivedSignature || ! hash_equals(strtolower($calculatedSignature), strtolower($receivedSignature))) {
             Log::warning('Fawry Webhook Signature Verification Failed', [
                 'received' => $receivedSignature,
                 'calculated' => $calculatedSignature,

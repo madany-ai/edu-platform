@@ -1,13 +1,12 @@
 <?php
 
-use App\Models\Choice;
+use App\Models\Answer;
 use App\Models\Course;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
-use App\Models\Lecture;
-use App\Models\Question;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\ExamService;
 
 beforeEach(function () {
     $this->instructor = User::factory()->create(['status' => 'active']);
@@ -41,7 +40,7 @@ beforeEach(function () {
     $this->section = $this->course->sections()->create(['title' => 'S1', 'sort_order' => 1]);
     $this->lecture = $this->section->lectures()->create(['title' => 'L1', 'sort_order' => 1]);
 
-    $this->service = app(\App\Services\ExamService::class);
+    $this->service = app(ExamService::class);
 });
 
 it('gradeAttempt returns 0 when total points are zero', function () {
@@ -65,7 +64,7 @@ it('gradeAttempt returns 0 when total points are zero', function () {
         'started_at' => now(),
     ]);
 
-    \App\Models\Answer::create([
+    Answer::create([
         'attempt_id' => $attempt->id,
         'question_id' => $question->id,
         'answer' => $choice->id,
@@ -103,13 +102,13 @@ it('gradeAttempt handles mixed MCQ and essay questions correctly', function () {
         'started_at' => now(),
     ]);
 
-    \App\Models\Answer::create([
+    Answer::create([
         'attempt_id' => $attempt->id,
         'question_id' => $mcq->id,
         'answer' => $correctChoice->id,
     ]);
 
-    \App\Models\Answer::create([
+    Answer::create([
         'attempt_id' => $attempt->id,
         'question_id' => $essay->id,
         'answer' => 'My essay answer',
@@ -147,13 +146,13 @@ it('gradeAttempt gives 50% for mixed correct and wrong MCQ', function () {
         'started_at' => now(),
     ]);
 
-    \App\Models\Answer::create([
+    Answer::create([
         'attempt_id' => $attempt->id,
         'question_id' => $q1->id,
         'answer' => $correct1->id,
     ]);
 
-    \App\Models\Answer::create([
+    Answer::create([
         'attempt_id' => $attempt->id,
         'question_id' => $q2->id,
         'answer' => $wrong2->id,
@@ -183,7 +182,7 @@ it('gradeAttempt gives zero for essay with empty answer', function () {
         'started_at' => now(),
     ]);
 
-    \App\Models\Answer::create([
+    Answer::create([
         'attempt_id' => $attempt->id,
         'question_id' => $essay->id,
         'answer' => '   ',

@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\Lectures\Pages;
 
 use App\Filament\Resources\Lectures\LectureResource;
+use App\Models\Bundle;
 use App\Models\Lecture;
 use App\Models\Product;
-use App\Models\Bundle;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateLecture extends CreateRecord
@@ -19,7 +19,7 @@ class CreateLecture extends CreateRecord
             $data['instructor_id'] = $user->id;
         }
 
-        if (!empty($data['youtube_url'])) {
+        if (! empty($data['youtube_url'])) {
             $data['video_path'] = $data['youtube_url'];
         }
         unset($data['youtube_url']);
@@ -43,8 +43,8 @@ class CreateLecture extends CreateRecord
         }
 
         // Handle Product & Bundle creation
-        $isStandalone = !empty($data['is_standalone']);
-        $hasBundles = !empty($data['bundles']) && is_array($data['bundles']);
+        $isStandalone = ! empty($data['is_standalone']);
+        $hasBundles = ! empty($data['bundles']) && is_array($data['bundles']);
 
         if ($isStandalone || $hasBundles) {
             $instructorId = $lecture->resolveInstructorId() ?? auth()->id();
@@ -55,7 +55,7 @@ class CreateLecture extends CreateRecord
                 ],
                 [
                     'instructor_id' => $instructorId,
-                    'name' => 'محاضرة: ' . $lecture->title,
+                    'name' => 'محاضرة: '.$lecture->title,
                     'price' => $data['price'] ?? $lecture->price ?? 0,
                     'access_duration_days' => $data['access_duration_days'] ?? null,
                     'is_active' => true,

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\AcademicYearScope;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +27,7 @@ class Group extends Model
     protected static function boot(): void
     {
         parent::boot();
-        static::addGlobalScope(new \App\Models\Scopes\AcademicYearScope);
+        static::addGlobalScope(new AcademicYearScope);
     }
 
     protected function casts(): array

@@ -23,14 +23,14 @@ return new class extends Migration
 
         // 2. Courses table
         Schema::table('courses', function (Blueprint $table) {
-            if (!Schema::hasColumn('courses', 'academic_year')) {
+            if (! Schema::hasColumn('courses', 'academic_year')) {
                 $table->string('academic_year')->default('sec_3')->after('status');
             }
         });
 
         // 3. Products table
         Schema::table('products', function (Blueprint $table) {
-            if (!Schema::hasColumn('products', 'academic_year')) {
+            if (! Schema::hasColumn('products', 'academic_year')) {
                 $table->string('academic_year')->default('sec_3')->after('is_active');
             }
         });
@@ -38,7 +38,7 @@ return new class extends Migration
         // 4. Bundles table (if exists)
         if (Schema::hasTable('bundles')) {
             Schema::table('bundles', function (Blueprint $table) {
-                if (!Schema::hasColumn('bundles', 'academic_year')) {
+                if (! Schema::hasColumn('bundles', 'academic_year')) {
                     $table->string('academic_year')->default('sec_3');
                 }
             });
@@ -55,7 +55,7 @@ return new class extends Migration
                     $table->dropForeign(['academic_year_id']);
                     $table->dropColumn('academic_year_id');
                 }
-                if (!Schema::hasColumn('center_groups', 'academic_year')) {
+                if (! Schema::hasColumn('center_groups', 'academic_year')) {
                     $table->string('academic_year')->default('sec_3');
                 }
             });
@@ -72,7 +72,7 @@ return new class extends Migration
                     $table->dropForeign(['academic_year_id']);
                     $table->dropColumn('academic_year_id');
                 }
-                if (!Schema::hasColumn('center_exams', 'academic_year')) {
+                if (! Schema::hasColumn('center_exams', 'academic_year')) {
                     $table->string('academic_year')->default('sec_3');
                 }
             });

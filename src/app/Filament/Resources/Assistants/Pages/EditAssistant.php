@@ -19,6 +19,7 @@ class EditAssistant extends EditRecord
         } else {
             $data['password'] = Hash::make($data['password']);
         }
+
         return $data;
     }
 

@@ -2,31 +2,34 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\OrderResource;
+use App\Models\Bundle;
+use App\Models\Entitlement;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\Bundle;
 use App\Models\Student;
+use App\Services\Payment\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-
-use App\Http\Resources\OrderResource;
-use App\Services\Payment\PaymentService;
+use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
     public function __construct(
         private PaymentService $paymentService
     ) {}
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
         $student = Student::where('user_id', $user->id)->first();
 
-        if (!$student) {
+        if (! $student) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'طالب غير موجود.'
+                'message' => 'طالب غير موجود.',
             ], 404);
         }
 
@@ -52,17 +55,17 @@ class OrderController extends Controller
         $user = $request->user();
         $student = Student::where('user_id', $user->id)->first();
 
-        if (!$student) {
+        if (! $student) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'طالب غير موجود.'
+                'message' => 'طالب غير موجود.',
             ], 404);
         }
 
-        if (!$student->is_verified) {
+        if (! $student->is_verified) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'عفواً، لا تملك الصلاحيات لشراء هذا المحتوى. يرجى التواصل مع الإدارة.'
+                'message' => 'عفواً، لا تملك الصلاحيات لشراء هذا المحتوى. يرجى التواصل مع الإدارة.',
             ], 403);
         }
 
@@ -72,46 +75,46 @@ class OrderController extends Controller
         $purchasableClass = $type === 'product' ? Product::class : Bundle::class;
         $purchasable = $purchasableClass::find($id);
 
-        if (!$purchasable) {
+        if (! $purchasable) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'المحتوى المطلوب غير موجود.'
+                'message' => 'المحتوى المطلوب غير موجود.',
             ], 404);
         }
 
-        if ($purchasable instanceof Product && !$purchasable->is_active) {
+        if ($purchasable instanceof Product && ! $purchasable->is_active) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'هذا المنتج غير متاح حالياً.'
+                'message' => 'هذا المنتج غير متاح حالياً.',
             ], 400);
         }
 
         // Check if student already owns active entitlements for all resolved lectures
         $lectureIds = $purchasable->resolveLectureIds();
         if ($lectureIds->isNotEmpty()) {
-            $ownedCount = \App\Models\Entitlement::where('student_id', $student->id)
+            $ownedCount = Entitlement::where('student_id', $student->id)
                 ->whereIn('lecture_id', $lectureIds)
                 ->where(function ($q) {
                     $q->whereNull('expires_at')
-                      ->orWhere('expires_at', '>', now());
+                        ->orWhere('expires_at', '>', now());
                 })
                 ->count();
 
             if ($ownedCount >= $lectureIds->count()) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'أنت تمتلك صلاحية الوصول لكل محتويات هذا المنتج بالفعل.'
+                    'message' => 'أنت تمتلك صلاحية الوصول لكل محتويات هذا المنتج بالفعل.',
                 ], 409);
             }
         }
 
         // Idempotency / Duplicate pending order check
-        $idempotencyKey = $request->header('X-Idempotency-Key') ?? 'IDEMP-' . md5($student->id . '-' . $purchasableClass . '-' . $id . '-' . uniqid());
-        
+        $idempotencyKey = $request->header('X-Idempotency-Key') ?? 'IDEMP-'.md5($student->id.'-'.$purchasableClass.'-'.$id.'-'.uniqid());
+
         $existingOrder = Order::where('student_id', $student->id)
             ->where('purchasable_type', $purchasableClass)
             ->where('purchasable_id', $id)
-            ->where('status', \App\Enums\OrderStatus::Pending->value)
+            ->where('status', OrderStatus::Pending->value)
             ->first();
 
         if ($existingOrder) {
@@ -127,8 +130,8 @@ class OrderController extends Controller
             'amount_cents' => (int) round((float) $purchasable->price * 100),
             'currency' => 'EGP',
             'payment_method' => 'manual', // will be overwritten by initiatePayment
-            'transaction_id' => 'PENDING-' . strtoupper((string) \Illuminate\Support\Str::uuid()),
-            'status' => \App\Enums\OrderStatus::Pending->value,
+            'transaction_id' => 'PENDING-'.strtoupper((string) Str::uuid()),
+            'status' => OrderStatus::Pending->value,
             'idempotency_key' => $idempotencyKey,
         ]);
 

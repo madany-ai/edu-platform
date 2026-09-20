@@ -4,14 +4,14 @@ use App\Models\Bundle;
 use App\Models\Course;
 use App\Models\CourseSection;
 use App\Models\Lecture;
-use App\Models\Order;
 use App\Models\Product;
 use App\Models\Student;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
-    \Illuminate\Support\Facades\Http::fake([
-        'https://accept.paymob.com/*' => \Illuminate\Support\Facades\Http::response([
+    Http::fake([
+        'https://accept.paymob.com/*' => Http::response([
             'token' => 'fake_token',
             'id' => 12345,
         ], 201),

@@ -3,6 +3,7 @@
 use App\Models\Bundle;
 use App\Models\Course;
 use App\Models\CourseSection;
+use App\Models\Enrollment;
 use App\Models\Entitlement;
 use App\Models\Lecture;
 use App\Models\Order;
@@ -10,10 +11,12 @@ use App\Models\Product;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\GrantEntitlementService;
+use App\Services\VideoAccessService;
+use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
-    \Illuminate\Support\Facades\Http::fake([
-        'https://accept.paymob.com/*' => \Illuminate\Support\Facades\Http::response([
+    Http::fake([
+        'https://accept.paymob.com/*' => Http::response([
             'token' => 'fake_token',
             'id' => 12345,
         ], 201),
@@ -285,7 +288,7 @@ it('sets correct expires_at from product access_duration_days', function () {
         'paid_at' => now(),
     ]);
 
-    (new GrantEntitlementService())->handle($order);
+    (new GrantEntitlementService)->handle($order);
 
     $entitlement = Entitlement::where('student_id', $this->student->id)
         ->where('lecture_id', $this->lecture1->id)
@@ -311,7 +314,7 @@ it('grants access to free course via enrollment', function () {
         'sort_order' => 1,
     ]);
 
-    \App\Models\Enrollment::create([
+    Enrollment::create([
         'student_id' => $this->student->id,
         'course_id' => $freeCourse->id,
         'status' => 'active',
@@ -319,6 +322,6 @@ it('grants access to free course via enrollment', function () {
         'started_at' => now(),
     ]);
 
-    $accessService = app(\App\Services\VideoAccessService::class);
+    $accessService = app(VideoAccessService::class);
     expect($accessService->canAccess($this->studentUser, $freeLecture))->toBeTrue();
 });

@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
-use App\Services\NotificationService;
+use App\Enums\UserStatus;
+use App\Models\Role;
 use App\Models\Student;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Role;
+use Illuminate\Support\Facades\Log;
 
 class AuthService
 {
@@ -18,9 +21,9 @@ class AuthService
      * @return array{user: User, token?: string, message?: string} */
     public function register(array $data): array
     {
-        $user = \Illuminate\Support\Facades\DB::transaction(function () use ($data) {
+        $user = DB::transaction(function () use ($data) {
             $user = User::create([
-                'name' => $data['first_name'] . ' ' . $data['last_name'],
+                'name' => $data['first_name'].' '.$data['last_name'],
                 'email' => $data['email'],
                 'phone' => $data['phone'],
                 'password' => Hash::make($data['password']),
@@ -57,7 +60,7 @@ class AuthService
                 );
             }
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning('Failed to send registration notifications: ' . $e->getMessage());
+            Log::warning('Failed to send registration notifications: '.$e->getMessage());
         }
 
         return [
@@ -87,24 +90,24 @@ class AuthService
             return null;
         }
 
-        if ($user->status === \App\Enums\UserStatus::Pending) {
+        if ($user->status === UserStatus::Pending) {
             return 'pending';
         }
 
-        if ($user->status === \App\Enums\UserStatus::Rejected) {
+        if ($user->status === UserStatus::Rejected) {
             return 'rejected';
         }
 
         // Check if password matches student code and force password change
         $student = $user->student;
-        if ($student && \Illuminate\Support\Facades\Hash::check($student->student_code, $user->password)) {
+        if ($student && Hash::check($student->student_code, $user->password)) {
             $user->must_change_password = true;
             $user->save();
         }
 
         $user->update(['last_login_at' => now()]);
 
-        \Illuminate\Support\Facades\Auth::guard('web')->login($user);
+        Auth::guard('web')->login($user);
         if (request()->hasSession()) {
             request()->session()->regenerate();
         }
@@ -117,12 +120,12 @@ class AuthService
 
     public function logout(User $user): void
     {
-        \Illuminate\Support\Facades\Auth::guard('web')->logout();
+        Auth::guard('web')->logout();
         if (request()->hasSession()) {
             request()->session()->invalidate();
             request()->session()->regenerateToken();
         }
-        
+
         $token = $user->currentAccessToken();
         if ($token && method_exists($token, 'delete')) {
             $token->delete();
@@ -136,11 +139,11 @@ class AuthService
         }
 
         $student = $user->student;
-        if (!$student && $user->hasRole(['student', 'super_admin', 'admin', 'instructor'])) {
+        if (! $student && $user->hasRole(['student', 'super_admin', 'admin', 'instructor'])) {
             $student = Student::firstOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'student_code' => 'ST' . rand(100000, 999999),
+                    'student_code' => 'ST'.rand(100000, 999999),
                     'first_name' => $data['first_name'] ?? explode(' ', $user->name)[0] ?? 'Student',
                     'second_name' => 'A',
                     'third_name' => 'B',
@@ -161,9 +164,9 @@ class AuthService
                 'father_phone' => $data['father_phone'] ?? null,
                 'mother_phone' => $data['mother_phone'] ?? null,
                 'school_name' => $data['school_name'] ?? null,
-            ], fn($val) => $val !== null);
+            ], fn ($val) => $val !== null);
 
-            if (!empty($studentData)) {
+            if (! empty($studentData)) {
                 $student->update($studentData);
             }
         }

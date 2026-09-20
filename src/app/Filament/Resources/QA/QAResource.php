@@ -5,6 +5,7 @@ namespace App\Filament\Resources\QA;
 use App\Filament\Resources\QA\Pages\ManageQA;
 use App\Models\QuestionsPost;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\Textarea;
@@ -12,11 +13,11 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\HtmlString;
 
 class QAResource extends Resource
 {
@@ -99,17 +100,18 @@ class QAResource extends Resource
                     ->label('عرض')
                     ->icon('heroicon-o-eye')
                     ->modalHeading('السؤال والردود')
-                    ->modalContent(function (QuestionsPost $record): \Illuminate\Support\HtmlString {
+                    ->modalContent(function (QuestionsPost $record): HtmlString {
                         $html = '<div class="space-y-4">';
-                        $html .= '<div class="p-4 bg-gray-50 rounded-lg"><strong>السؤال:</strong><br>' . e($record->body) . '</div>';
+                        $html .= '<div class="p-4 bg-gray-50 rounded-lg"><strong>السؤال:</strong><br>'.e($record->body).'</div>';
                         foreach ($record->replies as $reply) {
                             $html .= '<div class="p-4 bg-blue-50 rounded-lg mr-8">';
-                            $html .= '<strong>' . e($reply->user->name) . ':</strong><br>';
+                            $html .= '<strong>'.e($reply->user->name).':</strong><br>';
                             $html .= e($reply->body);
                             $html .= '</div>';
                         }
                         $html .= '</div>';
-                        return new \Illuminate\Support\HtmlString($html);
+
+                        return new HtmlString($html);
                     }),
             ])
             ->toolbarActions([

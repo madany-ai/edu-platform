@@ -2,14 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\QuestionsPost;
-use App\Models\QuestionReply;
+use App\Models\CourseAssistant;
 use App\Models\Lecture;
+use App\Models\QuestionReply;
+use App\Models\QuestionsPost;
 use App\Models\Student;
 use App\Models\User;
-use App\Models\CourseAssistant;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
 
 class QAService
 {

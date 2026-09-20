@@ -2,33 +2,42 @@
 
 namespace App\Filament\Resources\Students;
 
-use App\Models\Bundle;
-use App\Models\Order;
-use App\Models\Product;
-use App\Services\GrantEntitlementService;
-use App\Services\NotificationService;
-use App\Models\Student;
+use App\Enums\UserStatus;
+use App\Filament\Exports\StudentExporter;
 use App\Filament\Resources\Students\Pages\ManageStudents;
+use App\Models\CommunicationLog;
+use App\Models\Course;
+use App\Models\Entitlement;
+use App\Models\Governorate;
+use App\Models\Lecture;
+use App\Models\Student;
+use App\Models\StudentTransfer;
+use App\Services\NotificationService;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ExportBulkAction;
-use App\Filament\Exports\StudentExporter;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Actions\Action;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Hash;
 
 class StudentResource extends Resource
 {
@@ -55,8 +64,8 @@ class StudentResource extends Resource
                 TextInput::make('email')
                     ->label('البريد الإلكتروني للجديد')
                     ->email()
-                    ->required(fn (callable $get) => !$get('user_id'))
-                    ->visible(fn (callable $get) => !$get('user_id'))
+                    ->required(fn (callable $get) => ! $get('user_id'))
+                    ->visible(fn (callable $get) => ! $get('user_id'))
                     ->unique('users', 'email')
                     ->extraInputAttributes(['autocomplete' => 'new-email']),
                 TextInput::make('student_code')
@@ -104,7 +113,7 @@ class StudentResource extends Resource
                     ->required()
                     ->tel()
                     ->maxLength(20),
-                Select::make('gender')  
+                Select::make('gender')
                     ->label('الجنس')
                     ->options([
                         'male' => 'ذكر',
@@ -116,7 +125,7 @@ class StudentResource extends Resource
                     ->required(),
                 Select::make('governorate_id')
                     ->label('المحافظة')
-                    ->options(\App\Models\Governorate::pluck('name', 'id'))
+                    ->options(Governorate::pluck('name', 'id'))
                     ->searchable()
                     ->preload(),
                 TextInput::make('school_name')
@@ -134,11 +143,12 @@ class StudentResource extends Resource
                     ])
                     ->live()
                     ->afterStateUpdated(function ($state, callable $set) {
-                        if (!$state) {
+                        if (! $state) {
                             $set('academic_track_id', null);
+
                             return;
                         }
-                        if (!in_array($state, ['sec_2', 'sec_3'])) {
+                        if (! in_array($state, ['sec_2', 'sec_3'])) {
                             $set('academic_track_id', null);
                         }
                     }),
@@ -154,9 +164,10 @@ class StudentResource extends Resource
                     ->preload()
                     ->visible(function (callable $get) {
                         $academicYear = $get('academic_year');
-                        if (!$academicYear) {
+                        if (! $academicYear) {
                             return false;
                         }
+
                         return in_array($academicYear, ['sec_2', 'sec_3']);
                     }),
                 Select::make('group_id')
@@ -173,7 +184,7 @@ class StudentResource extends Resource
                     ->helperText(fn (?Student $record) => $record !== null ? 'اتركه فارغاً إذا كنت لا تريد تغيير كلمة المرور.' : 'إذا تركته فارغاً، ستكون كلمة المرور هي كود الطالب.')
                     ->extraInputAttributes(['autocomplete' => 'new-password']),
 
-                \Filament\Forms\Components\Toggle::make('is_verified')
+                Toggle::make('is_verified')
                     ->label('مُفعل / معتمد (صلاحية الشراء)')
                     ->helperText('تفعيل هذا الخيار يسمح للطالب بشراء وتفعيل الكورسات من المتجر مباشرة.')
                     ->default(false),
@@ -201,13 +212,13 @@ class StudentResource extends Resource
                 TextColumn::make('user.status')
                     ->label('الحالة')
                     ->badge()
-                    ->color(fn ($state): string => match ($state instanceof \App\Enums\UserStatus ? $state->value : $state) {
+                    ->color(fn ($state): string => match ($state instanceof UserStatus ? $state->value : $state) {
                         'pending' => 'warning',
                         'active' => 'success',
                         'rejected' => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn ($state): string => match ($state instanceof \App\Enums\UserStatus ? $state->value : $state) {
+                    ->formatStateUsing(fn ($state): string => match ($state instanceof UserStatus ? $state->value : $state) {
                         'pending' => 'قيد المراجعة',
                         'active' => 'نشط',
                         'rejected' => 'مرفوض',
@@ -221,7 +232,7 @@ class StudentResource extends Resource
                     ->label('تاريخ التسجيل')
                     ->dateTime('Y-m-d')
                     ->sortable(),
-                \Filament\Tables\Columns\IconColumn::make('is_verified')
+                IconColumn::make('is_verified')
                     ->label('معتمد للشراء')
                     ->boolean()
                     ->sortable(),
@@ -252,12 +263,13 @@ class StudentResource extends Resource
                 EditAction::make()
                     ->mutateFormDataUsing(function (array $data): array {
                         unset($data['email']);
+
                         return $data;
                     })
                     ->after(function (Student $record, array $data): void {
-                        if (!empty($data['password'])) {
+                        if (! empty($data['password'])) {
                             $record->user->update([
-                                'password' => \Illuminate\Support\Facades\Hash::make($data['password']),
+                                'password' => Hash::make($data['password']),
                                 'must_change_password' => $data['password'] === $record->student_code,
                             ]);
                         }
@@ -322,12 +334,13 @@ class StudentResource extends Resource
                             ->label('الدورة التدريبية')
                             ->options(function () {
                                 $user = auth()->user();
-                                $query = \App\Models\Course::query();
+                                $query = Course::query();
                                 if ($user->hasRole('instructor')) {
                                     $query->where('instructor_id', $user->id);
                                 } elseif ($user->hasRole('assistant')) {
                                     $query->whereHas('assistants', fn ($q) => $q->where('user_id', $user->id));
                                 }
+
                                 return $query->pluck('title', 'id')->toArray();
                             })
                             ->live()
@@ -337,10 +350,11 @@ class StudentResource extends Resource
                             ->label('المحاضرة')
                             ->options(function (callable $get) {
                                 $courseId = $get('course_id');
-                                if (!$courseId) {
+                                if (! $courseId) {
                                     return [];
                                 }
-                                return \App\Models\Lecture::whereHas('section', fn ($q) => $q->where('course_id', $courseId))
+
+                                return Lecture::whereHas('section', fn ($q) => $q->where('course_id', $courseId))
                                     ->pluck('title', 'id')
                                     ->toArray();
                             })
@@ -352,7 +366,7 @@ class StudentResource extends Resource
                             ->helperText('اتركه فارغاً للحصول على صلاحية دائمة.'),
                     ])
                     ->action(function (Student $record, array $data): void {
-                        \App\Models\Entitlement::updateOrCreate(
+                        Entitlement::updateOrCreate(
                             [
                                 'student_id' => $record->id,
                                 'lecture_id' => $data['lecture_id'],
@@ -375,7 +389,7 @@ class StudentResource extends Resource
                     ->modalHeading('إلغاء صلاحيات الطالب')
                     ->modalDescription('اختر المحاضرات التي ترغب في إلغاء صلاحية الوصول إليها لهذا الطالب.')
                     ->form(fn (Student $record) => [
-                        \Filament\Forms\Components\CheckboxList::make('entitlements')
+                        CheckboxList::make('entitlements')
                             ->label('الصلاحيات النشطة')
                             ->options(function () use ($record) {
                                 return $record->entitlements()
@@ -385,14 +399,15 @@ class StudentResource extends Resource
                                         $course = $e->lecture?->section?->course?->title ?? '-';
                                         $section = $e->lecture?->section?->title ?? '-';
                                         $lecture = $e->lecture?->title ?? '-';
-                                        $expires = $e->expires_at ? ' (ينتهي: ' . $e->expires_at->format('Y-m-d') . ')' : ' (دائم)';
+                                        $expires = $e->expires_at ? ' (ينتهي: '.$e->expires_at->format('Y-m-d').')' : ' (دائم)';
+
                                         return [$e->id => "{$course} / {$section} / {$lecture}{$expires}"];
                                     });
                             })
                             ->required(),
                     ])
                     ->action(function (array $data): void {
-                        \App\Models\Entitlement::whereIn('id', $data['entitlements'])->delete();
+                        Entitlement::whereIn('id', $data['entitlements'])->delete();
 
                         Notification::make()
                             ->title('تم إلغاء الصلاحيات المحددة بنجاح')
@@ -428,10 +443,11 @@ class StudentResource extends Resource
                                 ->title('الطالب موجود بالفعل في هذه المجموعة!')
                                 ->warning()
                                 ->send();
+
                             return;
                         }
 
-                        \App\Models\StudentTransfer::create([
+                        StudentTransfer::create([
                             'student_id' => $record->id,
                             'from_group_id' => $fromGroupId,
                             'to_group_id' => $toGroupId,
@@ -477,7 +493,7 @@ class StudentResource extends Resource
                             ->label('تفاصيل الملاحظات'),
                     ])
                     ->action(function (Student $record, array $data): void {
-                        \App\Models\CommunicationLog::create([
+                        CommunicationLog::create([
                             'student_id' => $record->id,
                             'date' => $data['date'],
                             'contact_method' => $data['contact_method'],
@@ -505,20 +521,20 @@ class StudentResource extends Resource
 
             ])
             ->headerActions([
-                \Filament\Actions\ExportAction::make()
+                ExportAction::make()
                     ->exporter(StudentExporter::class)
                     ->label('تصدير بيانات الطلاب (Excel)'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    \Filament\Actions\BulkAction::make('printBulkQrCodes')
+                    BulkAction::make('printBulkQrCodes')
                         ->label('طباعة الكارنيهات (QR)')
                         ->icon('heroicon-o-qr-code')
                         ->color('primary')
                         ->modalHeading('كارنيهات الطلاب المحددين - QR Codes')
                         ->modalSubmitAction(false)
                         ->modalCancelActionLabel('إغلاق')
-                        ->modalContent(fn (\Illuminate\Database\Eloquent\Collection $records) => view('filament.modals.bulk-student-qr-cards', [
+                        ->modalContent(fn (Collection $records) => view('filament.modals.bulk-student-qr-cards', [
                             'students' => $records,
                         ])),
                     ExportBulkAction::make()

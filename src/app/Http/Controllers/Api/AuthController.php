@@ -5,8 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\UserMeResource;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -56,28 +60,28 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out']);
     }
 
-    public function refreshToken(\Illuminate\Http\Request $request): JsonResponse
+    public function refreshToken(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         // Delete the current token being used
         $token = $request->user()->currentAccessToken();
         if ($token) {
             $token->delete();
         }
-        
+
         // Create a new token
         $newToken = $user->createToken('auth_token')->plainTextToken;
-        
+
         // Regenerate the session cookie so SPA requests continue to work
-        \Illuminate\Support\Facades\Auth::guard('web')->login($user);
+        Auth::guard('web')->login($user);
         if (request()->hasSession()) {
             request()->session()->regenerate();
         }
-        
+
         return response()->json([
             'token' => $newToken,
-            'message' => 'Token refreshed successfully'
+            'message' => 'Token refreshed successfully',
         ]);
     }
 
@@ -85,15 +89,15 @@ class AuthController extends Controller
     {
         $user = request()->user();
         $user->load('roles');
-        
+
         if ($user->roles->pluck('name')->contains('student')) {
             $user->load('student');
         }
 
-        return response()->json(new \App\Http\Resources\UserMeResource($user));
+        return response()->json(new UserMeResource($user));
     }
 
-    public function updateProfile(\Illuminate\Http\Request $request): JsonResponse
+    public function updateProfile(Request $request): JsonResponse
     {
         $user = $request->user();
         $validated = $request->validate([
@@ -109,15 +113,15 @@ class AuthController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'تم تحديث البيانات بنجاح.',
-            'data' => new \App\Http\Resources\UserMeResource($updatedUser),
+            'data' => new UserMeResource($updatedUser),
         ]);
     }
 
-    public function changePassword(\Illuminate\Http\Request $request): JsonResponse
+    public function changePassword(Request $request): JsonResponse
     {
         $user = $request->user();
-        
-        if (!$user->must_change_password) {
+
+        if (! $user->must_change_password) {
             $validated = $request->validate([
                 'current_password' => 'required|current_password',
                 'password' => 'required|string|min:6|confirmed',
@@ -128,7 +132,7 @@ class AuthController extends Controller
             ]);
         }
 
-        $user->password = \Illuminate\Support\Facades\Hash::make($validated['password']);
+        $user->password = Hash::make($validated['password']);
         $user->must_change_password = false;
         $user->save();
 

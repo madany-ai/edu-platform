@@ -1,10 +1,9 @@
 <?php
 
+use App\Enums\EnrollmentStatus;
 use App\Models\Course;
-use App\Models\CourseSection;
 use App\Models\Enrollment;
 use App\Models\Entitlement;
-use App\Models\Lecture;
 use App\Models\Order;
 use App\Models\Student;
 use App\Models\User;
@@ -127,7 +126,7 @@ it('instructor can revoke enrollment', function () {
     $enrollment = Enrollment::where('student_id', $this->student->id)
         ->where('course_id', $this->freeCourse->id)
         ->first();
-    expect($enrollment->status)->toBe(\App\Enums\EnrollmentStatus::Suspended);
+    expect($enrollment->status)->toBe(EnrollmentStatus::Suspended);
 });
 
 it('student cannot revoke enrollment', function () {

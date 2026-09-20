@@ -9,6 +9,7 @@ use App\Models\CenterExam;
 use App\Models\CenterGrade;
 use App\Models\CommunicationLog;
 use App\Models\Group;
+use App\Models\Role;
 use App\Models\Student;
 use App\Models\StudentTransfer;
 use App\Models\User;
@@ -21,15 +22,18 @@ class CenterManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected Student $student;
+
     protected AcademicYear $academicYear;
+
     protected Group $group;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        \App\Models\Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
 
         $this->user = User::factory()->create([
             'name' => 'طالب تجريبي',

@@ -12,6 +12,7 @@ class CreateCourse extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['instructor_id'] = auth()->id();
+
         return $data;
     }
 }

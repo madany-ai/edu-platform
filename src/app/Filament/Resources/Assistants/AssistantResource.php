@@ -9,20 +9,18 @@ use App\Models\Course;
 use App\Models\User;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Hash;
 
 class AssistantResource extends Resource
 {
@@ -104,8 +102,6 @@ class AssistantResource extends Resource
                 TextColumn::make('phone')
                     ->label('رقم الهاتف')
                     ->searchable(),
-
-
 
                 TextColumn::make('assisted_courses_count')
                     ->label('عدد الدورات')

@@ -2,16 +2,15 @@
 
 namespace App\Filament\Resources\Orders;
 
+use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\Pages\ManageOrders;
 use App\Models\Bundle;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\GrantEntitlementService;
+use App\Services\RefundService;
 use BackedEnum;
-use Filament\Actions\BulkActionGroup;
 use Filament\Actions\Action;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -19,6 +18,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class OrderResource extends Resource
 {
@@ -75,18 +75,19 @@ class OrderResource extends Resource
                         if ($record->purchasable) {
                             return $record->purchasable->name;
                         }
+
                         return '-';
                     }),
 
                 TextColumn::make('amount_cents')
                     ->label('المبلغ')
-                    ->formatStateUsing(fn ($state): string => number_format((int) $state / 100, 2) . ' ج.م'),
+                    ->formatStateUsing(fn ($state): string => number_format((int) $state / 100, 2).' ج.م'),
 
                 TextColumn::make('status')
                     ->label('الحالة')
                     ->badge()
-                    ->color(fn ($state): ?string => $state ? (\App\Enums\OrderStatus::tryFrom($state)?->color() ?? 'gray') : 'gray')
-                    ->formatStateUsing(fn ($state): string => $state ? (\App\Enums\OrderStatus::tryFrom($state)?->label() ?? (string) $state) : ''),
+                    ->color(fn ($state): ?string => $state ? (OrderStatus::tryFrom($state)?->color() ?? 'gray') : 'gray')
+                    ->formatStateUsing(fn ($state): string => $state ? (OrderStatus::tryFrom($state)?->label() ?? (string) $state) : ''),
 
                 TextColumn::make('payment_method')
                     ->label('طريقة الدفع'),
@@ -106,10 +107,10 @@ class OrderResource extends Resource
                     ->modalHeading('تأكيد استلام الدفع')
                     ->modalDescription('هل تأكدت من استلام المبلغ من الطالب؟ سيتم تفعيل المحتوى فوراً.')
                     ->modalSubmitActionLabel('نعم، تأكيد')
-                    ->visible(fn (Order $record): bool => ($record->status instanceof \App\Enums\OrderStatus ? $record->status->value : $record->status) === 'pending')
+                    ->visible(fn (Order $record): bool => ($record->status instanceof OrderStatus ? $record->status->value : $record->status) === 'pending')
                     ->action(function (Order $record): void {
                         try {
-                            \Illuminate\Support\Facades\DB::transaction(function () use ($record) {
+                            DB::transaction(function () use ($record) {
                                 app(GrantEntitlementService::class)->handle($record);
 
                                 $record->update([
@@ -121,7 +122,7 @@ class OrderResource extends Resource
 
                             Notification::make()
                                 ->title('تم تأكيد الدفع')
-                                ->body("تم تفعيل الطلب وتطبيق الصلاحيات بنجاح.")
+                                ->body('تم تفعيل الطلب وتطبيق الصلاحيات بنجاح.')
                                 ->success()
                                 ->send();
                         } catch (\Exception $e) {
@@ -141,9 +142,9 @@ class OrderResource extends Resource
                     ->modalHeading('تأكيد استرداد الطلب')
                     ->modalDescription('هل أنت متأكد من استرداد هذا الطلب؟ سيتم إلغاء صلاحية الوصول فوراً.')
                     ->modalSubmitActionLabel('نعم، استرداد')
-                    ->visible(fn (Order $record): bool => ($record->status instanceof \App\Enums\OrderStatus ? $record->status->value : $record->status) === 'completed')
+                    ->visible(fn (Order $record): bool => ($record->status instanceof OrderStatus ? $record->status->value : $record->status) === 'completed')
                     ->action(function (Order $record): void {
-                        app(\App\Services\RefundService::class)->refundOrder($record);
+                        app(RefundService::class)->refundOrder($record);
 
                         Notification::make()
                             ->title('تم استرداد الطلب')
@@ -171,12 +172,12 @@ class OrderResource extends Resource
                 if ($user->hasRole('instructor')) {
                     $query->where(function (Builder $q) use ($user) {
                         $q->whereHasMorph('purchasable', [Product::class], fn (Builder $pq) => $pq->where('instructor_id', $user->id))
-                          ->orWhereHasMorph('purchasable', [Bundle::class], fn (Builder $bq) => $bq->where('instructor_id', $user->id));
+                            ->orWhereHasMorph('purchasable', [Bundle::class], fn (Builder $bq) => $bq->where('instructor_id', $user->id));
                     });
                 } elseif ($user->hasRole('assistant')) {
                     $query->where(function (Builder $q) use ($user) {
                         $q->whereHasMorph('purchasable', [Product::class], fn (Builder $pq) => $pq->where('instructor_id', $user->id))
-                          ->orWhereHasMorph('purchasable', [Bundle::class], fn (Builder $bq) => $bq->where('instructor_id', $user->id));
+                            ->orWhereHasMorph('purchasable', [Bundle::class], fn (Builder $bq) => $bq->where('instructor_id', $user->id));
                     });
                 }
             });

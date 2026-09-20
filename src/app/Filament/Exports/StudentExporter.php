@@ -34,10 +34,10 @@ class StudentExporter extends Exporter
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'تم الانتهاء من تصدير بيانات الطلاب بنجاح وعددهم ' . number_format($export->successful_rows) . ' طالب.';
+        $body = 'تم الانتهاء من تصدير بيانات الطلاب بنجاح وعددهم '.number_format($export->successful_rows).' طالب.';
 
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' مع فشل تصدير ' . number_format($failedRowsCount) . ' صف.';
+            $body .= ' مع فشل تصدير '.number_format($failedRowsCount).' صف.';
         }
 
         return $body;

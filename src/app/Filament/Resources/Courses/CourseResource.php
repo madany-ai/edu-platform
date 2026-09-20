@@ -6,6 +6,8 @@ use App\Enums\CourseStatus;
 use App\Filament\Resources\Courses\Pages\CreateCourse;
 use App\Filament\Resources\Courses\Pages\EditCourse;
 use App\Filament\Resources\Courses\Pages\ListCourses;
+use App\Filament\Resources\Courses\RelationManagers\AssistantsRelationManager;
+use App\Filament\Resources\Courses\RelationManagers\EnrollmentsRelationManager;
 use App\Models\Course;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -14,14 +16,13 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section as FormSection;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -130,13 +131,13 @@ class CourseResource extends Resource
 
                 TextColumn::make('price')
                     ->label('السعر')
-                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' ج.م'),
+                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2).' ج.م'),
 
                 TextColumn::make('status')
                     ->label('الحالة')
                     ->badge()
-                    ->color(fn ($state): string => $state instanceof \App\Enums\CourseStatus ? $state->color() : 'gray')
-                    ->formatStateUsing(fn ($state): string => $state instanceof \App\Enums\CourseStatus ? $state->label() : (string) $state),
+                    ->color(fn ($state): string => $state instanceof CourseStatus ? $state->color() : 'gray')
+                    ->formatStateUsing(fn ($state): string => $state instanceof CourseStatus ? $state->label() : (string) $state),
 
                 TextColumn::make('sections_count')
                     ->label('الأقسام')
@@ -175,8 +176,8 @@ class CourseResource extends Resource
     public static function getRelations(): array
     {
         return [
-            \App\Filament\Resources\Courses\RelationManagers\AssistantsRelationManager::class,
-            \App\Filament\Resources\Courses\RelationManagers\EnrollmentsRelationManager::class,
+            AssistantsRelationManager::class,
+            EnrollmentsRelationManager::class,
         ];
     }
 

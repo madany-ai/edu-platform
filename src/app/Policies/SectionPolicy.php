@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Course;
 use App\Models\CourseSection;
+use App\Models\User;
 
 class SectionPolicy
 {
@@ -13,6 +13,7 @@ class SectionPolicy
         if ($user->hasRole('super_admin')) {
             return true;
         }
+
         return null;
     }
 
@@ -31,6 +32,7 @@ class SectionPolicy
         if ($course === null) {
             return $user->hasRole('instructor');
         }
+
         return $user->hasRole('instructor') && $user->id === $course->instructor_id;
     }
 

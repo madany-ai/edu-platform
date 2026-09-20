@@ -1,11 +1,15 @@
 <?php
 
+use App\Models\Role;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
 uses(
-    Tests\TestCase::class,
-    Illuminate\Foundation\Testing\RefreshDatabase::class,
+    TestCase::class,
+    RefreshDatabase::class,
 )->beforeEach(function () {
-    \App\Models\Role::firstOrCreate(['name' => 'student']);
-    \App\Models\Role::firstOrCreate(['name' => 'instructor']);
-    \App\Models\Role::firstOrCreate(['name' => 'assistant']);
-    \App\Models\Role::firstOrCreate(['name' => 'super_admin']);
+    Role::firstOrCreate(['name' => 'student']);
+    Role::firstOrCreate(['name' => 'instructor']);
+    Role::firstOrCreate(['name' => 'assistant']);
+    Role::firstOrCreate(['name' => 'super_admin']);
 })->in('Feature');

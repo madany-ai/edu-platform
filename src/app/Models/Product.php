@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Scopes\AcademicYearScope;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Collection;
 
 class Product extends Model
 {
     use HasUuids;
+
     protected $fillable = [
         'instructor_id',
         'name',
@@ -24,14 +27,14 @@ class Product extends Model
     protected static function boot(): void
     {
         parent::boot();
-        static::addGlobalScope(new \App\Models\Scopes\AcademicYearScope);
+        static::addGlobalScope(new AcademicYearScope);
     }
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
-            'price'     => 'decimal:2',
+            'price' => 'decimal:2',
         ];
     }
 
@@ -50,7 +53,7 @@ class Product extends Model
         };
     }
 
-    public function bundles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function bundles(): BelongsToMany
     {
         return $this->belongsToMany(Bundle::class, 'bundle_products');
     }

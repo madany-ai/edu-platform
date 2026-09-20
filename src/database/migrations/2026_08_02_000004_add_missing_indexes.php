@@ -10,7 +10,7 @@ return new class extends Migration
     {
         if (Schema::hasTable('students')) {
             Schema::table('students', function (Blueprint $table) {
-                if (!Schema::hasIndex('students', 'students_user_id_index')) {
+                if (! Schema::hasIndex('students', 'students_user_id_index')) {
                     $table->index('user_id');
                 }
             });
@@ -18,12 +18,12 @@ return new class extends Migration
 
         if (Schema::hasTable('exams')) {
             Schema::table('exams', function (Blueprint $table) {
-                if (!Schema::hasIndex('exams', 'exams_lecture_id_index')) {
+                if (! Schema::hasIndex('exams', 'exams_lecture_id_index')) {
                     $table->index('lecture_id');
                 }
                 try {
                     $table->unique(['lecture_id', 'is_assignment']);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // index may already exist
                 }
             });
@@ -31,7 +31,7 @@ return new class extends Migration
 
         if (Schema::hasTable('questions')) {
             Schema::table('questions', function (Blueprint $table) {
-                if (!Schema::hasIndex('questions', 'questions_exam_id_index')) {
+                if (! Schema::hasIndex('questions', 'questions_exam_id_index')) {
                     $table->index('exam_id');
                 }
             });
@@ -39,7 +39,7 @@ return new class extends Migration
 
         if (Schema::hasTable('choices')) {
             Schema::table('choices', function (Blueprint $table) {
-                if (!Schema::hasIndex('choices', 'choices_question_id_index')) {
+                if (! Schema::hasIndex('choices', 'choices_question_id_index')) {
                     $table->index('question_id');
                 }
             });
@@ -47,10 +47,10 @@ return new class extends Migration
 
         if (Schema::hasTable('questions_posts')) {
             Schema::table('questions_posts', function (Blueprint $table) {
-                if (!Schema::hasIndex('questions_posts', 'questions_posts_lecture_id_index')) {
+                if (! Schema::hasIndex('questions_posts', 'questions_posts_lecture_id_index')) {
                     $table->index('lecture_id');
                 }
-                if (!Schema::hasIndex('questions_posts', 'questions_posts_student_id_index')) {
+                if (! Schema::hasIndex('questions_posts', 'questions_posts_student_id_index')) {
                     $table->index('student_id');
                 }
             });
@@ -58,7 +58,7 @@ return new class extends Migration
 
         if (Schema::hasTable('notifications')) {
             Schema::table('notifications', function (Blueprint $table) {
-                if (!Schema::hasIndex('notifications', 'notifications_user_id_index')) {
+                if (! Schema::hasIndex('notifications', 'notifications_user_id_index')) {
                     $table->index('user_id');
                 }
             });
@@ -66,7 +66,7 @@ return new class extends Migration
 
         if (Schema::hasTable('users')) {
             Schema::table('users', function (Blueprint $table) {
-                if (!Schema::hasIndex('users', 'users_status_index')) {
+                if (! Schema::hasIndex('users', 'users_status_index')) {
                     $table->index('status');
                 }
             });
@@ -74,7 +74,7 @@ return new class extends Migration
 
         if (Schema::hasTable('courses')) {
             Schema::table('courses', function (Blueprint $table) {
-                if (!Schema::hasIndex('courses', 'courses_status_index')) {
+                if (! Schema::hasIndex('courses', 'courses_status_index')) {
                     $table->index('status');
                 }
             });
@@ -82,7 +82,7 @@ return new class extends Migration
 
         if (Schema::hasTable('products')) {
             Schema::table('products', function (Blueprint $table) {
-                if (!Schema::hasIndex('products', 'products_is_active_index')) {
+                if (! Schema::hasIndex('products', 'products_is_active_index')) {
                     $table->index('is_active');
                 }
             });

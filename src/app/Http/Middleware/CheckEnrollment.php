@@ -2,9 +2,12 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Course;
+use App\Enums\CourseStatus;
+use App\Models\CourseAssistant;
 use App\Models\Enrollment;
 use App\Models\Entitlement;
+use App\Models\Student;
+use App\Services\VideoAccessService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,14 +34,14 @@ class CheckEnrollment
 
         $isAssignedAssistant = false;
         if ($user->hasRole('assistant')) {
-            $isAssignedAssistant = \App\Models\CourseAssistant::where('user_id', $user->id)
+            $isAssignedAssistant = CourseAssistant::where('user_id', $user->id)
                 ->where('course_id', $courseId)
                 ->exists();
         }
 
-        $courseStatus = $course->status instanceof \App\Enums\CourseStatus ? $course->status->value : $course->status;
+        $courseStatus = $course->status instanceof CourseStatus ? $course->status->value : $course->status;
         $isOwnerOrAdmin = $course->instructor_id === $user->id || $user->hasRole('super_admin') || $user->hasRole('admin') || $isAssignedAssistant;
-        if (!$isOwnerOrAdmin && $courseStatus !== 'published') {
+        if (! $isOwnerOrAdmin && $courseStatus !== 'published') {
             return response()->json(['message' => 'هذه الدورة غير متاحة حالياً.'], 403);
         }
 
@@ -46,7 +49,7 @@ class CheckEnrollment
             return $next($request);
         }
 
-        $student = $user->student ?? \App\Models\Student::where('user_id', $user->id)->first();
+        $student = $user->student ?? Student::where('user_id', $user->id)->first();
 
         if (! $student) {
             return response()->json(['message' => 'غير مسجل في هذه الدورة.'], 403);
@@ -57,7 +60,7 @@ class CheckEnrollment
             ->where('status', 'active')
             ->where(function ($q) {
                 $q->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
+                    ->orWhere('expires_at', '>', now());
             })
             ->exists();
 
@@ -65,7 +68,7 @@ class CheckEnrollment
             ->where('lecture_id', $lecture->id)
             ->where(function ($q) {
                 $q->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
+                    ->orWhere('expires_at', '>', now());
             })
             ->exists();
 
@@ -74,7 +77,7 @@ class CheckEnrollment
         }
 
         // Check if blocked by exam in preceding lectures
-        $videoAccessService = app(\App\Services\VideoAccessService::class);
+        $videoAccessService = app(VideoAccessService::class);
         if ($videoAccessService->isBlockedByExam($user, $lecture, 'lecture_access')) {
             return response()->json(['message' => 'هذه المحاضرة مغلقة حتى تجتاز الاختبار المطلوب أولاً.'], 403);
         }

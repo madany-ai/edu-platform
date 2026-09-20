@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Course;
-use App\Models\CourseSection;
 use App\Models\Enrollment;
 use App\Models\Lecture;
 use App\Models\Student;

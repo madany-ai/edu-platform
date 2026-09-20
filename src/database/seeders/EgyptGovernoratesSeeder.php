@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Governorate;
 use App\Models\City;
+use App\Models\Governorate;
+use Illuminate\Database\Seeder;
 
 class EgyptGovernoratesSeeder extends Seeder
 {
@@ -45,7 +45,7 @@ class EgyptGovernoratesSeeder extends Seeder
             foreach ($cities as $cityName) {
                 City::firstOrCreate([
                     'name' => $cityName,
-                    'governorate_id' => $gov->id
+                    'governorate_id' => $gov->id,
                 ]);
             }
         }

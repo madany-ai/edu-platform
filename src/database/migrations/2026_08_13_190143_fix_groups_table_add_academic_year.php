@@ -16,7 +16,7 @@ return new class extends Migration
                 $table->dropForeign(['grade_level_id']);
                 $table->dropColumn('grade_level_id');
             }
-            if (!Schema::hasColumn('groups', 'academic_year')) {
+            if (! Schema::hasColumn('groups', 'academic_year')) {
                 $table->string('academic_year')->default('sec_3')->after('academic_year_id');
             }
         });
@@ -31,7 +31,7 @@ return new class extends Migration
             if (Schema::hasColumn('groups', 'academic_year')) {
                 $table->dropColumn('academic_year');
             }
-            if (!Schema::hasColumn('groups', 'grade_level_id')) {
+            if (! Schema::hasColumn('groups', 'grade_level_id')) {
                 $table->foreignUuid('grade_level_id')->nullable()->constrained('grade_levels')->cascadeOnDelete();
             }
         });

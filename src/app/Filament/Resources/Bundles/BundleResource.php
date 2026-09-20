@@ -3,12 +3,14 @@
 namespace App\Filament\Resources\Bundles;
 
 use App\Filament\Resources\Bundles\Pages\ManageBundles;
+use App\Filament\Resources\Bundles\RelationManagers\ProductsRelationManager;
 use App\Models\Bundle;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -50,7 +52,7 @@ class BundleResource extends Resource
                     ->minValue(0)
                     ->default(0),
 
-                \Filament\Forms\Components\Select::make('products')
+                Select::make('products')
                     ->label('المنتجات المشمولة في الباقة')
                     ->relationship('products', 'name')
                     ->multiple()
@@ -75,7 +77,7 @@ class BundleResource extends Resource
 
                 TextColumn::make('price')
                     ->label('السعر')
-                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2) . ' ج.م'),
+                    ->formatStateUsing(fn ($state): string => number_format((float) $state, 2).' ج.م'),
 
                 TextColumn::make('products_count')
                     ->label('عدد المنتجات')
@@ -128,7 +130,7 @@ class BundleResource extends Resource
     public static function getRelations(): array
     {
         return [
-            \App\Filament\Resources\Bundles\RelationManagers\ProductsRelationManager::class,
+            ProductsRelationManager::class,
         ];
     }
 

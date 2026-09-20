@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Enums\OrderStatus;
+use App\Models\Bundle;
 use App\Models\Course;
 use App\Models\Enrollment;
-use App\Models\Student;
+use App\Models\Lecture;
 use App\Models\Notification;
+use App\Models\Product;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -33,14 +36,14 @@ class DashboardService
             ->first();
 
         $ordersRevenueCents = DB::table('orders')
-            ->where('status', \App\Enums\OrderStatus::Completed->value)
+            ->where('status', OrderStatus::Completed->value)
             ->where(function ($query) use ($instructorId) {
                 $query->where(function ($q1) use ($instructorId) {
-                    $q1->where('purchasable_type', \App\Models\Product::class)
-                       ->whereIn('purchasable_id', \App\Models\Product::where('instructor_id', $instructorId)->pluck('id'));
+                    $q1->where('purchasable_type', Product::class)
+                        ->whereIn('purchasable_id', Product::where('instructor_id', $instructorId)->pluck('id'));
                 })->orWhere(function ($q2) use ($instructorId) {
-                    $q2->where('purchasable_type', \App\Models\Bundle::class)
-                       ->whereIn('purchasable_id', \App\Models\Bundle::where('instructor_id', $instructorId)->pluck('id'));
+                    $q2->where('purchasable_type', Bundle::class)
+                        ->whereIn('purchasable_id', Bundle::where('instructor_id', $instructorId)->pluck('id'));
                 });
             })
             ->sum('amount_cents');
@@ -145,7 +148,7 @@ class DashboardService
             ->join('course_sections', 'lectures.section_id', '=', 'course_sections.id')
             ->where('student_activities.student_id', $studentId)
             ->where('student_activities.type', 'video_completed')
-            ->where('student_activities.entity_type', \App\Models\Lecture::class)
+            ->where('student_activities.entity_type', Lecture::class)
             ->select('course_sections.course_id', DB::raw('count(distinct lectures.id) as completed_lectures'))
             ->groupBy('course_sections.course_id')
             ->pluck('completed_lectures', 'course_id')

@@ -2,27 +2,33 @@
 
 namespace App\Jobs;
 
+use App\Models\Lecture;
+use App\Models\LectureVideo;
 use App\Services\BunnyStreamService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ProcessVideoHLS implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
     public int $timeout = 900;
+
     public int $tries = 3;
 
     protected $lecture;
+
     protected ?string $bunnyVideoId;
+
     protected int $attemptCount;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(\App\Models\Lecture $lecture, ?string $bunnyVideoId = null, int $attemptCount = 1)
+    public function __construct(Lecture $lecture, ?string $bunnyVideoId = null, int $attemptCount = 1)
     {
         $this->lecture = $lecture;
         $this->bunnyVideoId = $bunnyVideoId;
@@ -37,26 +43,27 @@ class ProcessVideoHLS implements ShouldQueue
         $lecture = $this->lecture;
 
         // If this is the initial run (no video ID yet)
-        if (!$this->bunnyVideoId) {
-            if (!$lecture->video_path || filter_var($lecture->video_path, FILTER_VALIDATE_URL)) {
+        if (! $this->bunnyVideoId) {
+            if (! $lecture->video_path || filter_var($lecture->video_path, FILTER_VALIDATE_URL)) {
                 return;
             }
 
             // Initialize metadata
-            \App\Models\LectureVideo::updateOrCreate(
+            LectureVideo::updateOrCreate(
                 ['lecture_id' => $lecture->id],
                 ['status' => 'processing']
             );
 
             // Download source from MinIO to a temp file
             $tempFile = tempnam(sys_get_temp_dir(), 'video_');
-            $videoStream = \Illuminate\Support\Facades\Storage::disk('public')->readStream($lecture->video_path);
+            $videoStream = Storage::disk('public')->readStream($lecture->video_path);
 
-            if (!$videoStream) {
-                \App\Models\LectureVideo::updateOrCreate(
+            if (! $videoStream) {
+                LectureVideo::updateOrCreate(
                     ['lecture_id' => $lecture->id],
                     ['status' => 'failed']
                 );
+
                 return;
             }
 
@@ -75,7 +82,7 @@ class ProcessVideoHLS implements ShouldQueue
                 Log::info("Bunny Stream: Uploaded content for video {$videoId}");
 
                 // 3. Update LectureVideo record
-                \App\Models\LectureVideo::updateOrCreate(
+                LectureVideo::updateOrCreate(
                     ['lecture_id' => $lecture->id],
                     [
                         'bunny_video_id' => $videoId,
@@ -87,8 +94,8 @@ class ProcessVideoHLS implements ShouldQueue
                 self::dispatch($lecture, $videoId, 1)->delay(now()->addSeconds(15));
 
             } catch (\Exception $e) {
-                Log::error("Bunny Stream: Upload failed for Lecture {$lecture->id}: " . $e->getMessage());
-                \App\Models\LectureVideo::updateOrCreate(
+                Log::error("Bunny Stream: Upload failed for Lecture {$lecture->id}: ".$e->getMessage());
+                LectureVideo::updateOrCreate(
                     ['lecture_id' => $lecture->id],
                     ['status' => 'failed']
                 );
@@ -98,6 +105,7 @@ class ProcessVideoHLS implements ShouldQueue
                     unlink($tempFile);
                 }
             }
+
             return;
         }
 
@@ -114,7 +122,7 @@ class ProcessVideoHLS implements ShouldQueue
                 $durationSeconds = $videoData['length'] ?? 0;
                 $durationMinutes = (int) round($durationSeconds / 60);
 
-                \App\Models\LectureVideo::updateOrCreate(
+                LectureVideo::updateOrCreate(
                     ['lecture_id' => $lecture->id],
                     [
                         'duration' => $durationMinutes,
@@ -126,9 +134,10 @@ class ProcessVideoHLS implements ShouldQueue
                 Log::info("Bunny Stream: Video {$videoId} completed transcoding for Lecture {$lecture->id}");
 
                 // Clean up the original MinIO upload since it is transcoded on Bunny
-                if ($lecture->video_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($lecture->video_path)) {
-                    \Illuminate\Support\Facades\Storage::disk('public')->delete($lecture->video_path);
+                if ($lecture->video_path && Storage::disk('public')->exists($lecture->video_path)) {
+                    Storage::disk('public')->delete($lecture->video_path);
                 }
+
                 return;
             }
 
@@ -144,8 +153,8 @@ class ProcessVideoHLS implements ShouldQueue
             }
 
         } catch (\Exception $e) {
-            Log::error("Bunny Stream Polling: Failed for video {$videoId}: " . $e->getMessage());
-            \App\Models\LectureVideo::updateOrCreate(
+            Log::error("Bunny Stream Polling: Failed for video {$videoId}: ".$e->getMessage());
+            LectureVideo::updateOrCreate(
                 ['lecture_id' => $lecture->id],
                 ['status' => 'failed']
             );

@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\Course;
+use App\Models\Governorate;
+use App\Models\User;
+
 it('login endpoint has rate limiting applied', function () {
     // The login route is wrapped with throttle:login middleware
     // We test that the endpoint works normally within limits
@@ -13,7 +17,7 @@ it('login endpoint has rate limiting applied', function () {
 });
 
 it('register endpoint has rate limiting applied', function () {
-    $governorate = \App\Models\Governorate::create(['name' => 'Cairo']);
+    $governorate = Governorate::create(['name' => 'Cairo']);
 
     $response = $this->postJson('/api/auth/register', [
         'first_name' => 'Test',
@@ -39,10 +43,10 @@ it('register endpoint has rate limiting applied', function () {
 });
 
 it('stream key endpoint has rate limiting applied', function () {
-    $instructor = \App\Models\User::factory()->create(['status' => 'active']);
+    $instructor = User::factory()->create(['status' => 'active']);
     $instructor->assignRole('instructor');
 
-    $course = \App\Models\Course::create([
+    $course = Course::create([
         'title' => 'Course',
         'description' => 'Desc',
         'price' => 0,

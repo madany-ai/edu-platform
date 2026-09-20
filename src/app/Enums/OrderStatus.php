@@ -4,18 +4,18 @@ namespace App\Enums;
 
 enum OrderStatus: string
 {
-    case Pending   = 'pending';
+    case Pending = 'pending';
     case Completed = 'completed';
-    case Failed    = 'failed';
-    case Refunded  = 'refunded';
+    case Failed = 'failed';
+    case Refunded = 'refunded';
 
     public function label(): string
     {
         return match ($this) {
-            self::Pending   => 'قيد الانتظار',
+            self::Pending => 'قيد الانتظار',
             self::Completed => 'مكتمل',
-            self::Failed    => 'فشل',
-            self::Refunded  => 'مسترجع',
+            self::Failed => 'فشل',
+            self::Refunded => 'مسترجع',
         };
     }
 
@@ -23,9 +23,9 @@ enum OrderStatus: string
     {
         return match ($this) {
             self::Completed => 'success',
-            self::Pending   => 'warning',
-            self::Failed    => 'danger',
-            self::Refunded  => 'gray',
+            self::Pending => 'warning',
+            self::Failed => 'danger',
+            self::Refunded => 'gray',
         };
     }
 }

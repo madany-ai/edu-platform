@@ -2,9 +2,8 @@
 
 use App\Models\Choice;
 use App\Models\Course;
-use App\Models\CourseSection;
+use App\Models\Enrollment;
 use App\Models\Exam;
-use App\Models\Lecture;
 use App\Models\Question;
 use App\Models\Student;
 use App\Models\User;
@@ -65,7 +64,7 @@ beforeEach(function () {
     Choice::create(['question_id' => $question->id, 'answer' => 'x = 3', 'is_correct' => true]);
     Choice::create(['question_id' => $question->id, 'answer' => 'x = 2', 'is_correct' => false]);
 
-    \App\Models\Enrollment::create([
+    Enrollment::create([
         'student_id' => $this->student->id,
         'course_id' => $this->course->id,
         'status' => 'active',

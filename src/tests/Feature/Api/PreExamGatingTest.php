@@ -4,13 +4,14 @@ use App\Models\Answer;
 use App\Models\Choice;
 use App\Models\Course;
 use App\Models\CourseSection;
-use App\Models\Entitlement;
+use App\Models\Enrollment;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
 use App\Models\Lecture;
 use App\Models\Question;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\ExamService;
 use App\Services\VideoAccessService;
 
 beforeEach(function () {
@@ -93,7 +94,7 @@ beforeEach(function () {
         'is_correct' => false,
     ]);
 
-    \App\Models\Enrollment::create([
+    Enrollment::create([
         'student_id' => $this->student->id,
         'course_id' => $this->course->id,
         'status' => 'active',
@@ -152,7 +153,7 @@ it('keeps video blocked when exam is failed', function () {
 });
 
 it('saves exam score correctly in database', function () {
-    $examService = app(\App\Services\ExamService::class);
+    $examService = app(ExamService::class);
 
     $attempt = $examService->startAttempt($this->blockingExam, $this->student);
     expect($attempt)->not->toBeNull();

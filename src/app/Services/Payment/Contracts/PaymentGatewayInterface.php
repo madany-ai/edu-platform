@@ -10,6 +10,6 @@ use Illuminate\Http\Request;
 interface PaymentGatewayInterface
 {
     public function createCheckout(Order $order): CheckoutResult;
-    
+
     public function verifyWebhook(Request $request): WebhookPayload;
 }

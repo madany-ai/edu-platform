@@ -9,17 +9,18 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class ExamResource extends Resource
@@ -170,22 +171,22 @@ class ExamResource extends Resource
         ];
     }
 
-    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    public static function getEloquentQuery(): Builder
     {
         $user = request()->user();
 
         return parent::getEloquentQuery()
             ->where('is_assignment', false)
-            ->when($user && ! $user->hasRole('super_admin'), function (\Illuminate\Database\Eloquent\Builder $query) use ($user) {
+            ->when($user && ! $user->hasRole('super_admin'), function (Builder $query) use ($user) {
                 if ($user->hasRole('instructor')) {
                     $query->where(function ($q) use ($user) {
                         $q->whereHas('lecture.section.course', fn ($c) => $c->where('instructor_id', $user->id))
-                          ->orWhereNull('lecture_id');
+                            ->orWhereNull('lecture_id');
                     });
                 } elseif ($user->hasRole('assistant')) {
                     $query->where(function ($q) use ($user) {
                         $q->whereHas('lecture.section.course.assistants', fn ($c) => $c->where('user_id', $user->id))
-                          ->orWhereNull('lecture_id');
+                            ->orWhereNull('lecture_id');
                     });
                 }
             });

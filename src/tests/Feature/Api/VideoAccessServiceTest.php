@@ -1,13 +1,14 @@
 <?php
 
 use App\Models\Course;
-use App\Models\CourseSection;
+use App\Models\Enrollment;
 use App\Models\Entitlement;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
-use App\Models\Lecture;
+use App\Models\Order;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\VideoAccessService;
 use Illuminate\Support\Facades\Crypt;
 
 beforeEach(function () {
@@ -49,7 +50,7 @@ beforeEach(function () {
     $this->lecture2 = $this->section1->lectures()->create(['title' => 'Lecture 2', 'sort_order' => 2]);
     $this->lecture3 = $this->section2->lectures()->create(['title' => 'Lecture 3', 'sort_order' => 1]);
 
-    $this->service = app(\App\Services\VideoAccessService::class);
+    $this->service = app(VideoAccessService::class);
 });
 
 it('canAccess returns true for super_admin', function () {
@@ -68,7 +69,7 @@ it('canAccess returns false for instructor of different course', function () {
 });
 
 it('canAccess returns true for student with valid entitlement', function () {
-    $order = \App\Models\Order::create([
+    $order = Order::create([
         'student_id' => $this->student->id,
         'purchasable_id' => $this->course->id,
         'purchasable_type' => Course::class,
@@ -109,7 +110,7 @@ it('canAccess returns true for enrolled student on free course', function () {
     $section = $freeCourse->sections()->create(['title' => 'S1', 'sort_order' => 1]);
     $lecture = $section->lectures()->create(['title' => 'L1', 'sort_order' => 1]);
 
-    \App\Models\Enrollment::create([
+    Enrollment::create([
         'student_id' => $this->student->id,
         'course_id' => $freeCourse->id,
         'status' => 'active',
@@ -135,7 +136,7 @@ it('canAccess returns false for unenrolled student on free course', function () 
 });
 
 it('canAccess returns false when entitled but blocked by exam', function () {
-    $order = \App\Models\Order::create([
+    $order = Order::create([
         'student_id' => $this->student->id,
         'purchasable_id' => $this->course->id,
         'purchasable_type' => Course::class,
@@ -164,7 +165,7 @@ it('canAccess returns false when entitled but blocked by exam', function () {
 });
 
 it('canAccess returns true when entitled and blocking exam is passed', function () {
-    $order = \App\Models\Order::create([
+    $order = Order::create([
         'student_id' => $this->student->id,
         'purchasable_id' => $this->course->id,
         'purchasable_type' => Course::class,
@@ -214,7 +215,7 @@ it('generateSignedToken creates valid encrypted token', function () {
 });
 
 it('validateToken returns true for valid token', function () {
-    $order = \App\Models\Order::create([
+    $order = Order::create([
         'student_id' => $this->student->id,
         'purchasable_id' => $this->course->id,
         'purchasable_type' => Course::class,

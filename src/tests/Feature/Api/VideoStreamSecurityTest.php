@@ -2,10 +2,11 @@
 
 use App\Models\Course;
 use App\Models\Entitlement;
-use App\Models\Lecture;
 use App\Models\LectureVideo;
+use App\Models\Order;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\VideoAccessService;
 use Illuminate\Support\Facades\Crypt;
 
 beforeEach(function () {
@@ -58,7 +59,7 @@ beforeEach(function () {
     $video2->encryption_key = bin2hex(openssl_random_pseudo_bytes(16));
     $video2->save();
 
-    $this->order = \App\Models\Order::create([
+    $this->order = Order::create([
         'student_id' => $this->student->id,
         'purchasable_id' => $this->course->id,
         'purchasable_type' => Course::class,
@@ -74,7 +75,7 @@ beforeEach(function () {
         'expires_at' => now()->addDays(30),
     ]);
 
-    $this->service = app(\App\Services\VideoAccessService::class);
+    $this->service = app(VideoAccessService::class);
 });
 
 it('validateToken rejects token for lecture B when token was issued for lecture A', function () {
@@ -119,7 +120,7 @@ it('validateToken rejects token when entitlement has been revoked', function () 
 
     expect($this->service->validateToken($token, $this->lecture1, '192.168.1.1'))->toBeTrue();
 
-    \App\Models\Entitlement::where('student_id', $this->student->id)
+    Entitlement::where('student_id', $this->student->id)
         ->where('lecture_id', $this->lecture1->id)
         ->delete();
 
@@ -145,7 +146,7 @@ it('validateToken rejects token when entitlement expires between generation and 
     ];
     $token = Crypt::encrypt($payload);
 
-    \App\Models\Entitlement::where('student_id', $this->student->id)
+    Entitlement::where('student_id', $this->student->id)
         ->where('lecture_id', $this->lecture1->id)
         ->update(['expires_at' => now()->subMinutes(1)]);
 

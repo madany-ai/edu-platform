@@ -8,6 +8,7 @@ use App\Models\Exam;
 use App\Models\ExamAttempt;
 use App\Models\Lecture;
 use App\Models\Student;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
 class ExamService
@@ -164,7 +165,7 @@ class ExamService
                 'student_id' => $student->id,
                 'started_at' => now(),
             ]);
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             $latest = ExamAttempt::where('exam_id', $exam->id)
                 ->where('student_id', $student->id)
                 ->latest()

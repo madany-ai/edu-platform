@@ -112,7 +112,7 @@ it('instructor dashboard courses returns only own courses', function () {
     for ($i = 0; $i < 5; $i++) {
         Course::create([
             'title' => "My Course {$i}",
-            'description' => "Desc",
+            'description' => 'Desc',
             'price' => 0,
             'status' => 'published',
             'instructor_id' => $this->instructor->id,

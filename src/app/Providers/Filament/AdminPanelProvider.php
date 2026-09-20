@@ -2,6 +2,12 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Settings;
+use App\Filament\Widgets\CoursePerformanceWidget;
+use App\Filament\Widgets\InstructorStatsOverview;
+use App\Filament\Widgets\RecentEnrollmentsWidget;
+use App\Http\Middleware\PreventCloudflareCaching;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -10,13 +16,13 @@ use Filament\Navigation\NavigationItem;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\View;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -27,22 +33,22 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login(\App\Filament\Pages\Auth\Login::class)
+            ->login(Login::class)
             ->profile()
             ->brandName(fn () => config('app.name', 'Mr Hefni Muhammad'))
             ->renderHook(
-                \Filament\View\PanelsRenderHook::HEAD_END,
-                fn (): string => \Illuminate\Support\Facades\View::make('filament.hooks.head')->render(),
+                PanelsRenderHook::HEAD_END,
+                fn (): string => View::make('filament.hooks.head')->render(),
             )
             ->renderHook(
-                \Filament\View\PanelsRenderHook::BODY_START,
+                PanelsRenderHook::BODY_START,
                 fn (): string => '<form style="position: absolute; left: -9999px; top: -9999px;"><input type="text" name="fakeusernameremembered"/><input type="password" name="fakepasswordremembered"/></form>',
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
-                \App\Filament\Pages\Settings::class,
+                Settings::class,
             ])
 
             ->navigationItems([
@@ -54,9 +60,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                \App\Filament\Widgets\InstructorStatsOverview::class,
-                \App\Filament\Widgets\RecentEnrollmentsWidget::class,
-                \App\Filament\Widgets\CoursePerformanceWidget::class,
+                InstructorStatsOverview::class,
+                RecentEnrollmentsWidget::class,
+                CoursePerformanceWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -68,7 +74,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                \App\Http\Middleware\PreventCloudflareCaching::class,
+                PreventCloudflareCaching::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

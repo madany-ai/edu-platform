@@ -1,9 +1,9 @@
 <?php
 
 use App\Jobs\ProcessVideoHLS;
+use App\Models\Course;
 use App\Models\Lecture;
 use App\Models\LectureVideo;
-use App\Models\Course;
 use App\Models\User;
 use Illuminate\Support\Facades\Queue;
 
@@ -149,7 +149,7 @@ it('Lecture model dispatches ProcessVideoHLS when video_path changes', function 
 });
 
 it('LectureVideo has correct fillable fields', function () {
-    $video = new LectureVideo();
+    $video = new LectureVideo;
 
     expect($video->getFillable())->toContain('lecture_id')
         ->and($video->getFillable())->toContain('status')

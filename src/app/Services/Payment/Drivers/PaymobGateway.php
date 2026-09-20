@@ -37,7 +37,7 @@ class PaymobGateway implements PaymentGatewayInterface
             'delivery_needed' => false,
             'amount_cents' => $order->amount_cents,
             'currency' => $order->currency ?? 'EGP',
-            'merchant_order_id' => $order->id . '_' . uniqid(),
+            'merchant_order_id' => $order->id.'_'.uniqid(),
             'items' => [],
         ]);
 
@@ -53,9 +53,9 @@ class PaymobGateway implements PaymentGatewayInterface
         $user = $student?->user;
 
         $phone = preg_replace('/[^0-9]/', '', (string) ($student?->phone ?? '')) ?: '01000000000';
-        $firstName = !empty($student?->first_name) ? $student->first_name : (!empty($user?->name) ? explode(' ', $user->name)[0] : 'Student');
-        $lastName = !empty($student?->last_name) ? $student->last_name : 'User';
-        $email = !empty($user?->email) ? $user->email : 'student@example.com';
+        $firstName = ! empty($student?->first_name) ? $student->first_name : (! empty($user?->name) ? explode(' ', $user->name)[0] : 'Student');
+        $lastName = ! empty($student?->last_name) ? $student->last_name : 'User';
+        $email = ! empty($user?->email) ? $user->email : 'student@example.com';
 
         $paymentKeyResponse = Http::post("{$baseUrl}/api/acceptance/payment_keys", [
             'auth_token' => $authToken,
@@ -105,7 +105,7 @@ class PaymobGateway implements PaymentGatewayInterface
         if (is_string($obj)) {
             $obj = json_decode($obj, true) ?? [];
         }
-        if (empty($obj) || !is_array($obj)) {
+        if (empty($obj) || ! is_array($obj)) {
             $obj = $request->all();
         }
 
@@ -144,7 +144,7 @@ class PaymobGateway implements PaymentGatewayInterface
 
         $calculatedHmac = hash_hmac('sha512', $concatenated, $hmacSecret);
 
-        if (!$receivedHmac || !hash_equals($calculatedHmac, $receivedHmac)) {
+        if (! $receivedHmac || ! hash_equals($calculatedHmac, $receivedHmac)) {
             Log::warning('Paymob Webhook HMAC Verification Failed', [
                 'received' => $receivedHmac,
                 'calculated' => $calculatedHmac,
@@ -157,7 +157,7 @@ class PaymobGateway implements PaymentGatewayInterface
         $isRefunded = data_get($obj, 'is_refunded') === true || data_get($obj, 'is_refunded') === 'true';
 
         $status = 'failed';
-        if ($success && !$pending) {
+        if ($success && ! $pending) {
             $status = 'paid';
         } elseif ($isRefunded) {
             $status = 'refunded';

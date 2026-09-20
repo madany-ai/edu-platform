@@ -2,26 +2,31 @@
 
 namespace App\Filament\Resources\Courses\RelationManagers;
 
+use App\Enums\EnrollmentSource;
+use App\Enums\EnrollmentStatus;
 use App\Models\Enrollment;
 use App\Models\Student;
-use Filament\Forms;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Actions\Action;
-use Filament\Notifications\Notification;
-
-use Filament\Schemas\Schema;
 
 class EnrollmentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'enrollments';
 
     protected static ?string $title = 'الطلاب المسجلين';
-    
+
     protected static ?string $modelLabel = 'تسجيل';
+
     protected static ?string $pluralModelLabel = 'التسجيلات';
 
     public function form(Schema $schema): Schema
@@ -36,8 +41,8 @@ class EnrollmentsRelationManager extends RelationManager
                     ->required(),
                 Select::make('status')
                     ->label('الحالة')
-                    ->options(\App\Enums\EnrollmentStatus::class)
-                    ->default(\App\Enums\EnrollmentStatus::Active)
+                    ->options(EnrollmentStatus::class)
+                    ->default(EnrollmentStatus::Active)
                     ->required(),
             ]);
     }
@@ -57,8 +62,8 @@ class EnrollmentsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('status')
                     ->label('الحالة')
                     ->badge()
-                    ->color(fn ($state): string => $state instanceof \App\Enums\EnrollmentStatus ? $state->color() : 'gray')
-                    ->formatStateUsing(fn ($state): string => $state instanceof \App\Enums\EnrollmentStatus ? $state->label() : (string) $state),
+                    ->color(fn ($state): string => $state instanceof EnrollmentStatus ? $state->color() : 'gray')
+                    ->formatStateUsing(fn ($state): string => $state instanceof EnrollmentStatus ? $state->label() : (string) $state),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('تاريخ التسجيل')
                     ->dateTime('Y-m-d')
@@ -79,6 +84,7 @@ class EnrollmentsRelationManager extends RelationManager
                             ->searchable()
                             ->getSearchResultsUsing(function (string $search, RelationManager $livewire) {
                                 $courseAcademicYear = $livewire->getOwnerRecord()->academic_year;
+
                                 return Student::query()
                                     ->where('academic_year', $courseAcademicYear)
                                     ->where(function ($query) use ($search) {
@@ -102,36 +108,36 @@ class EnrollmentsRelationManager extends RelationManager
                     ->action(function (array $data, RelationManager $livewire) {
                         $courseId = $livewire->ownerRecord->id;
                         $count = 0;
-                        
+
                         foreach ($data['student_ids'] as $studentId) {
                             $enrollment = Enrollment::firstOrCreate([
                                 'student_id' => $studentId,
                                 'course_id' => $courseId,
                             ], [
-                                'status' => \App\Enums\EnrollmentStatus::Active,
-                                'source' => \App\Enums\EnrollmentSource::Manual,
+                                'status' => EnrollmentStatus::Active,
+                                'source' => EnrollmentSource::Manual,
                                 'started_at' => now(),
                             ]);
-                            
+
                             if ($enrollment->wasRecentlyCreated) {
                                 $count++;
                             }
                         }
-                        
+
                         Notification::make()
                             ->title("تم تسجيل {$count} طالب بنجاح في هذه الدورة.")
                             ->success()
                             ->send();
                     }),
-                \Filament\Actions\CreateAction::make()->label('تسجيل طالب جديد'),
+                CreateAction::make()->label('تسجيل طالب جديد'),
             ])
             ->actions([
-                \Filament\Actions\EditAction::make(),
-                \Filament\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                \Filament\Actions\BulkActionGroup::make([
-                    \Filament\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }

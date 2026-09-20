@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Enrollment;
+use App\Models\Entitlement;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
 use App\Models\Lecture;
 use App\Models\Student;
 use App\Services\ExamService;
+use App\Services\VideoAccessService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ExamController extends Controller
 {
@@ -32,6 +36,7 @@ class ExamController extends Controller
 
         if (! $exam) {
             $msg = $isAssignment ? 'لا يوجد واجب لهذه المحاضرة.' : 'لا يوجد امتحان لهذه المحاضرة.';
+
             return response()->json(['message' => $msg], 404);
         }
 
@@ -44,10 +49,10 @@ class ExamController extends Controller
         }
 
         $user = request()->user();
-        $student = $user ? \App\Models\Student::where('user_id', $user->id)->first() : null;
+        $student = $user ? Student::where('user_id', $user->id)->first() : null;
         $latestAttempt = null;
         $maxAttemptsReached = false;
-        
+
         if ($student) {
             $latestAttempt = ExamAttempt::where('exam_id', $exam->id)
                 ->where('student_id', $student->id)
@@ -59,7 +64,7 @@ class ExamController extends Controller
                 ->where('student_id', $student->id)
                 ->whereNotNull('submitted_at')
                 ->count();
-                
+
             $maxAttemptsReached = false; // Infinite attempts allowed
         }
 
@@ -129,34 +134,34 @@ class ExamController extends Controller
 
         // Check if student is enrolled or has entitlement to the lecture/course
         $lecture = $exam->lecture;
-        if (!$lecture) {
+        if (! $lecture) {
             abort(404, 'الامتحان غير مرتبط بمحاضرة.');
         }
 
         $courseId = $lecture->section->course_id ?? null;
-        if (!$courseId) {
+        if (! $courseId) {
             abort(404, 'الامتحان غير مرتبط بكورس.');
         }
 
-        $isEnrolled = \App\Models\Enrollment::where('student_id', $student->id)
+        $isEnrolled = Enrollment::where('student_id', $student->id)
             ->where('course_id', $courseId)
             ->where('status', 'active')
             ->exists();
 
-        $hasEntitlement = \App\Models\Entitlement::where('student_id', $student->id)
+        $hasEntitlement = Entitlement::where('student_id', $student->id)
             ->where('lecture_id', $lecture->id)
             ->where(function ($q) {
                 $q->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
+                    ->orWhere('expires_at', '>', now());
             })
             ->exists();
 
-        if (!$isEnrolled && !$hasEntitlement) {
+        if (! $isEnrolled && ! $hasEntitlement) {
             return response()->json(['message' => 'غير مسجل في هذه الدورة أو المحاضرة.'], 403);
         }
 
         // Check if preceding blocking exams have been passed
-        $videoAccessService = app(\App\Services\VideoAccessService::class);
+        $videoAccessService = app(VideoAccessService::class);
         if ($videoAccessService->isBlockedByExam($user, $lecture, $exam->is_assignment ? 'assignment' : 'exam', $exam->id)) {
             return response()->json(['message' => 'هذا الاختبار مغلق حتى تجتاز الاختبارات السابقة أولاً.'], 403);
         }
@@ -176,7 +181,7 @@ class ExamController extends Controller
             'answers' => 'present|array',
             'answers.*.question_id' => [
                 'required',
-                \Illuminate\Validation\Rule::exists('questions', 'id')->where('exam_id', $attempt->exam_id),
+                Rule::exists('questions', 'id')->where('exam_id', $attempt->exam_id),
             ],
             'answers.*.answer' => 'required|string',
         ]);
@@ -206,8 +211,8 @@ class ExamController extends Controller
     {
         $user = $request->user();
         $student = Student::where('user_id', $user->id)->first();
-        
-        if (!$student) {
+
+        if (! $student) {
             return response()->json(['data' => []]);
         }
 

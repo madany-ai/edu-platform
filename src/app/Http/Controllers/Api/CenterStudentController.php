@@ -159,7 +159,7 @@ class CenterStudentController extends Controller
                     'session' => [
                         'topic' => $a->session?->topic,
                         'date' => $a->session?->date?->format('Y-m-d'),
-                    ]
+                    ],
                 ]),
                 'grades' => $student->centerGrades->map(fn ($g) => [
                     'id' => $g->id,
@@ -168,7 +168,7 @@ class CenterStudentController extends Controller
                     'exam' => [
                         'name' => $g->centerExam?->name,
                         'total_marks' => (float) ($g->centerExam?->total_marks ?? 0),
-                    ]
+                    ],
                 ]),
             ],
         ]);

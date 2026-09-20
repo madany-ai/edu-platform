@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 
 class PasswordResetController extends Controller
@@ -44,7 +45,7 @@ class PasswordResetController extends Controller
         $status = Password::broker('users')->reset(
             request()->only('email', 'token', 'password'),
             function ($user, $password) {
-                $user->password = \Illuminate\Support\Facades\Hash::make($password);
+                $user->password = Hash::make($password);
                 $user->save();
 
                 // Invalidate all existing tokens (security: force re-login)

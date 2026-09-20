@@ -1,10 +1,10 @@
 <?php
 
+use App\Models\Bundle;
 use App\Models\Course;
 use App\Models\CourseSection;
 use App\Models\Lecture;
 use App\Models\Product;
-use App\Models\Bundle;
 use App\Models\User;
 
 beforeEach(function () {

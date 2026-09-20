@@ -2,11 +2,14 @@
 
 use App\Models\Course;
 use App\Models\Enrollment;
-use App\Models\Notification;
+use App\Models\Lecture;
+use App\Models\Order;
+use App\Models\Product;
 use App\Models\Student;
 use App\Models\StudentActivity;
 use App\Models\StudentStatistic;
 use App\Models\User;
+use App\Services\DashboardService;
 
 beforeEach(function () {
     $this->instructor = User::factory()->create(['status' => 'active']);
@@ -37,7 +40,7 @@ beforeEach(function () {
         'instructor_id' => $this->instructor->id,
     ]);
 
-    $this->service = app(\App\Services\DashboardService::class);
+    $this->service = app(DashboardService::class);
 });
 
 it('getStudentStats returns correct completed courses count', function () {
@@ -55,7 +58,7 @@ it('getStudentStats returns correct completed courses count', function () {
     StudentActivity::create([
         'student_id' => $this->student->id,
         'type' => 'video_completed',
-        'entity_type' => \App\Models\Lecture::class,
+        'entity_type' => Lecture::class,
         'entity_id' => $lecture->id,
         'metadata' => ['duration' => 120],
     ]);
@@ -81,7 +84,7 @@ it('getStudentStats returns zero completed courses when lectures not all complet
     StudentActivity::create([
         'student_id' => $this->student->id,
         'type' => 'video_completed',
-        'entity_type' => \App\Models\Lecture::class,
+        'entity_type' => Lecture::class,
         'entity_id' => $lecture1->id,
         'metadata' => ['duration' => 120],
     ]);
@@ -131,7 +134,7 @@ it('getInstructorStats returns correct draft count', function () {
 });
 
 it('getInstructorStats returns correct revenue', function () {
-    $product = \App\Models\Product::create([
+    $product = Product::create([
         'instructor_id' => $this->instructor->id,
         'name' => 'Course Product',
         'sellable_id' => $this->course->id,
@@ -140,10 +143,10 @@ it('getInstructorStats returns correct revenue', function () {
         'is_active' => true,
     ]);
 
-    \App\Models\Order::create([
+    Order::create([
         'student_id' => $this->student->id,
         'purchasable_id' => $product->id,
-        'purchasable_type' => \App\Models\Product::class,
+        'purchasable_type' => Product::class,
         'amount_cents' => 20000,
         'currency' => 'EGP',
         'payment_method' => 'manual',

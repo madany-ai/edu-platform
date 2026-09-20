@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\ExamAttempt;
+use App\Models\User;
 
 class ExamAttemptPolicy
 {
@@ -12,6 +12,7 @@ class ExamAttemptPolicy
         if ($user->hasRole('super_admin')) {
             return true;
         }
+
         return null;
     }
 
@@ -28,6 +29,7 @@ class ExamAttemptPolicy
 
         // Also allow the instructor who owns the course to view the results
         $instructorId = $attempt->exam?->lecture?->section?->course?->instructor_id ?? null;
+
         return $instructorId && $user->id === $instructorId;
     }
 }

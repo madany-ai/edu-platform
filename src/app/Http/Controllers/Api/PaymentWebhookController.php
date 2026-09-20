@@ -25,15 +25,17 @@ class PaymentWebhookController extends Controller
                 'order_id' => $order->id,
             ], 200);
         } catch (\InvalidArgumentException $e) {
-            Log::warning("PaymentWebhookController invalid signature for {$gateway}: " . $e->getMessage());
+            Log::warning("PaymentWebhookController invalid signature for {$gateway}: ".$e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
             ], 403);
         } catch (\Throwable $e) {
-            Log::error("PaymentWebhookController exception for {$gateway}: " . $e->getMessage(), [
+            Log::error("PaymentWebhookController exception for {$gateway}: ".$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'فشلت معالجة التنبيه.',

@@ -37,7 +37,7 @@ class ProgressService
                     'metadata' => [
                         'current_time' => $currentTime,
                         'is_completed' => $isCompleted,
-                    ]
+                    ],
                 ]
             );
 
@@ -49,7 +49,7 @@ class ProgressService
                 ->where('entity_id', $lecture->id)
                 ->exists();
 
-            if ($isCompleted && !$wasCompleted) {
+            if ($isCompleted && ! $wasCompleted) {
                 StudentActivity::create([
                     'student_id' => $student->id,
                     'type' => 'video_completed',
@@ -58,8 +58,8 @@ class ProgressService
                     'metadata' => ['completed_at' => now()->toDateTimeString()],
                 ]);
                 $stats->completed_lectures = ($stats->completed_lectures ?? 0) + 1;
-                
-                $durationMinutes = $lecture && $lecture->duration ? (int)$lecture->duration : 10;
+
+                $durationMinutes = $lecture && $lecture->duration ? (int) $lecture->duration : 10;
                 $stats->total_watch_minutes = ($stats->total_watch_minutes ?? 0) + $durationMinutes;
             }
 

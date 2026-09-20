@@ -15,8 +15,11 @@ class NotifyParentJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $student;
+
     public $examName;
+
     public $score;
+
     public $totalMarks;
 
     /**

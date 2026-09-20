@@ -2,12 +2,15 @@
 
 use App\Models\Course;
 use App\Models\Entitlement;
+use App\Models\Exam;
+use App\Models\ExamAttempt;
 use App\Models\Governorate;
 use App\Models\Notification;
 use App\Models\Order;
-use App\Models\Product;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\ExamService;
+use App\Services\GrantEntitlementService;
 use App\Services\NotificationService;
 
 beforeEach(function () {
@@ -157,7 +160,7 @@ it('purchase completion does NOT send notification (known gap)', function () {
 
     $notificationsBefore = Notification::where('user_id', $this->studentUser->id)->count();
 
-    app(\App\Services\GrantEntitlementService::class)->handle($order);
+    app(GrantEntitlementService::class)->handle($order);
 
     $notificationsAfter = Notification::where('user_id', $this->studentUser->id)->count();
 
@@ -165,7 +168,7 @@ it('purchase completion does NOT send notification (known gap)', function () {
 });
 
 it('exam submission does NOT send notification to student (known gap)', function () {
-    $exam = \App\Models\Exam::create([
+    $exam = Exam::create([
         'lecture_id' => $this->lecture->id,
         'title' => 'Exam',
         'duration' => 30,
@@ -183,7 +186,7 @@ it('exam submission does NOT send notification to student (known gap)', function
         'is_correct' => true,
     ]);
 
-    $attempt = \App\Models\ExamAttempt::create([
+    $attempt = ExamAttempt::create([
         'exam_id' => $exam->id,
         'student_id' => $this->student->id,
         'started_at' => now(),
@@ -191,7 +194,7 @@ it('exam submission does NOT send notification to student (known gap)', function
 
     $notificationsBefore = Notification::where('user_id', $this->studentUser->id)->count();
 
-    $service = app(\App\Services\ExamService::class);
+    $service = app(ExamService::class);
     $service->submitAttempt($attempt, [
         ['question_id' => $question->id, 'answer' => $choice->id],
     ]);

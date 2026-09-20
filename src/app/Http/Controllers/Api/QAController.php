@@ -5,19 +5,25 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreQuestionRequest;
 use App\Http\Requests\StoreReplyRequest;
+use App\Http\Resources\QuestionReplyResource;
 use App\Http\Resources\QuestionResource;
+use App\Models\CourseAssistant;
+use App\Models\Enrollment;
+use App\Models\Entitlement;
 use App\Models\Lecture;
-use App\Models\QuestionsPost;
 use App\Models\QuestionReply;
+use App\Models\QuestionsPost;
 use App\Models\Student;
 use App\Services\QAService;
+use App\Traits\ResolvesStudent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class QAController extends Controller
 {
-    use \App\Traits\ResolvesStudent;
+    use ResolvesStudent;
+
     public function __construct(
         private readonly QAService $qaService,
     ) {}
@@ -72,7 +78,7 @@ class QAController extends Controller
 
         // Assistant check
         if ($user->hasRole('assistant')) {
-            $isAssigned = \App\Models\CourseAssistant::where('user_id', $user->id)
+            $isAssigned = CourseAssistant::where('user_id', $user->id)
                 ->where('course_id', $courseId)
                 ->exists();
             if ($isAssigned) {
@@ -86,16 +92,16 @@ class QAController extends Controller
             abort(403, 'غير مصرح لك.');
         }
 
-        $isEnrolled = \App\Models\Enrollment::where('student_id', $student->id)
+        $isEnrolled = Enrollment::where('student_id', $student->id)
             ->where('course_id', $courseId)
             ->where('status', 'active')
             ->exists();
 
-        $hasEntitlement = \App\Models\Entitlement::where('student_id', $student->id)
+        $hasEntitlement = Entitlement::where('student_id', $student->id)
             ->where('lecture_id', $lecture->id)
             ->where(function ($q) {
                 $q->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
+                    ->orWhere('expires_at', '>', now());
             })
             ->exists();
 
@@ -123,7 +129,7 @@ class QAController extends Controller
 
         return response()->json([
             'message' => 'تم إضافة الرد بنجاح.',
-            'reply' => new \App\Http\Resources\QuestionReplyResource($reply),
+            'reply' => new QuestionReplyResource($reply),
         ], 201);
     }
 
@@ -148,6 +154,7 @@ class QAController extends Controller
         // Check if student owns it
         if ($student && $question->student_id === $student->id) {
             $question->delete();
+
             return response()->json(['message' => 'تم حذف السؤال بنجاح.']);
         }
 
@@ -157,9 +164,10 @@ class QAController extends Controller
 
         if ($user->hasRole('super_admin') ||
             ($user->hasRole('instructor') && $course && $course->instructor_id === $user->id) ||
-            ($user->hasRole('assistant') && $course && \App\Models\CourseAssistant::where('user_id', $user->id)->where('course_id', $course->id)->exists())
+            ($user->hasRole('assistant') && $course && CourseAssistant::where('user_id', $user->id)->where('course_id', $course->id)->exists())
         ) {
             $question->delete();
+
             return response()->json(['message' => 'تم حذف السؤال بنجاح.']);
         }
 
@@ -173,6 +181,7 @@ class QAController extends Controller
         // Check if user is the reply author
         if ($reply->user_id === $user->id) {
             $reply->delete();
+
             return response()->json(['message' => 'تم حذف الرد بنجاح.']);
         }
 
@@ -183,9 +192,10 @@ class QAController extends Controller
 
         if ($user->hasRole('super_admin') ||
             ($user->hasRole('instructor') && $course && $course->instructor_id === $user->id) ||
-            ($user->hasRole('assistant') && $course && \App\Models\CourseAssistant::where('user_id', $user->id)->where('course_id', $course->id)->exists())
+            ($user->hasRole('assistant') && $course && CourseAssistant::where('user_id', $user->id)->where('course_id', $course->id)->exists())
         ) {
             $reply->delete();
+
             return response()->json(['message' => 'تم حذف الرد بنجاح.']);
         }
 

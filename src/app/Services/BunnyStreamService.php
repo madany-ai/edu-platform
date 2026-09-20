@@ -8,9 +8,13 @@ use Illuminate\Support\Facades\Log;
 class BunnyStreamService
 {
     private string $apiKey;
+
     private string $libraryId;
+
     private string $baseUrl;
+
     private string $cdnHostname;
+
     private string $signingKey;
 
     public function __construct()
@@ -36,7 +40,7 @@ class BunnyStreamService
         ]);
 
         if ($response->failed()) {
-            Log::error("Bunny Stream: Failed to create video", [
+            Log::error('Bunny Stream: Failed to create video', [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
@@ -57,43 +61,43 @@ class BunnyStreamService
         Log::info("Bunny Stream: Uploading {$fileSize} bytes to {$url}");
 
         $fileHandle = fopen($filePath, 'r');
-        if (!$fileHandle) {
+        if (! $fileHandle) {
             throw new \Exception("Failed to open local file for reading: {$filePath}");
         }
 
         $ch = curl_init();
         curl_setopt_array($ch, [
-            CURLOPT_URL            => $url,
+            CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CUSTOMREQUEST  => 'PUT',
-            CURLOPT_UPLOAD         => true,
-            CURLOPT_INFILE         => $fileHandle,
-            CURLOPT_INFILESIZE     => $fileSize,
-            CURLOPT_HTTPHEADER     => [
+            CURLOPT_CUSTOMREQUEST => 'PUT',
+            CURLOPT_UPLOAD => true,
+            CURLOPT_INFILE => $fileHandle,
+            CURLOPT_INFILESIZE => $fileSize,
+            CURLOPT_HTTPHEADER => [
                 "AccessKey: {$this->apiKey}",
-                "Content-Type: application/octet-stream",
+                'Content-Type: application/octet-stream',
                 "Content-Length: {$fileSize}",
             ],
-            CURLOPT_TIMEOUT        => 3600,
+            CURLOPT_TIMEOUT => 3600,
             CURLOPT_CONNECTTIMEOUT => 30,
         ]);
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error    = curl_error($ch);
+        $error = curl_error($ch);
         curl_close($ch);
         fclose($fileHandle);
 
         if ($error) {
-            Log::error("Bunny Stream: cURL upload error", ['video_id' => $videoId, 'error' => $error]);
+            Log::error('Bunny Stream: cURL upload error', ['video_id' => $videoId, 'error' => $error]);
             throw new \Exception("cURL upload failed: {$error}");
         }
 
         if ($httpCode < 200 || $httpCode >= 300) {
-            Log::error("Bunny Stream: Failed to upload content", [
+            Log::error('Bunny Stream: Failed to upload content', [
                 'video_id' => $videoId,
-                'status'   => $httpCode,
-                'body'     => $response,
+                'status' => $httpCode,
+                'body' => $response,
             ]);
             throw new \Exception("Failed to upload video content to Bunny Stream: HTTP {$httpCode}");
         }
@@ -112,7 +116,7 @@ class BunnyStreamService
         ])->get("{$this->baseUrl}/videos/{$videoId}");
 
         if ($response->failed()) {
-            Log::error("Bunny Stream: Failed to get video", [
+            Log::error('Bunny Stream: Failed to get video', [
                 'video_id' => $videoId,
                 'status' => $response->status(),
                 'body' => $response->body(),
@@ -130,6 +134,7 @@ class BunnyStreamService
     {
         try {
             $video = $this->getVideo($videoId);
+
             return ($video['status'] ?? 0) === 2;
         } catch (\Exception $e) {
             return false;
@@ -146,7 +151,7 @@ class BunnyStreamService
         ])->delete("{$this->baseUrl}/videos/{$videoId}");
 
         if ($response->failed()) {
-            Log::warning("Bunny Stream: Failed to delete video", [
+            Log::warning('Bunny Stream: Failed to delete video', [
                 'video_id' => $videoId,
                 'status' => $response->status(),
             ]);
@@ -161,10 +166,11 @@ class BunnyStreamService
     {
         $expiration = now()->addMinutes($expirationMinutes)->timestamp;
 
-        if (!empty($this->signingKey)) {
+        if (! empty($this->signingKey)) {
             // Bunny Embed View Token Auth: sha256(key + videoId + expiration).
             // Note: Bunny Stream API explicitly requires simple SHA-256 concatenation, not HMAC.
-            $token = hash('sha256', $this->signingKey . $videoId . $expiration);
+            $token = hash('sha256', $this->signingKey.$videoId.$expiration);
+
             return "https://iframe.mediadelivery.net/embed/{$this->libraryId}/{$videoId}?token={$token}&expires={$expiration}";
         }
 

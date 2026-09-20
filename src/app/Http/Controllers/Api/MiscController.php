@@ -12,18 +12,20 @@ class MiscController extends Controller
     public function governorates(): JsonResponse
     {
         $governorates = Governorate::orderBy('name', 'asc')->get(['id', 'name']);
+
         return response()->json([
             'status' => 'success',
-            'data' => $governorates
+            'data' => $governorates,
         ]);
     }
 
     public function gradeLevels(): JsonResponse
     {
         $gradeLevels = GradeLevel::orderBy('sort_order', 'asc')->get(['id', 'name', 'sort_order']);
+
         return response()->json([
             'status' => 'success',
-            'data' => $gradeLevels
+            'data' => $gradeLevels,
         ]);
     }
 }
