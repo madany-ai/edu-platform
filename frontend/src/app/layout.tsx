@@ -8,7 +8,7 @@ const tajawal = Tajawal({
   subsets: ["arabic"],
   display: "swap",
   variable: "--font-tajawal",
-  weight: ["300", "400", "500", "700", "800"],
+  weight: ["400", "500", "700"],
 });
 
 export const viewport: Viewport = {

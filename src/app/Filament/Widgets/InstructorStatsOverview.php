@@ -16,6 +16,8 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class InstructorStatsOverview extends StatsOverviewWidget
 {
+    protected ?string $pollingInterval = null;
+
     public static function canView(): bool
     {
         return ! auth()->user()->hasRole('assistant');

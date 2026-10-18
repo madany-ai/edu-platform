@@ -38,7 +38,16 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       
       if (typeof window !== "undefined") {
-        if (originalRequest.url !== "/auth/login" && originalRequest.url !== "/auth/refresh-token") {
+        const isAuthEndpoint = 
+          originalRequest.url?.includes("/auth/login") ||
+          originalRequest.url?.includes("/auth/refresh-token") ||
+          originalRequest.url?.includes("/auth/me");
+
+        const isAuthPage = 
+          window.location.pathname === "/login" || 
+          window.location.pathname === "/register";
+
+        if (!isAuthEndpoint && !isAuthPage) {
           try {
             // Attempt to refresh the token using HttpOnly Cookie (sent automatically)
             const { data } = await axios.post(
@@ -60,18 +69,20 @@ api.interceptors.response.use(
             setAccessToken(null);
             document.cookie = "laravel_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            if (window.location.pathname !== "/login") {
+            if (!isAuthPage) {
               window.location.href = "/login";
             }
             return Promise.reject(refreshError);
           }
         } else {
-          // No token or already trying to login/refresh, just clear cookies
+          // Auth endpoint or already on auth page, clean session state without looping
           setAccessToken(null);
-          document.cookie = "laravel_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-          document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          if (isAuthEndpoint && !originalRequest.url?.includes("/auth/me")) {
+            document.cookie = "laravel_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          }
           
-          if (window.location.pathname !== "/login" && error.config?.url !== "/auth/me") {
+          if (!isAuthPage && !originalRequest.url?.includes("/auth/me")) {
             window.location.href = "/login";
           }
         }

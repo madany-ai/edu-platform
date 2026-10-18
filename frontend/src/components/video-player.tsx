@@ -742,6 +742,7 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
     if (isApiReady && videoId && containerRef.current && !playerRef.current) {
       playerRef.current = new window.YT.Player(containerRef.current, {
         videoId,
+        host: "https://www.youtube.com",
         playerVars: { 
           controls: 0, // إخفاء أزرار يوتيوب الافتراضية بالكامل لتركيب الأزرار الخاصة بنا!
           disablekb: 1, 
@@ -750,7 +751,9 @@ function YouTubeSecurePlayer({ videoId }: { videoId: string | null }) {
           iv_load_policy: 3, 
           cc_load_policy: 3,
           fs: 0, 
-          playsinline: 1 
+          playsinline: 1,
+          enablejsapi: 1,
+          origin: typeof window !== "undefined" ? window.location.origin : undefined,
         },
         events: {
           onReady: (e: any) => {
