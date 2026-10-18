@@ -9,6 +9,7 @@ const tajawal = Tajawal({
   display: "swap",
   variable: "--font-tajawal",
   weight: ["400", "500", "700"],
+  preload: false,
 });
 
 export const viewport: Viewport = {

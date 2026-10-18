@@ -32,7 +32,7 @@ class DemoDataSeeder extends Seeder
         }
 
         $codeService = app(CodeGeneratorService::class);
-        $statuses = ['present', 'absent', 'late', 'excused'];
+        $statuses = ['present', 'absent', 'late', 'guest'];
         $years = ['sec_1', 'sec_2', 'sec_3'];
 
         $studentCounter = 1;

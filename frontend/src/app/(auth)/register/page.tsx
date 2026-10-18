@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertCircle, CheckCircle2, Loader2, Calculator } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, Calculator, Eye, EyeOff } from "lucide-react";
 import { miscService, type GovernorateInfo, type GradeLevelInfo } from "@/services/misc.service";
 import env from "@/config/env";
 
@@ -50,7 +50,9 @@ export default function RegisterPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
 
   const [firstName, setFirstName] = useState("");
   const [secondName, setSecondName] = useState("");
@@ -308,30 +310,50 @@ export default function RegisterPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">كلمة المرور</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); clearFieldError("password"); }}
-                  required
-                  className="bg-background/50 border-border/60 text-foreground"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); clearFieldError("password"); }}
+                    required
+                    className="bg-background/50 border-border/60 text-foreground pl-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                    aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
                 {getFieldError("password") && (
                   <p className="text-xs text-destructive">{getFieldError("password")}</p>
                 )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password_confirmation">تأكيد كلمة المرور</Label>
-                <Input
-                  id="password_confirmation"
-                  type="password"
-                  placeholder="••••••••"
-                  value={passwordConfirmation}
-                  onChange={(e) => { setPasswordConfirmation(e.target.value); clearFieldError("password_confirmation"); }}
-                  required
-                  className="bg-background/50 border-border/60 text-foreground"
-                />
+                <div className="relative">
+                  <Input
+                    id="password_confirmation"
+                    type={showPasswordConfirmation ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={passwordConfirmation}
+                    onChange={(e) => { setPasswordConfirmation(e.target.value); clearFieldError("password_confirmation"); }}
+                    required
+                    className="bg-background/50 border-border/60 text-foreground pl-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordConfirmation(!showPasswordConfirmation)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                    aria-label={showPasswordConfirmation ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                  >
+                    {showPasswordConfirmation ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
                 {getFieldError("password_confirmation") && (
                   <p className="text-xs text-destructive">{getFieldError("password_confirmation")}</p>
                 )}

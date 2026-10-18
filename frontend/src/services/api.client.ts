@@ -65,12 +65,19 @@ api.interceptors.response.use(
               return api(originalRequest);
             }
           } catch (refreshError) {
-            // Refresh failed, clear everything and redirect to login
+            // Refresh failed, clear session state
             setAccessToken(null);
             document.cookie = "laravel_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            if (!isAuthPage) {
-              window.location.href = "/login";
+            
+            const isProtectedRoute = 
+              window.location.pathname.startsWith("/dashboard") ||
+              window.location.pathname.startsWith("/center") ||
+              window.location.pathname.startsWith("/player") ||
+              window.location.pathname.startsWith("/change-password");
+
+            if (isProtectedRoute) {
+              window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
             }
             return Promise.reject(refreshError);
           }
@@ -82,8 +89,14 @@ api.interceptors.response.use(
             document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
           }
           
-          if (!isAuthPage && !originalRequest.url?.includes("/auth/me")) {
-            window.location.href = "/login";
+          const isProtectedRoute = 
+            window.location.pathname.startsWith("/dashboard") ||
+            window.location.pathname.startsWith("/center") ||
+            window.location.pathname.startsWith("/player") ||
+            window.location.pathname.startsWith("/change-password");
+
+          if (isProtectedRoute && !originalRequest.url?.includes("/auth/me")) {
+            window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
           }
         }
       }

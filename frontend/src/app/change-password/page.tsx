@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 import api from "@/services/api.client";
 import { AuthGuard } from "@/components/layout/auth-guard";
 
@@ -33,6 +34,8 @@ export default function ChangePasswordPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
 
   const {
     register,
@@ -77,13 +80,23 @@ export default function ChangePasswordPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="password">كلمة المرور الجديدة</Label>
-              <Input
-                id="password"
-                type="password"
-                {...register("password")}
-                className="bg-zinc-800/50 border-zinc-700"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  {...register("password")}
+                  className="bg-zinc-800/50 border-zinc-700 pl-10"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                  aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               {errors.password && (
                 <p className="text-xs text-red-500">{errors.password.message}</p>
               )}
@@ -91,13 +104,23 @@ export default function ChangePasswordPage() {
 
             <div className="space-y-2">
               <Label htmlFor="password_confirmation">تأكيد كلمة المرور</Label>
-              <Input
-                id="password_confirmation"
-                type="password"
-                {...register("password_confirmation")}
-                className="bg-zinc-800/50 border-zinc-700"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <Input
+                  id="password_confirmation"
+                  type={showPasswordConfirmation ? "text" : "password"}
+                  {...register("password_confirmation")}
+                  className="bg-zinc-800/50 border-zinc-700 pl-10"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordConfirmation(!showPasswordConfirmation)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                  aria-label={showPasswordConfirmation ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                >
+                  {showPasswordConfirmation ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               {errors.password_confirmation && (
                 <p className="text-xs text-red-500">{errors.password_confirmation.message}</p>
               )}
